@@ -34,4 +34,6 @@
     <color name="vetro_card_fill">#0A000000</color>
     <color name="vetro_card_border">#14000000</color>
     <color name="vetro_floating_fill">#D9FFFFFF</color>
+    <!-- mini-player in fondo allo schermo -->
+    <color name="vetro_mini_player">#FFFFFFFF</color>
 </resources>

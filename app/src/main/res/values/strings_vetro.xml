@@ -7,4 +7,13 @@
     <string name="tab_home">Home</string>
     <string name="pill_audio">Audio</string>
     <string name="pill_save">Save</string>
+    <string name="settings_summary_video_audio">Quality, player, mini window, gestures</string>
+    <string name="settings_summary_downloads">Where downloads are saved and how</string>
+    <string name="settings_summary_appearance">Theme, tabs, how lists look</string>
+    <string name="settings_summary_history">What to remember and what to delete</string>
+    <string name="settings_summary_content">Language, country, comments, related videos</string>
+    <string name="settings_summary_notifications">New videos from channels, player notification</string>
+    <string name="settings_summary_updates">Check for new versions of the app</string>
+    <string name="settings_summary_backup">Save or restore subscriptions, history and settings</string>
+    <string name="settings_summary_debug">Advanced: only for testing the app</string>
 </resources>

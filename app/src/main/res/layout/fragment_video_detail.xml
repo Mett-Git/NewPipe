@@ -565,7 +565,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.9"
-        android:background="?attr/windowBackground">
+        android:background="@color/vetro_mini_player">
 
         <ImageButton
             android:id="@+id/overlay_thumbnail"

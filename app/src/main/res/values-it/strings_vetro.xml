@@ -6,4 +6,13 @@
     <string name="tab_home">Home</string>
     <string name="pill_audio">Audio</string>
     <string name="pill_save">Salva</string>
+    <string name="settings_summary_video_audio">Qualità, lettore, finestrella, gesti, cosa succede quando esci dall\'app</string>
+    <string name="settings_summary_downloads">Dove salvare video e musica scaricati e come</string>
+    <string name="settings_summary_appearance">Tema, schede della barra in basso, come si vedono le liste</string>
+    <string name="settings_summary_history">Cosa ricordare (visti, ricerche) e cosa cancellare</string>
+    <string name="settings_summary_content">Lingua e paese dei contenuti, commenti, video correlati, YouTube</string>
+    <string name="settings_summary_notifications">Avvisi dei video nuovi dei canali e la notifica del lettore</string>
+    <string name="settings_summary_updates">Controllo delle nuove versioni dell\'app</string>
+    <string name="settings_summary_backup">Salva o rimetti iscrizioni, cronologia, playlist e impostazioni</string>
+    <string name="settings_summary_debug">Avanzate: solo per chi prova l\'app</string>
 </resources>

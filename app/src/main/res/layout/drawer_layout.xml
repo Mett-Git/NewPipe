@@ -7,4 +7,10 @@
     android:layout_gravity="start"
     android:background="?android:attr/windowBackground"
     android:orientation="vertical"
-    app:headerLayout="@layout/drawer_header" />
+    app:headerLayout="@layout/drawer_header"
+    app:itemIconTint="@color/vetro_drawer_item_content"
+    app:itemShapeAppearance="@style/VetroDrawerItemShape"
+    app:itemShapeFillColor="@color/vetro_drawer_item_fill"
+    app:itemShapeInsetEnd="12dp"
+    app:itemShapeInsetStart="12dp"
+    app:itemTextColor="@color/vetro_drawer_item_content" />

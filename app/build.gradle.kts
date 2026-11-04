@@ -71,6 +71,9 @@ configure<ApplicationExtension> {
         }
 
         release {
+            // versione ritoccata (stile Vetro): pacchetto suo, così sta accanto a quella
+            // ufficiale e si aggiorna dalle release del nostro fork
+            applicationIdSuffix = ".vetro"
             System.getProperty("packageSuffix")?.let { suffix ->
                 applicationIdSuffix = suffix
                 resValue("string", "app_name", "NewPipe $suffix")

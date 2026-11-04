@@ -32,4 +32,10 @@
         <item name="android:textColor">@color/vetro_pill_hot_text</item>
         <item name="drawableTint">@color/vetro_pill_hot_text</item>
     </style>
+
+    <!-- voci del menu a sinistra: a pillola -->
+    <style name="VetroDrawerItemShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>
