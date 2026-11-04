@@ -21,6 +21,7 @@ import org.schabi.newpipe.extractor.exceptions.ExtractionException;
 import org.schabi.newpipe.fragments.BlankFragment;
 import org.schabi.newpipe.fragments.list.channel.ChannelFragment;
 import org.schabi.newpipe.fragments.list.kiosk.DefaultKioskFragment;
+import org.schabi.newpipe.fragments.list.kiosk.HomeFragment;
 import org.schabi.newpipe.fragments.list.kiosk.KioskFragment;
 import org.schabi.newpipe.fragments.list.playlist.PlaylistFragment;
 import org.schabi.newpipe.local.bookmark.BookmarkFragment;
@@ -165,7 +166,8 @@ public abstract class Tab {
         KIOSK(new KioskTab()),
         CHANNEL(new ChannelTab()),
         PLAYLIST(new PlaylistTab()),
-        FEEDGROUP(new FeedGroupTab());
+        FEEDGROUP(new FeedGroupTab()),
+        HOME(new HomeTab());
 
         private final Tab tab;
 
@@ -480,6 +482,33 @@ public abstract class Tab {
 
         public String getChannelName() {
             return channelName;
+        }
+    }
+
+    /** Home: dirette, tendenze e video dei canali seguiti in un'unica pagina. */
+    public static class HomeTab extends Tab {
+        // lontano dagli id della NewPipe ufficiale, che potrebbe aggiungerne altri
+        public static final int ID = 50;
+
+        @Override
+        public int getTabId() {
+            return ID;
+        }
+
+        @Override
+        public String getTabName(final Context context) {
+            return context.getString(R.string.tab_home);
+        }
+
+        @DrawableRes
+        @Override
+        public int getTabIconRes(final Context context) {
+            return R.drawable.ic_home;
+        }
+
+        @Override
+        public HomeFragment getFragment(final Context context) throws ExtractionException {
+            return HomeFragment.getInstance(ServiceHelper.getSelectedServiceId(context));
         }
     }
 

@@ -47,40 +47,48 @@
     <style name="LightTheme" parent="Base.LightTheme"/>
 
     <!-- Dark Theme -->
+    <!-- Stile "Vetro" (colors_vetro.xml): nero con aloni, vetro, tocchi corallo -->
     <style name="Base.V21.DarkTheme" parent="Base">
-        <item name="colorPrimary">@color/dark_youtube_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_youtube_primary_color</item>
-        <item name="colorAccent">@color/dark_youtube_accent_color</item>
-        <item name="android:windowBackground">@color/dark_background_color</item>
-        <item name="windowBackground">@color/dark_background_color</item>
+        <item name="colorPrimary">@color/vetro_background</item>
+        <item name="colorPrimaryDark">@color/vetro_background</item>
+        <item name="colorAccent">@color/white</item>
+        <item name="android:windowBackground">@drawable/vetro_window_background</item>
+        <item name="windowBackground">@color/vetro_background</item>
+        <!-- trasparente: si vedono gli aloni, e nella finestrella di Android non resta
+             una fascia sopra il video -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/vetro_background</item>
+        <item name="android:textColorPrimary">@color/vetro_text</item>
+        <item name="android:textColorSecondary">@color/vetro_text_secondary</item>
 
-        <item name="separator_color">@color/dark_separator_color</item>
+        <item name="separator_color">@color/vetro_separator</item>
         <item name="contrast_background_color">@color/dark_contrast_background_color</item>
         <item name="checked_selector">@drawable/selector_checked_dark</item>
         <item name="focused_selector">@drawable/selector_focused_dark</item>
-        <item name="toolbar_shadow">@drawable/toolbar_shadow_dark</item>
+        <!-- Vetro: niente ombra sotto la barra in alto, si vedono gli aloni -->
+        <item name="toolbar_shadow">@android:color/transparent</item>
         <item name="selector">@drawable/selector_dark</item>
         <item name="colorControlHighlight">@color/dark_ripple_color</item>
-        <item name="progress_horizontal_drawable">@drawable/progress_youtube_horizontal_dark</item>
-        <item name="card_item_background_color">@color/dark_card_item_background_color</item>
-        <item name="card_item_contrast_color">@color/dark_card_item_contrast_color</item>
-        <item name="border_color">@color/dark_border_color</item>
+        <item name="progress_horizontal_drawable">@drawable/vetro_progress_horizontal</item>
+        <item name="card_item_background_color">@color/vetro_glass</item>
+        <item name="card_item_contrast_color">@color/vetro_glass_strong</item>
+        <item name="border_color">@color/vetro_glass_border</item>
         <item name="dashed_border">@drawable/dashed_border_dark</item>
     </style>
     <style name="Base.DarkTheme" parent="Base.V21.DarkTheme" />
     <style name="DarkTheme" parent="Base.DarkTheme"/>
 
     <!-- Black Theme -->
+    <!-- il nero è il Vetro senza aloni: sfondo nero pieno -->
     <style name="Base.V21.BlackTheme" parent="DarkTheme">
         <item name="android:windowBackground">@color/black_background_color</item>
         <item name="windowBackground">@color/black_background_color</item>
+        <item name="colorPrimary">@color/black_background_color</item>
+        <item name="colorPrimaryDark">@color/black_background_color</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/black_background_color</item>
 
-        <item name="separator_color">@color/black_separator_color</item>
         <item name="contrast_background_color">@color/black_contrast_background_color</item>
-
-        <item name="card_item_background_color">@color/black_card_item_background_color</item>
-        <item name="card_item_contrast_color">@color/black_card_item_contrast_color</item>
-        <item name="border_color">@color/black_border_color</item>
         <item name="dashed_border">@drawable/dashed_border_black</item>
     </style>
     <style name="Base.BlackTheme" parent="Base.V21.BlackTheme" />
@@ -96,11 +104,11 @@
     </style>
 
     <style name="DarkDialogTheme" parent="Theme.AppCompat.DayNight.Dialog">
-        <item name="colorPrimary">@color/dark_youtube_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_youtube_primary_color</item>
-        <item name="colorAccent">@color/dark_youtube_accent_color</item>
-        <item name="android:windowBackground">@color/dark_dialog_background_color</item>
-        <item name="windowBackground">@color/dark_dialog_background_color</item>
+        <item name="colorPrimary">@color/vetro_background</item>
+        <item name="colorPrimaryDark">@color/vetro_background</item>
+        <item name="colorAccent">@color/vetro_coral</item>
+        <item name="android:windowBackground">@drawable/vetro_dialog_background</item>
+        <item name="windowBackground">@color/vetro_dialog_background</item>
     </style>
 
     <style name="LightDialogMinWidthTheme" parent="Theme.AppCompat.DayNight.Dialog.MinWidth">
@@ -112,11 +120,11 @@
     </style>
 
     <style name="DarkDialogMinWidthTheme" parent="Theme.AppCompat.DayNight.Dialog.MinWidth">
-        <item name="colorPrimary">@color/dark_youtube_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_youtube_primary_color</item>
-        <item name="colorAccent">@color/dark_youtube_accent_color</item>
-        <item name="android:windowBackground">@color/dark_dialog_background_color</item>
-        <item name="windowBackground">@color/dark_dialog_background_color</item>
+        <item name="colorPrimary">@color/vetro_background</item>
+        <item name="colorPrimaryDark">@color/vetro_background</item>
+        <item name="colorAccent">@color/vetro_coral</item>
+        <item name="android:windowBackground">@drawable/vetro_dialog_background</item>
+        <item name="windowBackground">@color/vetro_dialog_background</item>
     </style>
 
     <!-- Settings -->
@@ -125,11 +133,11 @@
     </style>
 
     <style name="DarkSettingsTheme" parent="DarkTheme">
-        <item name="colorAccent">@color/dark_settings_accent_color</item>
+        <item name="colorAccent">@color/vetro_coral</item>
     </style>
 
     <style name="BlackSettingsTheme" parent="BlackTheme">
-        <item name="colorAccent">@color/black_settings_accent_color</item>
+        <item name="colorAccent">@color/vetro_coral</item>
     </style>
 
     <!-- Router Activity -->

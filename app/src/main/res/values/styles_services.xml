@@ -6,11 +6,11 @@
     </style>
 
     <style name="DarkTheme.YouTube" parent="DarkTheme" tools:keep="@style/DarkTheme_YouTube">
-        <item name="colorPrimaryDark">@color/dark_youtube_primary_color</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
     </style>
 
     <style name="BlackTheme.YouTube" parent="BlackTheme" tools:keep="@style/BlackTheme_YouTube">
-        <item name="colorPrimaryDark">@color/dark_youtube_primary_color</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
     </style>
 
     <!-- SoundCloud -->
@@ -23,17 +23,17 @@
     </style>
 
     <style name="DarkTheme.SoundCloud" parent="DarkTheme" tools:keep="@style/DarkTheme_SoundCloud">
-        <item name="colorPrimary">@color/dark_soundcloud_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_soundcloud_primary_color</item>
-        <item name="colorAccent">@color/dark_soundcloud_accent_color</item>
+        <item name="colorPrimary">?attr/windowBackground</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
+        <item name="colorAccent">@color/white</item>
         <item name="progress_horizontal_drawable">@drawable/progress_soundcloud_horizontal_dark
         </item>
     </style>
 
     <style name="BlackTheme.SoundCloud" parent="BlackTheme" tools:keep="@style/BlackTheme_SoundCloud">
-        <item name="colorPrimary">@color/dark_soundcloud_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_soundcloud_primary_color</item>
-        <item name="colorAccent">@color/dark_soundcloud_accent_color</item>
+        <item name="colorPrimary">?attr/windowBackground</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
+        <item name="colorAccent">@color/white</item>
         <item name="progress_horizontal_drawable">@drawable/progress_soundcloud_horizontal_dark
         </item>
     </style>
@@ -46,15 +46,15 @@
     </style>
 
     <style name="DarkTheme.PeerTube" parent="DarkTheme" tools:keep="@style/DarkTheme_PeerTube">
-        <item name="colorPrimary">@color/dark_peertube_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_peertube_primary_color</item>
-        <item name="colorAccent">@color/dark_peertube_accent_color</item>
+        <item name="colorPrimary">?attr/windowBackground</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
+        <item name="colorAccent">@color/white</item>
     </style>
 
     <style name="BlackTheme.PeerTube" parent="BlackTheme" tools:keep="@style/BlackTheme_PeerTube">
-        <item name="colorPrimary">@color/dark_peertube_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_peertube_primary_color</item>
-        <item name="colorAccent">@color/dark_peertube_accent_color</item>
+        <item name="colorPrimary">?attr/windowBackground</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
+        <item name="colorAccent">@color/white</item>
     </style>
 
     <!-- media.ccc.de -->
@@ -65,15 +65,15 @@
     </style>
 
     <style name="DarkTheme.media.ccc.de" parent="DarkTheme" tools:keep="@style/DarkTheme_media_ccc_de">
-        <item name="colorPrimary">@color/dark_media_ccc_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_media_ccc_primary_color</item>
-        <item name="colorAccent">@color/dark_media_ccc_accent_color</item>
+        <item name="colorPrimary">?attr/windowBackground</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
+        <item name="colorAccent">@color/white</item>
     </style>
 
     <style name="BlackTheme.media.ccc.de" parent="BlackTheme" tools:keep="@style/BlackTheme_media_ccc_de">
-        <item name="colorPrimary">@color/dark_media_ccc_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_media_ccc_primary_color</item>
-        <item name="colorAccent">@color/dark_media_ccc_accent_color</item>
+        <item name="colorPrimary">?attr/windowBackground</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
+        <item name="colorAccent">@color/white</item>
     </style>
 
     <!-- Bandcamp -->
@@ -84,15 +84,15 @@
     </style>
 
     <style name="DarkTheme.Bandcamp" parent="DarkTheme" tools:keep="@style/DarkTheme_Bandcamp">
-        <item name="colorPrimary">@color/dark_bandcamp_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_bandcamp_primary_color</item>
-        <item name="colorAccent">@color/dark_bandcamp_accent_color</item>
+        <item name="colorPrimary">?attr/windowBackground</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
+        <item name="colorAccent">@color/white</item>
     </style>
 
     <style name="BlackTheme.Bandcamp" parent="BlackTheme" tools:keep="@style/BlackTheme_Bandcamp">
-        <item name="colorPrimary">@color/dark_bandcamp_primary_color</item>
-        <item name="colorPrimaryDark">@color/dark_bandcamp_primary_color</item>
-        <item name="colorAccent">@color/dark_bandcamp_accent_color</item>
+        <item name="colorPrimary">?attr/windowBackground</item>
+        <item name="colorPrimaryDark">?attr/windowBackground</item>
+        <item name="colorAccent">@color/white</item>
     </style>
 
 </resources>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sfondo "Vetro": nero con tre aloni morbidi (come lo sfondo di Orbis). -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/vetro_background" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.1"
+                android:centerY="0.0"
+                android:gradientRadius="75%"
+                android:startColor="@color/vetro_glow_coral"
+                android:endColor="@color/vetro_glow_none" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="1.0"
+                android:centerY="0.45"
+                android:gradientRadius="70%"
+                android:startColor="@color/vetro_glow_blue"
+                android:endColor="@color/vetro_glow_none" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.15"
+                android:centerY="1.0"
+                android:gradientRadius="75%"
+                android:startColor="@color/vetro_glow_violet"
+                android:endColor="@color/vetro_glow_none" />
+        </shape>
+    </item>
+</layer-list>

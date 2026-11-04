@@ -72,19 +72,22 @@
     </string-array>
 
     <string name="minimize_on_exit_key">minimize_on_exit_key</string>
-    <string name="minimize_on_exit_value">@string/minimize_on_exit_background_key</string>
+    <string name="minimize_on_exit_value">@string/minimize_on_exit_pip_key</string>
     <string name="minimize_on_exit_none_key">minimize_on_exit_none_key</string>
     <string name="minimize_on_exit_background_key">minimize_on_exit_background_key</string>
     <string name="minimize_on_exit_popup_key">minimize_on_exit_popup_key</string>
+    <string name="minimize_on_exit_pip_key">minimize_on_exit_pip_key</string>
     <string-array name="minimize_on_exit_action_key">
         <item>@string/minimize_on_exit_none_key</item>
         <item>@string/minimize_on_exit_background_key</item>
         <item>@string/minimize_on_exit_popup_key</item>
+        <item>@string/minimize_on_exit_pip_key</item>
     </string-array>
     <string-array name="minimize_on_exit_action_description">
         <item>@string/minimize_on_exit_none_description</item>
         <item>@string/minimize_on_exit_background_description</item>
         <item>@string/minimize_on_exit_popup_description</item>
+        <item>@string/minimize_on_exit_pip_description</item>
     </string-array>
 
     <string name="start_main_player_fullscreen_key">start_main_player_fullscreen_key</string>
@@ -257,7 +260,7 @@
     <string name="dark_theme_key">dark_theme</string>
     <string name="black_theme_key">black_theme</string>
     <string name="auto_device_theme_key">auto_device_theme</string>
-    <string name="default_theme_value">@string/auto_device_theme_key</string>
+    <string name="default_theme_value">@string/dark_theme_key</string>
     <string name="default_night_theme_value">@string/dark_theme_key</string>
     <string-array name="theme_values_list">
         <item>@string/light_theme_key</item>
@@ -1409,7 +1412,7 @@
     </string-array>
 
     <string name="list_view_mode_key">list_view_mode</string>
-    <string name="list_view_mode_value">@string/list_view_mode_auto_key</string>
+    <string name="list_view_mode_value">@string/list_view_mode_card_key</string>
 
     <!-- TODO: Use these across the app instead of hardcoding it -->
     <string name="list_view_mode_auto_key">auto</string>

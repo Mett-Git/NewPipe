@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Testi delle parti nuove (stile Vetro, finestrella di Android). In italiano: values-it/strings_vetro.xml -->
+<resources>
+    <string name="minimize_on_exit_pip_description">Android picture-in-picture window</string>
+    <string name="controls_pip_title">Mini window</string>
+    <string name="open_in_pip_mode">Open in Android\'s picture-in-picture window</string>
+    <string name="tab_home">Home</string>
+</resources>

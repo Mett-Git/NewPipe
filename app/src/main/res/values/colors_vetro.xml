@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stile "Vetro" (come Orbis): nero con aloni di colore, superfici di vetro, tocchi corallo.
+     Usato dai temi scuro e nero. -->
+<resources>
+    <color name="vetro_background">#05070B</color>
+    <color name="vetro_glass">#13FFFFFF</color>
+    <color name="vetro_glass_strong">#24FFFFFF</color>
+    <color name="vetro_glass_border">#1FFFFFFF</color>
+    <color name="vetro_separator">#14FFFFFF</color>
+    <color name="vetro_text">#F4F6FA</color>
+    <color name="vetro_text_secondary">#94FFFFFF</color>
+    <color name="vetro_coral">#FF8A73</color>
+    <color name="vetro_coral_soft">#2EFF8A73</color>
+    <color name="vetro_coral_border">#8CFF8A73</color>
+    <color name="vetro_ripple">#33FFFFFF</color>
+    <color name="vetro_dialog_background">#14171D</color>
+
+    <!-- aloni dello sfondo: corallo in alto a sinistra, blu a destra, viola in basso -->
+    <color name="vetro_glow_coral">#4DFF785A</color>
+    <color name="vetro_glow_blue">#3D5A8CFF</color>
+    <color name="vetro_glow_violet">#3DAA5AFF</color>
+    <color name="vetro_glow_none">#00000000</color>
+</resources>

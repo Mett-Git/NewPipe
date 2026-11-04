@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -578,6 +579,28 @@ public class MainActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         handleIntent(intent);
+    }
+
+    /** Uscendo dall'app (home, altra app) il video può andare nella finestrella di Android. */
+    @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        final Fragment fragment = getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_player_holder);
+        if (fragment instanceof VideoDetailFragment) {
+            ((VideoDetailFragment) fragment).onUserLeaveApp();
+        }
+    }
+
+    @Override
+    public void onPictureInPictureModeChanged(final boolean isInPictureInPictureMode,
+                                              final Configuration newConfig) {
+        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
+        final Fragment fragment = getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_player_holder);
+        if (fragment instanceof VideoDetailFragment) {
+            ((VideoDetailFragment) fragment).onPipModeChanged(isInPictureInPictureMode);
+        }
     }
 
     @Override

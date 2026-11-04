@@ -9,6 +9,7 @@ import static org.schabi.newpipe.player.Player.STATE_COMPLETED;
 import static org.schabi.newpipe.player.Player.STATE_PAUSED;
 import static org.schabi.newpipe.player.helper.PlayerHelper.MinimizeMode.MINIMIZE_ON_EXIT_MODE_BACKGROUND;
 import static org.schabi.newpipe.player.helper.PlayerHelper.MinimizeMode.MINIMIZE_ON_EXIT_MODE_NONE;
+import static org.schabi.newpipe.player.helper.PlayerHelper.MinimizeMode.MINIMIZE_ON_EXIT_MODE_PIP;
 import static org.schabi.newpipe.player.helper.PlayerHelper.MinimizeMode.MINIMIZE_ON_EXIT_MODE_POPUP;
 import static org.schabi.newpipe.player.helper.PlayerHelper.getMinimizeOnExitAction;
 import static org.schabi.newpipe.player.helper.PlayerHelper.getTimeString;
@@ -375,6 +376,8 @@ public final class MainPlayerUi extends VideoPlayerUi implements View.OnLayoutCh
         if (player.isPlaying() || player.isLoading()) {
             switch (getMinimizeOnExitAction(context)) {
                 case MINIMIZE_ON_EXIT_MODE_BACKGROUND:
+                // finestrella non aperta (lettore piccolo in basso o tolta): solo audio
+                case MINIMIZE_ON_EXIT_MODE_PIP:
                     player.useVideoAndSubtitles(false);
                     break;
                 case MINIMIZE_ON_EXIT_MODE_POPUP:

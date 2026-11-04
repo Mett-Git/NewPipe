@@ -6,7 +6,9 @@ import static org.schabi.newpipe.extractor.stream.StreamExtractor.NO_AGE_LIMIT;
 import static org.schabi.newpipe.ktx.ViewUtils.animate;
 import static org.schabi.newpipe.ktx.ViewUtils.animateRotation;
 import static org.schabi.newpipe.player.helper.PlayerHelper.globalScreenOrientationLocked;
+import static org.schabi.newpipe.player.helper.PlayerHelper.getMinimizeOnExitAction;
 import static org.schabi.newpipe.player.helper.PlayerHelper.isClearingQueueConfirmationRequired;
+import static org.schabi.newpipe.player.helper.PlayerHelper.MinimizeMode.MINIMIZE_ON_EXIT_MODE_PIP;
 import static org.schabi.newpipe.util.DependentPreferenceHelper.getResumePlaybackEnabled;
 import static org.schabi.newpipe.util.ExtractorHelper.showMetaInfoInTextView;
 import static org.schabi.newpipe.util.ListHelper.getUrlAndNonTorrentStreams;
@@ -15,12 +17,15 @@ import static org.schabi.newpipe.util.NavigationHelper.openPlayQueue;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.PictureInPictureParams;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.graphics.Color;
 import android.graphics.Rect;
@@ -32,6 +37,7 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.util.Rational;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -47,6 +53,7 @@ import android.widget.Toast;
 import androidx.annotation.AttrRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.content.res.AppCompatResources;
@@ -59,6 +66,7 @@ import androidx.preference.PreferenceManager;
 import com.evernote.android.state.State;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
+import com.google.android.exoplayer2.video.VideoSize;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.tabs.TabLayout;
@@ -232,6 +240,13 @@ public final class VideoDetailFragment
     private PlayerService playerService;
     private Player player;
     private final PlayerHolder playerHolder = PlayerHolder.getInstance();
+    /** Schermo intero messo solo per la finestrella di Android: si toglie quando si esce. */
+    private boolean fullscreenForPip = false;
+    /** Tasto "Finestrella" premuto: si apre appena il video parte. */
+    private boolean pipPending = false;
+    /** Colore della barra di stato da rimettere quando si esce dalla finestrella. */
+    @Nullable
+    private Integer statusBarColorBeforePip = null;
 
     /*//////////////////////////////////////////////////////////////////////////
     // Service management
@@ -347,6 +362,33 @@ public final class VideoDetailFragment
         return binding.getRoot();
     }
 
+    /*
+     * La schermata principale non si ricrea più quando gira il telefono o si apre la
+     * finestrella di Android (AndroidManifest, configChanges): qui si rifà quello che
+     * NewPipe faceva ricreandola in onPlayerConnected (schermo intero in orizzontale,
+     * normale in verticale, misure del video).
+     */
+    @Override
+    public void onConfigurationChanged(@NonNull final Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (!isPlayerAvailable() || getView() == null || isInPictureInPicture()) {
+            return;
+        }
+        if (DeviceUtils.isLandscape(requireContext())) {
+            if (player.videoPlayerSelected()) {
+                checkLandscape();
+            }
+        } else {
+            player.UIs().get(MainPlayerUi.class).ifPresent(ui -> {
+                if (ui.isFullscreen() && !ui.isVerticalVideo()
+                        && !DeviceUtils.isTablet(activity)) {
+                    ui.toggleFullscreen();
+                }
+            });
+        }
+        tryAddVideoPlayerView();
+    }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -391,6 +433,12 @@ public final class VideoDetailFragment
     @Override
     public void onStop() {
         super.onStop();
+
+        // finestrella di Android chiusa (buttata giù): il video si ferma, come in YouTube
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && activity.isInPictureInPictureMode() && isPlayerAvailable()) {
+            player.pause();
+        }
 
         if (!activity.isChangingConfigurations()) {
             activity.sendBroadcast(new Intent(ACTION_VIDEO_FRAGMENT_STOPPED));
@@ -486,6 +534,7 @@ public final class VideoDetailFragment
 
         binding.detailControlsBackground.setOnClickListener(v -> openBackgroundPlayer(false));
         binding.detailControlsPopup.setOnClickListener(v -> openPopupPlayer(false));
+        binding.detailControlsPip.setOnClickListener(v -> openInPictureInPicture());
         binding.detailControlsPlaylistAppend.setOnClickListener(makeOnClickListener(info -> {
             if (getFM() != null && currentInfo != null) {
                 final Fragment fragment = getParentFragmentManager().
@@ -1301,6 +1350,11 @@ public final class VideoDetailFragment
                     playerUi.setupVideoSurfaceIfNeeded();
                 }
             });
+            // entrando nella finestrella Android spesso ricrea la schermata (diventa
+            // orizzontale): il lettore si riattacca qui, già dentro la finestrella
+            if (isInPictureInPicture()) {
+                applyPipWindow(true);
+            }
         });
     }
 
@@ -1641,6 +1695,8 @@ public final class VideoDetailFragment
         final boolean noVideoStreams =
                 info.getVideoStreams().isEmpty() && info.getVideoOnlyStreams().isEmpty();
         binding.detailControlsPopup.setVisibility(noVideoStreams ? View.GONE : View.VISIBLE);
+        binding.detailControlsPip.setVisibility(noVideoStreams || !isPipSupported()
+                ? View.GONE : View.VISIBLE);
         binding.detailThumbnailPlayButton.setImageResource(
                 noVideoStreams ? R.drawable.ic_headset_shadow : R.drawable.ic_play_arrow_shadow);
     }
@@ -1826,6 +1882,11 @@ public final class VideoDetailFragment
 
         switch (state) {
             case Player.STATE_PLAYING:
+                // tasto "Finestrella" premuto prima che il video partisse
+                if (pipPending) {
+                    pipPending = false;
+                    enterPictureInPicture();
+                }
                 if (binding.positionView.getAlpha() != 1.0f
                         && player.getPlayQueue() != null
                         && player.getPlayQueue().getItem() != null
@@ -1907,6 +1968,16 @@ public final class VideoDetailFragment
 
     @Override
     public void onFullscreenStateChanged(final boolean fullscreen) {
+        // nella finestrella resta solo il video, anche quando finisce (il lettore esce
+        // dallo schermo intero e mostrerebbe la pagina del video schiacciata)
+        if (!fullscreen && isInPictureInPicture() && isPlayerAvailable()) {
+            player.UIs().get(MainPlayerUi.class).ifPresent(ui -> new Handler(Looper.getMainLooper())
+                    .post(() -> {
+                        if (isInPictureInPicture() && !ui.isFullscreen()) {
+                            ui.toggleFullscreen();
+                        }
+                    }));
+        }
         setupBrightness();
         if (!isPlayerAndPlayerServiceAvailable()
                 || player.UIs().get(MainPlayerUi.class).isEmpty()
@@ -1977,6 +2048,118 @@ public final class VideoDetailFragment
     /*//////////////////////////////////////////////////////////////////////////
     // Player related utils
     //////////////////////////////////////////////////////////////////////////*/
+
+    /*//////////////////////////////////////////////////////////////////////////
+    // Finestrella di Android (Picture-in-Picture)
+    //////////////////////////////////////////////////////////////////////////*/
+
+    /**
+     * L'utente esce dall'app (home, altra app): con "Quando esci dall'app" = finestrella
+     * e un video che va a schermo, il video passa nella finestrella di Android.
+     */
+    public void onUserLeaveApp() {
+        if (getMinimizeOnExitAction(activity) == MINIMIZE_ON_EXIT_MODE_PIP
+                && bottomSheetState == BottomSheetBehavior.STATE_EXPANDED
+                && isPlayerAvailable() && player.videoPlayerSelected()
+                && (player.isPlaying() || player.isLoading())) {
+            enterPictureInPicture();
+        }
+    }
+
+    /** Tasto "Finestrella": se il video non va ancora lo fa partire, poi apre la finestrella. */
+    private void openInPictureInPicture() {
+        if (isPlayerAvailable() && player.videoPlayerSelected() && player.getPlayQueue() != null
+                && player.getPlayQueue().getItem() != null
+                && player.getPlayQueue().getItem().getUrl().equals(url)) {
+            enterPictureInPicture();
+            return;
+        }
+        pipPending = true;
+        openVideoPlayer(false);
+    }
+
+    private boolean isPipSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && activity != null
+                && activity.getPackageManager()
+                        .hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE);
+    }
+
+    // Apre la finestrella di Android col video che sta andando; false se non si può
+    public boolean enterPictureInPicture() {
+        if (!isPipSupported() || !isPlayerAvailable() || !player.videoPlayerSelected()) {
+            return false;
+        }
+        try {
+            return activity.enterPictureInPictureMode(new PictureInPictureParams.Builder()
+                    .setAspectRatio(pipAspectRatio())
+                    .build());
+        } catch (final IllegalStateException e) {
+            // finestrella spenta per NewPipe nelle impostazioni di Android
+            return false;
+        }
+    }
+
+    // Proporzioni del video per la finestrella (Android accetta da 1:2,39 a 2,39:1)
+    @RequiresApi(Build.VERSION_CODES.O)
+    private Rational pipAspectRatio() {
+        final VideoSize size = player.exoPlayerIsNull()
+                ? VideoSize.UNKNOWN : player.getExoPlayer().getVideoSize();
+        if (size.width > 0 && size.height > 0) {
+            final float ratio = (float) size.width / size.height;
+            if (ratio >= 1 / 2.39f && ratio <= 2.39f) {
+                return new Rational(size.width, size.height);
+            }
+        }
+        return new Rational(16, 9);
+    }
+
+    private boolean isInPictureInPicture() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && activity != null
+                && activity.isInPictureInPictureMode();
+    }
+
+    // Nella finestrella restano solo il video: via la barra in alto dell'app, il fondo della
+    // barra di stato (Android lo disegnerebbe sopra il video) e i comandi del lettore
+    private void applyPipWindow(final boolean inPip) {
+        final View toolbar = activity.findViewById(R.id.toolbar_layout);
+        if (toolbar != null) {
+            toolbar.setVisibility(inPip ? View.GONE : View.VISIBLE);
+        }
+        if (inPip) {
+            if (statusBarColorBeforePip == null) {
+                statusBarColorBeforePip = activity.getWindow().getStatusBarColor();
+            }
+            activity.getWindow().setStatusBarColor(Color.TRANSPARENT);
+            if (isPlayerAvailable()) {
+                player.UIs().get(MainPlayerUi.class).ifPresent(ui -> ui.hideControls(0, 0));
+            }
+        } else if (statusBarColorBeforePip != null) {
+            activity.getWindow().setStatusBarColor(statusBarColorBeforePip);
+            statusBarColorBeforePip = null;
+        }
+    }
+
+    // Nella finestrella il lettore occupa tutto (modalità schermo intero) senza comandi
+    public void onPipModeChanged(final boolean inPip) {
+        applyPipWindow(inPip);
+        if (!isPlayerAvailable()) {
+            return;
+        }
+        player.UIs().get(MainPlayerUi.class).ifPresent(ui -> {
+            if (inPip) {
+                if (!ui.isFullscreen()) {
+                    ui.toggleFullscreen();
+                    fullscreenForPip = true;
+                }
+                ui.hideControls(0, 0);
+            } else if (fullscreenForPip) {
+                fullscreenForPip = false;
+                if (ui.isFullscreen()) {
+                    ui.toggleFullscreen();
+                }
+            }
+        });
+    }
 
     private void showSystemUi() {
         if (DEBUG) {
@@ -2102,6 +2285,7 @@ public final class VideoDetailFragment
             binding.detailControlsPlaylistAppend.setBackgroundColor(transparent);
             binding.detailControlsBackground.setBackgroundColor(transparent);
             binding.detailControlsPopup.setBackgroundColor(transparent);
+            binding.detailControlsPip.setBackgroundColor(transparent);
             binding.detailControlsDownload.setBackgroundColor(transparent);
             binding.detailControlsShare.setBackgroundColor(transparent);
             binding.detailControlsOpenInBrowser.setBackgroundColor(transparent);

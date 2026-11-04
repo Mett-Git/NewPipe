@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="minimize_on_exit_pip_description">Finestrella di Android</string>
+    <string name="controls_pip_title">Finestrella</string>
+    <string name="open_in_pip_mode">Apri nella finestrella di Android (Picture-in-Picture)</string>
+    <string name="tab_home">Home</string>
+</resources>

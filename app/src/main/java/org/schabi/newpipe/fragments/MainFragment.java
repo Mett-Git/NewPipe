@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ import androidx.annotation.ColorInt;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapterMenuWorkaround;
@@ -42,6 +44,7 @@ import org.schabi.newpipe.error.UserAction;
 import org.schabi.newpipe.local.playlist.LocalPlaylistFragment;
 import org.schabi.newpipe.settings.tabs.Tab;
 import org.schabi.newpipe.settings.tabs.TabsManager;
+import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.ServiceHelper;
 import org.schabi.newpipe.util.ThemeHelper;
@@ -90,7 +93,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         youtubeRestrictedModeEnabledKey = getString(R.string.youtube_restricted_mode_enabled);
         youtubeRestrictedModeEnabled = prefs.getBoolean(youtubeRestrictedModeEnabledKey, false);
         mainTabsPositionKey = getString(R.string.main_tabs_position_key);
-        mainTabsPositionBottom = prefs.getBoolean(mainTabsPositionKey, false);
+        mainTabsPositionBottom = prefs.getBoolean(mainTabsPositionKey, true);
     }
 
     @Override
@@ -124,7 +127,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
             setupTabs();
         }
 
-        final boolean newMainTabsPosition = prefs.getBoolean(mainTabsPositionKey, false);
+        final boolean newMainTabsPosition = prefs.getBoolean(mainTabsPositionKey, true);
         if (mainTabsPositionBottom != newMainTabsPosition) {
             mainTabsPositionBottom = newMainTabsPosition;
             updateTabLayoutPosition();
@@ -210,6 +213,8 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
                 final Tab tab = tabsList.get(i);
                 tabToSet.setIcon(tab.getTabIconRes(requireContext()));
                 tabToSet.setContentDescription(tab.getTabName(requireContext()));
+                // barra in basso del Vetro: il nome sotto l'icona, come in YouTube
+                tabToSet.setText(isVetroBar() ? tab.getTabName(requireContext()) : null);
             }
         }
     }
@@ -240,13 +245,33 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         tabLayout.setSelectedTabIndicatorGravity(
                 bottom ? INDICATOR_GRAVITY_TOP : INDICATOR_GRAVITY_BOTTOM);
 
+        if (isVetroBar()) {
+            // Vetro: barra di vetro sospesa, scheda scelta bianca, le altre attenuate
+            final int margin = DeviceUtils.dpToPx(12, requireContext());
+            tabParams.setMargins(margin, 0, margin, margin);
+            tabLayout.setLayoutParams(tabParams);
+            viewPager.setLayoutParams(pagerParams);
+            tabLayout.setBackgroundResource(R.drawable.vetro_glass);
+            final ColorStateList colors = new ColorStateList(
+                    new int[][]{{android.R.attr.state_selected}, {}},
+                    new int[]{Color.WHITE, ContextCompat.getColor(requireContext(),
+                            R.color.vetro_text_secondary)});
+            tabLayout.setTabIconTint(colors);
+            tabLayout.setTabTextColors(colors);
+            tabLayout.setTabRippleColor(ColorStateList.valueOf(Color.WHITE).withAlpha(32));
+            tabLayout.setSelectedTabIndicator(new ColorDrawable(Color.TRANSPARENT));
+            updateTabsIconAndDescription();
+            return;
+        }
+        tabParams.setMargins(0, 0, 0, 0);
+        tabLayout.setSelectedTabIndicator(null);
         tabLayout.setLayoutParams(tabParams);
         viewPager.setLayoutParams(pagerParams);
 
         // change the background and icon color of the tab layout:
         // service-colored at the top, app-background-colored at the bottom
         tabLayout.setBackgroundColor(ThemeHelper.resolveColorFromAttr(requireContext(),
-                bottom ? android.R.attr.windowBackground : R.attr.colorPrimary));
+                bottom ? R.attr.windowBackground : R.attr.colorPrimary));
 
         @ColorInt final int iconColor = bottom
                 ? ThemeHelper.resolveColorFromAttr(requireContext(), android.R.attr.colorAccent)
@@ -254,6 +279,12 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         tabLayout.setTabRippleColor(ColorStateList.valueOf(iconColor).withAlpha(32));
         tabLayout.setTabIconTint(ColorStateList.valueOf(iconColor));
         tabLayout.setSelectedTabIndicatorColor(iconColor);
+        updateTabsIconAndDescription();
+    }
+
+    // Schede in basso col tema scuro o nero: la barra di vetro con i nomi (stile Vetro)
+    private boolean isVetroBar() {
+        return mainTabsPositionBottom && !ThemeHelper.isLightThemeSelected(requireContext());
     }
 
     @Override
