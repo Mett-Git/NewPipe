@@ -4,4 +4,6 @@
     <string name="controls_pip_title">Finestrella</string>
     <string name="open_in_pip_mode">Apri nella finestrella di Android (Picture-in-Picture)</string>
     <string name="tab_home">Home</string>
+    <string name="pill_audio">Audio</string>
+    <string name="pill_save">Salva</string>
 </resources>

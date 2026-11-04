@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icone della barra Commenti / Correlati / Descrizione: piena quella scelta, tenue le altre. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="?android:attr/textColorPrimary" android:state_selected="true" />
+    <item android:alpha="0.45" android:color="?android:attr/textColorPrimary" />
+</selector>

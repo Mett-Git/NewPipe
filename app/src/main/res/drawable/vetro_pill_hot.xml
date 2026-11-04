@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Tasto a pillola in evidenza (corallo), per la finestrella. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="@color/vetro_ripple">
+    android:color="@color/vetro_pill_ripple">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/vetro_coral_soft" />
+            <solid android:color="@color/vetro_pill_hot_fill" />
             <stroke
                 android:width="1dp"
-                android:color="@color/vetro_coral_border" />
+                android:color="@color/vetro_pill_hot_border" />
             <corners android:radius="18dp" />
         </shape>
     </item>

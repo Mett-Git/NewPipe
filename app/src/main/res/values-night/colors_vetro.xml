@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Stile "Vetro" nei temi scuro e nero: pillole e riquadri di vetro. -->
+<resources>
+    <color name="vetro_pill_fill">#13FFFFFF</color>
+    <color name="vetro_pill_border">#1FFFFFFF</color>
+    <color name="vetro_pill_ripple">#33FFFFFF</color>
+    <color name="vetro_pill_hot_fill">#2EFF8A73</color>
+    <color name="vetro_pill_hot_border">#8CFF8A73</color>
+    <color name="vetro_pill_hot_text">#FFB3A4</color>
+    <color name="vetro_subscribe_fill">#FFFFFF</color>
+    <color name="vetro_subscribe_text">#0B0B0F</color>
+    <color name="vetro_card_fill">#0FFFFFFF</color>
+    <color name="vetro_card_border">#1AFFFFFF</color>
+    <color name="vetro_floating_fill">#CC0B0E14</color>
+</resources>

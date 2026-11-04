@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tasto a pillola di vetro, con l'onda al tocco. -->
+<!-- Tasto a pillola: vetro nei temi scuro/nero, grigio leggero nel tema chiaro. -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="@color/vetro_ripple">
+    android:color="@color/vetro_pill_ripple">
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/vetro_glass" />
+            <solid android:color="@color/vetro_pill_fill" />
             <stroke
                 android:width="1dp"
-                android:color="@color/vetro_glass_border" />
+                android:color="@color/vetro_pill_border" />
             <corners android:radius="18dp" />
         </shape>
     </item>

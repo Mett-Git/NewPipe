@@ -48,6 +48,7 @@ import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.ServiceHelper;
 import org.schabi.newpipe.util.ThemeHelper;
+import org.schabi.newpipe.util.VetroBars;
 import org.schabi.newpipe.views.ScrollableTabLayout;
 
 import java.util.ArrayList;
@@ -67,6 +68,21 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
     private String youtubeRestrictedModeEnabledKey;
     private boolean mainTabsPositionBottom;
     private String mainTabsPositionKey;
+
+    // Vetro: le liste delle schede scorrono anche dietro la barra sospesa; in fondo lasciano
+    // lo spazio della barra, così l'ultimo video si può portare sopra di lei
+    private final FragmentManager.FragmentLifecycleCallbacks listsBehindBar =
+            new FragmentManager.FragmentLifecycleCallbacks() {
+                @Override
+                public void onFragmentViewCreated(@NonNull final FragmentManager fm,
+                                                  @NonNull final Fragment f,
+                                                  @NonNull final View v,
+                                                  @Nullable final Bundle savedInstanceState) {
+                    if (binding != null && isVetroBar()) {
+                        VetroBars.setListsBottomSpace(v, barSpace());
+                    }
+                }
+            };
 
     /*//////////////////////////////////////////////////////////////////////////
     // Fragment's LifeCycle
@@ -94,6 +110,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         youtubeRestrictedModeEnabled = prefs.getBoolean(youtubeRestrictedModeEnabledKey, false);
         mainTabsPositionKey = getString(R.string.main_tabs_position_key);
         mainTabsPositionBottom = prefs.getBoolean(mainTabsPositionKey, true);
+        getChildFragmentManager().registerFragmentLifecycleCallbacks(listsBehindBar, true);
     }
 
     @Override
@@ -246,12 +263,16 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
                 bottom ? INDICATOR_GRAVITY_TOP : INDICATOR_GRAVITY_BOTTOM);
 
         if (isVetroBar()) {
-            // Vetro: barra di vetro sospesa, scheda scelta bianca, le altre attenuate
+            // Vetro: barra di vetro sospesa sopra le liste (che le passano dietro),
+            // scheda scelta bianca, le altre attenuate
             final int margin = DeviceUtils.dpToPx(12, requireContext());
             tabParams.setMargins(margin, 0, margin, margin);
+            pagerParams.removeRule(ABOVE);
             tabLayout.setLayoutParams(tabParams);
             viewPager.setLayoutParams(pagerParams);
-            tabLayout.setBackgroundResource(R.drawable.vetro_glass);
+            tabLayout.bringToFront();
+            tabLayout.setBackgroundResource(R.drawable.vetro_bar_floating);
+            tabLayout.post(this::updateListsBottomSpace);
             final ColorStateList colors = new ColorStateList(
                     new int[][]{{android.R.attr.state_selected}, {}},
                     new int[]{Color.WHITE, ContextCompat.getColor(requireContext(),
@@ -267,6 +288,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         tabLayout.setSelectedTabIndicator(null);
         tabLayout.setLayoutParams(tabParams);
         viewPager.setLayoutParams(pagerParams);
+        updateListsBottomSpace();
 
         // change the background and icon color of the tab layout:
         // service-colored at the top, app-background-colored at the bottom
@@ -285,6 +307,27 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
     // Schede in basso col tema scuro o nero: la barra di vetro con i nomi (stile Vetro)
     private boolean isVetroBar() {
         return mainTabsPositionBottom && !ThemeHelper.isLightThemeSelected(requireContext());
+    }
+
+    // quanto spazio lasciare in fondo alle liste: la barra sospesa più il suo margine
+    private int barSpace() {
+        final int height = binding.mainTabLayout.getHeight();
+        return (height > 0 ? height : DeviceUtils.dpToPx(72, requireContext()))
+                + DeviceUtils.dpToPx(20, requireContext());
+    }
+
+    // rimette lo spazio giusto alle liste delle schede già aperte (anche dopo un cambio
+    // di posizione della barra)
+    private void updateListsBottomSpace() {
+        if (binding == null) {
+            return;
+        }
+        final int space = isVetroBar() ? barSpace() : 0;
+        for (final Fragment fragment : getChildFragmentManager().getFragments()) {
+            if (fragment.getView() != null) {
+                VetroBars.setListsBottomSpace(fragment.getView(), space);
+            }
+        }
     }
 
     @Override

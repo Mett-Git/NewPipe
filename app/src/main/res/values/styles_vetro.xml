@@ -7,4 +7,29 @@
         <item name="android:textAllCaps">false</item>
         <item name="textAllCaps">false</item>
     </style>
+
+    <!-- tasti a pillola sotto il video (Finestrella, Audio, Scarica...) -->
+    <style name="VetroPill">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">36dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:background">@drawable/vetro_pill</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:drawablePadding">6dp</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- la pillola in evidenza: corallo -->
+    <style name="VetroPill.Hot">
+        <item name="android:background">@drawable/vetro_pill_hot</item>
+        <item name="android:textColor">@color/vetro_pill_hot_text</item>
+        <item name="drawableTint">@color/vetro_pill_hot_text</item>
+    </style>
 </resources>

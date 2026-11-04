@@ -61,6 +61,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.preference.PreferenceManager;
 
 import com.evernote.android.state.State;
@@ -124,6 +125,7 @@ import org.schabi.newpipe.util.PermissionHelper;
 import org.schabi.newpipe.util.PlayButtonHelper;
 import org.schabi.newpipe.util.StreamTypeUtil;
 import org.schabi.newpipe.util.ThemeHelper;
+import org.schabi.newpipe.util.VetroBars;
 import org.schabi.newpipe.util.external_communication.KoreUtils;
 import org.schabi.newpipe.util.external_communication.ShareUtils;
 import org.schabi.newpipe.util.image.CoilHelper;
@@ -247,6 +249,20 @@ public final class VideoDetailFragment
     /** Colore della barra di stato da rimettere quando si esce dalla finestrella. */
     @Nullable
     private Integer statusBarColorBeforePip = null;
+    /** Tasto "Iscriviti" accanto al canale. */
+    private final SubscribeButtonHelper subscribeButton = new SubscribeButtonHelper();
+    /** Commenti, correlati e descrizione scorrono dietro la barra sospesa in fondo. */
+    private final FragmentManager.FragmentLifecycleCallbacks listsBehindBar =
+            new FragmentManager.FragmentLifecycleCallbacks() {
+                @Override
+                public void onFragmentViewCreated(@NonNull final FragmentManager fm,
+                                                  @NonNull final Fragment f,
+                                                  @NonNull final View v,
+                                                  @Nullable final Bundle savedInstanceState) {
+                    // la barra (48dp) più il suo margine (10dp) e un po' d'aria
+                    VetroBars.setListsBottomSpace(v, DeviceUtils.dpToPx(66, requireContext()));
+                }
+            };
 
     /*//////////////////////////////////////////////////////////////////////////
     // Service management
@@ -339,6 +355,7 @@ public final class VideoDetailFragment
         selectedTabTag = prefs.getString(
                 getString(R.string.stream_info_selected_tab_key), COMMENTS_TAB_TAG);
         prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener);
+        getChildFragmentManager().registerFragmentLifecycleCallbacks(listsBehindBar, false);
 
         setupBroadcastReceiver();
 
@@ -483,6 +500,7 @@ public final class VideoDetailFragment
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        subscribeButton.dispose();
         binding = null;
     }
 
@@ -653,7 +671,7 @@ public final class VideoDetailFragment
                     VideoPlayerUi.DEFAULT_CONTROLS_DURATION, 180);
             binding.detailSecondaryControlPanel.setVisibility(View.VISIBLE);
         } else {
-            binding.detailVideoTitleView.setMaxLines(1);
+            binding.detailVideoTitleView.setMaxLines(2);
             animateRotation(binding.detailToggleSecondaryControlsView,
                     VideoPlayerUi.DEFAULT_CONTROLS_DURATION, 0);
             binding.detailSecondaryControlPanel.setVisibility(View.GONE);
@@ -1551,7 +1569,7 @@ public final class VideoDetailFragment
         binding.positionView.setVisibility(View.GONE);
 
         binding.detailVideoTitleView.setText(title);
-        binding.detailVideoTitleView.setMaxLines(1);
+        binding.detailVideoTitleView.setMaxLines(2);
         animate(binding.detailVideoTitleView, true, 0);
 
         binding.detailToggleSecondaryControlsView.setVisibility(View.GONE);
@@ -1594,6 +1612,7 @@ public final class VideoDetailFragment
         } else {
             displayUploaderAsSubChannel(info);
         }
+        subscribeButton.bind(binding.detailSubscribeButton, info);
 
         if (info.getViewCount() >= 0) {
             if (info.getStreamType().equals(StreamType.AUDIO_LIVE_STREAM)) {
@@ -1609,6 +1628,17 @@ public final class VideoDetailFragment
             binding.detailViewCountView.setVisibility(View.VISIBLE);
         } else {
             binding.detailViewCountView.setVisibility(View.GONE);
+        }
+        // come su YouTube: "visualizzazioni • quando è uscito"
+        if (info.getUploadDate() != null) {
+            final String uploaded =
+                    Localization.relativeTime(info.getUploadDate().offsetDateTime());
+            if (binding.detailViewCountView.getVisibility() == View.VISIBLE) {
+                binding.detailViewCountView.append(Localization.DOT_SEPARATOR + uploaded);
+            } else {
+                binding.detailViewCountView.setText(uploaded);
+                binding.detailViewCountView.setVisibility(View.VISIBLE);
+            }
         }
 
         if (info.getDislikeCount() == -1 && info.getLikeCount() == -1) {
