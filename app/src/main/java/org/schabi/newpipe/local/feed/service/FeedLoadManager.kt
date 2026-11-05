@@ -31,6 +31,7 @@ import org.schabi.newpipe.util.ChannelTabHelper
 import org.schabi.newpipe.util.ExtractorHelper.getChannelInfo
 import org.schabi.newpipe.util.ExtractorHelper.getChannelTab
 import org.schabi.newpipe.util.ExtractorHelper.getMoreChannelTabItems
+import org.schabi.newpipe.util.RestrictedVideos
 
 class FeedLoadManager(private val context: Context) {
 
@@ -296,6 +297,7 @@ class FeedLoadManager(private val context: Context) {
                             notification.value!!.newStreams = filterNewStreams(info.streams)
 
                             feedDatabaseManager.upsertAll(info.uid, info.streams)
+                            RestrictedVideos.remember(context, info.streams)
                             subscriptionManager.updateFromInfo(info)
 
                             if (info.errors.isNotEmpty()) {

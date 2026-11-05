@@ -186,7 +186,8 @@
     <string name="vt_cat_language">Lingua e paese</string>
     <string name="vt_cat_tabs">Schede</string>
     <string name="vt_cat_video_page">Pagina del video</string>
-    <string name="vt_cat_channels">Video nuovi</string>
+    <string name="vt_cat_channels">Novità dai canali</string>
+    <string name="vt_cat_new_videos">Video nuovi</string>
     <string name="vt_cat_filters">Filtri e ricerca</string>
     <string name="vt_cat_remember">Cosa ricordare</string>
     <string name="vt_cat_clear">Cancella</string>
@@ -199,4 +200,12 @@
     <string name="vt_cat_main_watch">Guardare</string>
     <string name="vt_cat_main_app">L\'app</string>
     <string name="vt_cat_main_data">I tuoi dati</string>
+    <string name="video_members_only">Solo abbonati</string>
+    <string name="video_paid">A pagamento</string>
+    <string name="vs_storage_use_saf_api_29">Da Android 10 è sempre attivo, Android non permette altri modi</string>
+    <string name="vs_downloads_storage_ask_no_saf">A ogni download scegli tu dove salvare</string>
+    <string name="drawer_discover">Scopri</string>
+    <string name="drawer_your_channels">I tuoi canali</string>
+    <string name="drawer_show_all">Mostra tutti</string>
+    <string name="channel_notify_disabled">Accendi gli avvisi dei video nuovi in Impostazioni > Notifiche</string>
 </resources>

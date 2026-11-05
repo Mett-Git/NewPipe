@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/itemRoot"
+    android:stateListAnimator="@animator/vetro_press_soft"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
@@ -19,6 +20,28 @@
         app:layout_constraintBottom_toTopOf="@+id/itemProgressView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <org.schabi.newpipe.views.NewPipeTextView
+        android:id="@+id/itemRestrictedView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        android:background="@drawable/vetro_restricted_background"
+        android:drawableStart="@drawable/vetro_ic_lock"
+        android:drawablePadding="3dp"
+        android:gravity="center_vertical"
+        android:paddingStart="5dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="7dp"
+        android:paddingBottom="2dp"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@id/itemThumbnailView"
+        app:layout_constraintTop_toTopOf="@id/itemThumbnailView"
+        tools:text="Solo abbonati"
+        tools:visibility="visible" />
 
     <org.schabi.newpipe.views.NewPipeTextView
         android:id="@+id/itemDurationView"

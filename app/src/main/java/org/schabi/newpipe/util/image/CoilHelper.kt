@@ -9,6 +9,7 @@ import coil3.executeBlocking
 import coil3.imageLoader
 import coil3.request.Disposable
 import coil3.request.ImageRequest
+import coil3.request.crossfade
 import coil3.request.error
 import coil3.request.placeholder
 import coil3.request.target
@@ -174,6 +175,7 @@ object CoilHelper {
             .Builder(context)
             .data(takenUrl)
             .error(placeholderResId)
+            .crossfade(180)
             .memoryCacheKey(takenUrl)
             .diskCacheKey(takenUrl)
             .apply {

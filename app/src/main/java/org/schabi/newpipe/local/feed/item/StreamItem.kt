@@ -20,6 +20,7 @@ import org.schabi.newpipe.extractor.stream.StreamType.POST_LIVE_AUDIO_STREAM
 import org.schabi.newpipe.extractor.stream.StreamType.POST_LIVE_STREAM
 import org.schabi.newpipe.extractor.stream.StreamType.VIDEO_STREAM
 import org.schabi.newpipe.util.Localization
+import org.schabi.newpipe.util.RestrictedVideos
 import org.schabi.newpipe.util.StreamTypeUtil
 import org.schabi.newpipe.util.image.CoilHelper
 
@@ -68,6 +69,7 @@ data class StreamItem(
     override fun bind(viewBinding: ListStreamItemBinding, position: Int) {
         viewBinding.itemVideoTitleView.text = stream.title
         viewBinding.itemUploaderView.text = stream.uploader
+        RestrictedVideos.bind(viewBinding.itemRestrictedView, stream.url, null)
 
         if (stream.duration > 0) {
             viewBinding.itemDurationView.text = Localization.getDurationString(stream.duration)

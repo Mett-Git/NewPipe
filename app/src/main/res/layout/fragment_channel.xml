@@ -28,33 +28,38 @@
                 android:scaleType="centerCrop"
                 app:layout_collapseMode="parallax">
 
+                <!-- copertina stretta da bordo a bordo -->
                 <ImageView
                     android:id="@+id/channel_banner_image"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:adjustViewBounds="true"
-                    android:maxHeight="70dp"
-                    android:scaleType="fitCenter"
+                    android:layout_height="104dp"
+                    android:background="@drawable/vetro_channel_banner_empty"
+                    android:scaleType="centerCrop"
                     android:src="@drawable/placeholder_channel_banner"
                     app:layout_constraintTop_toTopOf="parent"
                     app:tint="@null"
                     tools:ignore="ContentDescription" />
 
+                <!-- la foto del canale sta a cavallo della copertina -->
+                <Space
+                    android:id="@+id/channel_avatar_anchor"
+                    android:layout_width="1dp"
+                    android:layout_height="34dp"
+                    app:layout_constraintBottom_toBottomOf="@id/channel_banner_image"
+                    app:layout_constraintStart_toStartOf="parent" />
+
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/channel_avatar_view"
-                    android:layout_width="@dimen/channel_avatar_size"
-                    android:layout_height="@dimen/channel_avatar_size"
-                    android:layout_marginVertical="8dp"
-                    android:layout_marginStart="8dp"
-                    android:padding="1dp"
+                    android:layout_width="76dp"
+                    android:layout_height="76dp"
+                    android:layout_marginStart="16dp"
+                    android:padding="2dp"
                     android:src="@drawable/placeholder_person"
-                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="1.0"
+                    app:layout_constraintTop_toTopOf="@id/channel_avatar_anchor"
                     app:shapeAppearance="@style/CircularImageView"
-                    app:strokeColor="#ffffff"
-                    app:strokeWidth="2dp"
+                    app:strokeColor="?attr/windowBackground"
+                    app:strokeWidth="3dp"
                     app:tint="@null" />
 
                 <com.google.android.material.imageview.ShapeableImageView
@@ -67,7 +72,7 @@
                     app:layout_constraintBottom_toBottomOf="@id/channel_avatar_view"
                     app:layout_constraintEnd_toEndOf="@id/channel_avatar_view"
                     app:shapeAppearance="@style/CircularImageView"
-                    app:strokeColor="#ffffff"
+                    app:strokeColor="?attr/windowBackground"
                     app:strokeWidth="2dp"
                     app:tint="@null"
                     tools:visibility="visible" />
@@ -76,33 +81,32 @@
                     android:id="@+id/channel_title_view"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
+                    android:layout_marginStart="16dp"
                     android:layout_marginTop="8dp"
-                    android:layout_marginEnd="4dp"
+                    android:layout_marginEnd="16dp"
                     android:ellipsize="end"
-                    android:lines="1"
+                    android:maxLines="2"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="16sp"
-                    app:layout_constraintBottom_toTopOf="@+id/sub_channel_title_view"
-                    app:layout_constraintEnd_toStartOf="@+id/channel_subscribe_button"
-                    app:layout_constraintStart_toEndOf="@+id/channel_avatar_view"
-                    app:layout_constraintTop_toBottomOf="@+id/channel_banner_image"
+                    android:textSize="21sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/channel_avatar_view"
                     tools:text="@tools:sample/lorem[10]" />
 
                 <org.schabi.newpipe.views.NewPipeTextView
                     android:id="@+id/sub_channel_title_view"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="4dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
                     android:ellipsize="end"
                     android:lines="1"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textSize="14sp"
                     android:visibility="gone"
-                    app:layout_constraintBottom_toTopOf="@+id/channel_subscriber_view"
-                    app:layout_constraintEnd_toStartOf="@+id/channel_subscribe_button"
-                    app:layout_constraintStart_toEndOf="@+id/channel_avatar_view"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/channel_title_view"
                     tools:text="@tools:sample/lorem[10]"
                     tools:visibility="visible" />
@@ -111,26 +115,53 @@
                     android:id="@+id/channel_subscriber_view"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginTop="2dp"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginBottom="8dp"
-                    android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/channel_subscribe_button"
-                    app:layout_constraintStart_toEndOf="@+id/channel_avatar_view"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="1dp"
+                    android:layout_marginEnd="16dp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:textSize="13sp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/sub_channel_title_view"
                     tools:text="123,141,411 subscribers" />
 
                 <androidx.appcompat.widget.AppCompatButton
                     android:id="@+id/channel_subscribe_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="0dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="12dp"
+                    android:background="@drawable/vetro_pill_subscribe"
+                    android:minHeight="0dp"
+                    android:stateListAnimator="@animator/vetro_press"
                     android:text="@string/subscribe_button_title"
-                    android:textSize="@dimen/channel_rss_title_size"
+                    android:textAllCaps="false"
+                    android:textColor="@color/vetro_subscribe_text"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
                     app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/channel_notify_button"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/channel_subscriber_view"
+                    app:layout_goneMarginEnd="16dp" />
+
+                <!-- campanella: avvisi dei video nuovi, solo se sei iscritto -->
+                <ImageButton
+                    android:id="@+id/channel_notify_button"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@drawable/vetro_drawer_round"
+                    android:contentDescription="@string/get_notified"
+                    android:src="@drawable/ic_notifications"
+                    android:stateListAnimator="@animator/vetro_press"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="@id/channel_subscribe_button"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/channel_banner_image" />
+                    app:layout_constraintTop_toTopOf="@id/channel_subscribe_button"
+                    tools:visibility="visible" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </org.schabi.newpipe.views.CustomCollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -146,12 +177,15 @@
             android:id="@+id/tab_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorPrimary"
+            android:background="@android:color/transparent"
             app:tabGravity="fill"
-            app:tabIndicatorColor="@color/white"
+            app:tabIndicatorColor="@color/vetro_coral"
+            app:tabIndicatorHeight="2dp"
             app:tabMode="scrollable"
-            app:tabRippleColor="@color/white"
-            app:tabTextColor="@color/white" />
+            app:tabRippleColor="@color/vetro_ripple"
+            app:tabSelectedTextColor="?android:attr/textColorPrimary"
+            app:tabTextAppearance="@style/VetroChannelTabText"
+            app:tabTextColor="?android:attr/textColorSecondary" />
 
         <androidx.viewpager.widget.ViewPager
             android:id="@+id/view_pager"

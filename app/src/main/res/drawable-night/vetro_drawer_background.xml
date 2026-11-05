@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Fondo del menu a sinistra: come lo sfondo Vetro, arrotondato a destra. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/vetro_drawer_fill" />
+            <corners android:bottomRightRadius="28dp" android:topRightRadius="28dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.1"
+                android:centerY="0.0"
+                android:gradientRadius="80%"
+                android:startColor="@color/vetro_glow_coral"
+                android:endColor="@color/vetro_glow_none" />
+            <corners android:bottomRightRadius="28dp" android:topRightRadius="28dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="1.0"
+                android:centerY="0.5"
+                android:gradientRadius="70%"
+                android:startColor="@color/vetro_glow_blue"
+                android:endColor="@color/vetro_glow_none" />
+            <corners android:bottomRightRadius="28dp" android:topRightRadius="28dp" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:type="radial"
+                android:centerX="0.15"
+                android:centerY="1.0"
+                android:gradientRadius="80%"
+                android:startColor="@color/vetro_glow_violet"
+                android:endColor="@color/vetro_glow_none" />
+            <corners android:bottomRightRadius="28dp" android:topRightRadius="28dp" />
+        </shape>
+    </item>
+</layer-list>

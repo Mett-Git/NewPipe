@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icona rotonda di "Scopri" nel menu a sinistra. -->
+<ImageButton xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="38dp"
+    android:layout_height="38dp"
+    android:background="@drawable/vetro_drawer_round"
+    android:padding="9dp"
+    android:scaleType="fitCenter"
+    android:stateListAnimator="@animator/vetro_press" />

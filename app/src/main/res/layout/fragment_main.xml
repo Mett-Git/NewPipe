@@ -17,6 +17,8 @@
         app:tabGravity="fill"
         app:tabInlineLabel="false"
         app:tabTextAppearance="@style/VetroTabText"
+        app:tabPaddingEnd="2dp"
+        app:tabPaddingStart="2dp"
         app:tabMinWidth="60dp" />
 
     <androidx.viewpager.widget.ViewPager

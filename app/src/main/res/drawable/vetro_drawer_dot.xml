@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pallino "video nuovi" sulla foto del canale. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="@color/vetro_coral" />
+    <stroke
+        android:width="2dp"
+        android:color="@color/vetro_drawer_fill" />
+</shape>

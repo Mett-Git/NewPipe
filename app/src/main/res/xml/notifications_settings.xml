@@ -6,7 +6,7 @@
 
     <PreferenceCategory
         android:layout="@layout/settings_category_header_layout"
-        android:title="@string/vt_cat_channels"
+        android:title="@string/vt_cat_new_videos"
         app:iconSpaceReserved="false"
         app:singleLineTitle="false">
 

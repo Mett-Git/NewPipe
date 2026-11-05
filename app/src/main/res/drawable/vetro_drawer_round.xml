@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tasto rotondo di vetro (Scopri nel menu, campanella del canale). -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="@color/vetro_pill_ripple">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/vetro_pill_fill" />
+            <stroke
+                android:width="1dp"
+                android:color="@color/vetro_pill_border" />
+        </shape>
+    </item>
+</ripple>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Un canale nel menu a sinistra: foto, pallino dei video nuovi e nome. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="46dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:background="@drawable/vetro_drawer_row_background"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingEnd="10dp"
+    android:stateListAnimator="@animator/vetro_press">
+
+    <FrameLayout
+        android:layout_width="32dp"
+        android:layout_height="32dp">
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/vetroRowIcon"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:src="@drawable/placeholder_person"
+            app:shapeAppearance="@style/CircularImageView" />
+
+        <View
+            android:id="@+id/vetroRowDot"
+            android:layout_width="11dp"
+            android:layout_height="11dp"
+            android:layout_gravity="bottom|end"
+            android:background="@drawable/vetro_drawer_dot"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <org.schabi.newpipe.views.NewPipeTextView
+        android:id="@+id/vetroRowTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+</LinearLayout>

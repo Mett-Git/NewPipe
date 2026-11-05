@@ -20,6 +20,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.OvershootInterpolator;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.ColorInt;
@@ -336,6 +337,12 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
             Log.d(TAG, "onTabSelected() called with: selectedTab = [" + selectedTab + "]");
         }
         updateTitleForTab(selectedTab.getPosition());
+        if (isVetroBar()) {
+            selectedTab.view.setScaleX(0.86f);
+            selectedTab.view.setScaleY(0.86f);
+            selectedTab.view.animate().scaleX(1f).scaleY(1f).setDuration(300)
+                    .setInterpolator(new OvershootInterpolator(2.6f)).start();
+        }
     }
 
     @Override

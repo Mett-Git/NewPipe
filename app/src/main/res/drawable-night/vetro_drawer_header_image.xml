@@ -1,31 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Temi scuro e nero: al posto dell'immagine, un alone corallo e uno blu come lo sfondo Vetro. -->
-<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item>
-        <shape android:shape="rectangle">
-            <solid android:color="@color/vetro_background" />
-        </shape>
-    </item>
-    <item>
-        <shape android:shape="rectangle">
-            <gradient
-                android:type="radial"
-                android:centerX="0.15"
-                android:centerY="0.1"
-                android:gradientRadius="90%"
-                android:startColor="#80FF785A"
-                android:endColor="@color/vetro_glow_none" />
-        </shape>
-    </item>
-    <item>
-        <shape android:shape="rectangle">
-            <gradient
-                android:type="radial"
-                android:centerX="1.0"
-                android:centerY="1.0"
-                android:gradientRadius="80%"
-                android:startColor="#665A8CFF"
-                android:endColor="@color/vetro_glow_none" />
-        </shape>
-    </item>
-</layer-list>
+<!-- Temi scuro e nero: niente immagine, si vede lo sfondo del menu. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+</shape>

@@ -36,4 +36,11 @@
     <color name="vetro_floating_fill">#D9FFFFFF</color>
     <!-- mini-player in fondo allo schermo -->
     <color name="vetro_mini_player">#FFFFFFFF</color>
+    <!-- segnino dei video solo per abbonati o a pagamento -->
+    <color name="vetro_restricted">#E6D9472F</color>
+    <!-- sfondo dell'icona dell'app -->
+    <color name="vetro_launcher_background">#000000</color>
+    <!-- menu a sinistra e tasto "Iscritto" -->
+    <color name="vetro_drawer_fill">#FFFFFFFF</color>
+    <color name="vetro_subscribed_fill">#1F000000</color>
 </resources>

@@ -5,6 +5,7 @@ import static org.schabi.newpipe.ktx.ViewUtils.animate;
 import static org.schabi.newpipe.ktx.ViewUtils.animateBackgroundColor;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -17,11 +18,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.ColorUtils;
 import androidx.core.view.MenuProvider;
 import androidx.preference.PreferenceManager;
 
@@ -386,12 +387,14 @@ public class ChannelFragment extends BaseStateFragment<ChannelInfo>
         final int backgroundDuration = isButtonVisible ? 300 : 0;
         final int textDuration = isButtonVisible ? 200 : 0;
 
+        // "Iscriviti" pieno e ben visibile, "Iscritto" di vetro
         final int subscribedBackground = ContextCompat
-                .getColor(activity, R.color.subscribed_background_color);
-        final int subscribedText = ContextCompat.getColor(activity, R.color.subscribed_text_color);
-        final int subscribeBackground = ColorUtils.blendARGB(ThemeHelper
-                .resolveColorFromAttr(activity, R.attr.colorPrimary), subscribedBackground, 0.35f);
-        final int subscribeText = ContextCompat.getColor(activity, R.color.subscribe_text_color);
+                .getColor(activity, R.color.vetro_subscribed_fill);
+        final int subscribedText = ThemeHelper
+                .resolveColorFromAttr(activity, android.R.attr.textColorPrimary);
+        final int subscribeBackground = ContextCompat
+                .getColor(activity, R.color.vetro_subscribe_fill);
+        final int subscribeText = ContextCompat.getColor(activity, R.color.vetro_subscribe_text);
 
         if (isSubscribed) {
             binding.channelSubscribeButton.setText(R.string.subscribed_button_title);
@@ -418,6 +421,7 @@ public class ChannelFragment extends BaseStateFragment<ChannelInfo>
     }
 
     private void updateNotifyButton(@Nullable final SubscriptionEntity subscription) {
+        updateNotifyBell(subscription);
         if (menuNotifyButton == null) {
             return;
         }
@@ -431,6 +435,33 @@ public class ChannelFragment extends BaseStateFragment<ChannelInfo>
         }
 
         menuNotifyButton.setVisible(subscription != null);
+    }
+
+    // campanella accanto a Iscriviti: corallo se gli avvisi di questo canale sono accesi
+    private void updateNotifyBell(@Nullable final SubscriptionEntity subscription) {
+        if (binding == null) {
+            return;
+        }
+        binding.channelNotifyButton.setVisibility(subscription != null ? View.VISIBLE : View.GONE);
+        if (subscription == null) {
+            return;
+        }
+        final boolean available =
+                NotificationHelper.areNewStreamsNotificationsEnabled(requireContext());
+        final boolean enabled = available
+                && subscription.getNotificationMode() == NotificationMode.ENABLED;
+        binding.channelNotifyButton.setAlpha(available ? 1f : 0.45f);
+        binding.channelNotifyButton.setImageTintList(enabled
+                ? ColorStateList.valueOf(ContextCompat.getColor(activity, R.color.vetro_coral))
+                : null);
+        binding.channelNotifyButton.setOnClickListener(v -> {
+            if (available) {
+                setNotify(!enabled);
+            } else {
+                Toast.makeText(activity, R.string.channel_notify_disabled, Toast.LENGTH_LONG)
+                        .show();
+            }
+        });
     }
 
     private void setNotify(final boolean isEnabled) {

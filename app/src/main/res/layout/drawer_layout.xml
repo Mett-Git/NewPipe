@@ -5,7 +5,7 @@
     android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:layout_gravity="start"
-    android:background="?android:attr/windowBackground"
+    android:background="@drawable/vetro_drawer_background"
     android:orientation="vertical"
     app:headerLayout="@layout/drawer_header"
     app:itemIconTint="@color/vetro_drawer_item_content"
@@ -13,4 +13,8 @@
     app:itemShapeFillColor="@color/vetro_drawer_item_fill"
     app:itemShapeInsetEnd="12dp"
     app:itemShapeInsetStart="12dp"
-    app:itemTextColor="@color/vetro_drawer_item_content" />
+    app:insetForeground="@android:color/transparent"
+    app:itemTextColor="@color/vetro_drawer_item_content">
+
+    <include layout="@layout/vetro_drawer_content" />
+</com.google.android.material.navigation.NavigationView>

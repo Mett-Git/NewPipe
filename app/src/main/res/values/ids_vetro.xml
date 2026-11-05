@@ -2,4 +2,7 @@
 <resources>
     <!-- spazio in fondo alle liste già aggiunto per la barra sospesa (vedi MainFragment) -->
     <item name="vetro_bar_space" type="id" />
+    <!-- animazioni degli elementi delle liste (vedi VetroListAnimator) -->
+    <item name="vetro_list_animator" type="id" />
+    <item name="vetro_item_animation" type="id" />
 </resources>

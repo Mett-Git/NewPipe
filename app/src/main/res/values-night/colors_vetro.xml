@@ -14,4 +14,6 @@
     <color name="vetro_floating_fill">#CC0B0E14</color>
     <!-- mini-player in fondo allo schermo -->
     <color name="vetro_mini_player">#FF14171D</color>
+    <color name="vetro_drawer_fill">#FF0B0E15</color>
+    <color name="vetro_subscribed_fill">#24FFFFFF</color>
 </resources>

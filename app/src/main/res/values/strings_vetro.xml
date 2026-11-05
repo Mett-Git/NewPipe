@@ -187,7 +187,8 @@
     <string name="vt_cat_language">Language and country</string>
     <string name="vt_cat_tabs">Tabs</string>
     <string name="vt_cat_video_page">Video page</string>
-    <string name="vt_cat_channels">New videos</string>
+    <string name="vt_cat_channels">New videos from channels</string>
+    <string name="vt_cat_new_videos">New videos</string>
     <string name="vt_cat_filters">Filters and search</string>
     <string name="vt_cat_remember">What to remember</string>
     <string name="vt_cat_clear">Delete</string>
@@ -200,4 +201,12 @@
     <string name="vt_cat_main_watch">Watching</string>
     <string name="vt_cat_main_app">App</string>
     <string name="vt_cat_main_data">Your data</string>
+    <string name="video_members_only">Members only</string>
+    <string name="video_paid">Paid</string>
+    <string name="vs_storage_use_saf_api_29">@string/downloads_storage_use_saf_summary_api_29</string>
+    <string name="vs_downloads_storage_ask_no_saf">@string/downloads_storage_ask_summary_no_saf_notice</string>
+    <string name="drawer_discover">Discover</string>
+    <string name="drawer_your_channels">Your channels</string>
+    <string name="drawer_show_all">Show all</string>
+    <string name="channel_notify_disabled">Turn on new video notifications in Settings > Notifications</string>
 </resources>

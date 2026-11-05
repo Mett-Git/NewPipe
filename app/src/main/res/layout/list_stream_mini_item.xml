@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/itemRoot"
+    android:stateListAnimator="@animator/vetro_press_soft"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
@@ -20,6 +21,28 @@
         android:scaleType="fitCenter"
         android:src="@drawable/placeholder_thumbnail_video"
         tools:ignore="RtlHardcoded" />
+
+    <org.schabi.newpipe.views.NewPipeTextView
+        android:id="@+id/itemRestrictedView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="6dp"
+        android:background="@drawable/vetro_restricted_background"
+        android:drawableStart="@drawable/vetro_ic_lock"
+        android:drawablePadding="3dp"
+        android:gravity="center_vertical"
+        android:paddingStart="5dp"
+        android:paddingTop="2dp"
+        android:paddingEnd="7dp"
+        android:paddingBottom="2dp"
+        android:textColor="@color/white"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        android:layout_alignStart="@id/itemThumbnailView"
+        android:layout_alignTop="@id/itemThumbnailView"
+        tools:text="Solo abbonati"
+        tools:visibility="visible" />
 
     <org.schabi.newpipe.views.NewPipeTextView
         android:id="@+id/itemDurationView"

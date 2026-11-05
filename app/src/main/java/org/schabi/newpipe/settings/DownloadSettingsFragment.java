@@ -63,8 +63,8 @@ public class DownloadSettingsFragment extends BasePreferenceFragment {
         prefUseSaf.setChecked(NewPipeSettings.useStorageAccessFramework(ctx));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             prefUseSaf.setEnabled(false);
-            prefUseSaf.setSummary(R.string.downloads_storage_use_saf_summary_api_29);
-            prefStorageAsk.setSummary(R.string.downloads_storage_ask_summary_no_saf_notice);
+            prefUseSaf.setSummary(R.string.vs_storage_use_saf_api_29);
+            prefStorageAsk.setSummary(R.string.vs_downloads_storage_ask_no_saf);
         }
 
         updatePreferencesSummary();

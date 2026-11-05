@@ -330,6 +330,7 @@
                             android:layout_height="36dp"
                             android:layout_marginStart="8dp"
                             android:background="@drawable/vetro_pill_subscribe"
+                            android:stateListAnimator="@animator/vetro_press"
                             android:clickable="true"
                             android:focusable="true"
                             android:gravity="center"

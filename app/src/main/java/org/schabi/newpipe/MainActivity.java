@@ -96,6 +96,7 @@ import org.schabi.newpipe.util.SerializedCache;
 import org.schabi.newpipe.util.ServiceHelper;
 import org.schabi.newpipe.util.StateSaver;
 import org.schabi.newpipe.util.ThemeHelper;
+import org.schabi.newpipe.util.VetroListAnimator;
 import org.schabi.newpipe.util.external_communication.ShareUtils;
 import org.schabi.newpipe.views.FocusOverlayView;
 
@@ -113,6 +114,8 @@ public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding mainBinding;
     private DrawerHeaderBinding drawerHeaderBinding;
     private DrawerLayoutBinding drawerLayoutBinding;
+    @Nullable
+    private VetroDrawer vetroDrawer;
     private ToolbarLayoutBinding toolbarLayoutBinding;
 
     private ActionBarDrawerToggle toggle;
@@ -121,14 +124,14 @@ public class MainActivity extends AppCompatActivity {
 
     private BroadcastReceiver broadcastReceiver;
 
-    private static final int ITEM_ID_SUBSCRIPTIONS = -1;
+    static final int ITEM_ID_SUBSCRIPTIONS = -1;
     private static final int ITEM_ID_FEED = -2;
     private static final int ITEM_ID_BOOKMARKS = -3;
     private static final int ITEM_ID_DOWNLOADS = -4;
     private static final int ITEM_ID_HISTORY = -5;
-    private static final int ITEM_ID_SETTINGS = 0;
-    private static final int ITEM_ID_DONATION = 1;
-    private static final int ITEM_ID_ABOUT = 2;
+    static final int ITEM_ID_SETTINGS = 0;
+    static final int ITEM_ID_DONATION = 1;
+    static final int ITEM_ID_ABOUT = 2;
 
     private static final int ORDER = 0;
     public static final String KEY_IS_IN_BACKGROUND = "is_in_background";
@@ -177,6 +180,18 @@ public class MainActivity extends AppCompatActivity {
         if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
             initFragments();
         }
+
+        // tutte le liste dell'app entrano con la stessa animazione
+        getSupportFragmentManager().registerFragmentLifecycleCallbacks(
+                new FragmentManager.FragmentLifecycleCallbacks() {
+                    @Override
+                    public void onFragmentViewCreated(@NonNull final FragmentManager fm,
+                                                      @NonNull final Fragment f,
+                                                      @NonNull final View v,
+                                                      @Nullable final Bundle savedInstanceState) {
+                        VetroListAnimator.attachToLists(v);
+                    }
+                }, true);
 
         setSupportActionBar(toolbarLayoutBinding.toolbar);
         try {
@@ -263,10 +278,21 @@ public class MainActivity extends AppCompatActivity {
                     ActivityCompat.recreate(MainActivity.this);
                 }
             }
+
+            @Override
+            public void onDrawerStateChanged(final int newState) {
+                if (newState != DrawerLayout.STATE_IDLE && vetroDrawer != null
+                        && !mainBinding.getRoot().isDrawerVisible(GravityCompat.START)) {
+                    vetroDrawer.onOpening();
+                }
+            }
         });
 
         drawerLayoutBinding.navigation.setNavigationItemSelectedListener(this::drawerItemSelected);
         setupDrawerHeader();
+        vetroDrawer = new VetroDrawer(this, drawerLayoutBinding.navigation,
+                this::drawerItemSelected, this::toggleServices,
+                () -> mainBinding.getRoot().closeDrawers());
     }
 
     /**
@@ -438,6 +464,9 @@ public class MainActivity extends AppCompatActivity {
                 ErrorUtil.showUiErrorSnackbar(this, "Showing main page tabs", e);
             }
         }
+        if (vetroDrawer != null) {
+            vetroDrawer.setServicesShown(servicesShown);
+        }
     }
 
     private void showServices() {
@@ -506,6 +535,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (vetroDrawer != null) {
+            vetroDrawer.dispose();
+        }
         if (!isChangingConfigurations()) {
             StateSaver.clearStateFiles();
         }
@@ -623,11 +655,10 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "onBackPressed() called");
         }
 
-        if (DeviceUtils.isTv(this)) {
-            if (mainBinding.getRoot().isDrawerOpen(drawerLayoutBinding.navigation)) {
-                mainBinding.getRoot().closeDrawers();
-                return;
-            }
+        // col menu aperto, Indietro chiude il menu e non l'app
+        if (mainBinding.getRoot().isDrawerOpen(drawerLayoutBinding.navigation)) {
+            mainBinding.getRoot().closeDrawers();
+            return;
         }
 
         // In case bottomSheet is not visible on the screen or collapsed we can assume that the user

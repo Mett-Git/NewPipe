@@ -1462,6 +1462,11 @@ public final class VideoDetailFragment
 
     private void showContent() {
         binding.detailContentRootHiding.setVisibility(View.VISIBLE);
+        // canale e tasti compaiono salendo un po'
+        binding.detailContentRootHiding.setAlpha(0f);
+        binding.detailContentRootHiding.setTranslationY(DeviceUtils.dpToPx(14, activity));
+        binding.detailContentRootHiding.animate().alpha(1f).translationY(0f)
+                .setDuration(260).start();
     }
 
     protected void setInitialData(final int newServiceId,
