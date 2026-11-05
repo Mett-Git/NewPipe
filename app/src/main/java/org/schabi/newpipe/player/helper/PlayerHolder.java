@@ -286,6 +286,13 @@ public final class PlayerHolder {
                 }
 
                 @Override
+                public void onPipButtonClicked() {
+                    if (listener != null) {
+                        listener.onPipButtonClicked();
+                    }
+                }
+
+                @Override
                 public void onMoreOptionsLongClicked() {
                     if (listener != null) {
                         listener.onMoreOptionsLongClicked();

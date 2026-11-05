@@ -221,6 +221,22 @@
                         tools:text="1x" />
 
                     <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/pipButton"
+                        android:layout_width="35dp"
+                        android:layout_height="35dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:contentDescription="@string/open_in_pip_mode"
+                        android:focusable="true"
+                        android:padding="5dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_picture_in_picture"
+                        android:visibility="gone"
+                        app:tint="@color/white"
+                        tools:ignore="RtlHardcoded" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
                         android:id="@+id/queueButton"
                         android:layout_width="35dp"
                         android:layout_height="35dp"
@@ -536,7 +552,7 @@
                 android:layout_height="40dp"
                 android:layout_marginEnd="10dp"
                 android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/vetro_player_button"
                 android:clickable="true"
                 android:contentDescription="@string/previous_stream"
                 android:focusable="true"
@@ -550,7 +566,7 @@
                 android:layout_width="0dp"
                 android:layout_height="60dp"
                 android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/vetro_player_button"
                 android:contentDescription="@string/pause"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_pause"
@@ -562,7 +578,7 @@
                 android:layout_height="40dp"
                 android:layout_marginStart="10dp"
                 android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/vetro_player_button"
                 android:clickable="true"
                 android:contentDescription="@string/next_stream"
                 android:focusable="true"

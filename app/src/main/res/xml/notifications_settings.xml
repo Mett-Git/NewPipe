@@ -4,50 +4,66 @@
 	android:key="general_preferences"
 	android:title="@string/notifications">
 
-	<PreferenceScreen
-		android:key="@string/player_notification_screen_key"
-		android:fragment="org.schabi.newpipe.settings.PlayerNotificationSettingsFragment"
-		android:summary="@string/settings_category_player_notification_summary"
-		android:title="@string/settings_category_player_notification_title"
-		app:singleLineTitle="false"
-		app:iconSpaceReserved="false" />
+    <PreferenceCategory
+        android:layout="@layout/settings_category_header_layout"
+        android:title="@string/vt_cat_channels"
+        app:iconSpaceReserved="false"
+        app:singleLineTitle="false">
 
-	<SwitchPreference
-		android:defaultValue="false"
-		android:key="@string/enable_streams_notifications"
-		android:summary="@string/enable_streams_notifications_summary"
-		android:title="@string/enable_streams_notifications_title"
-		app:singleLineTitle="false"
-		app:iconSpaceReserved="false" />
+        <SwitchPreference
+        	android:defaultValue="false"
+        	android:key="@string/enable_streams_notifications"
+        	android:summary="@string/vs_enable_streams_notifications"
+        	android:title="@string/vt_enable_streams_notifications"
+        	app:singleLineTitle="false"
+        	app:iconSpaceReserved="false" />
 
-	<org.schabi.newpipe.settings.custom.DurationListPreference
-		android:defaultValue="@string/streams_notifications_interval_default"
-		android:dependency="@string/enable_streams_notifications"
-		android:entries="@array/streams_notifications_interval_description"
-		android:entryValues="@array/streams_notifications_interval_values"
-		android:key="@string/streams_notifications_interval_key"
-		android:title="@string/streams_notifications_interval_title"
-		app:singleLineTitle="false"
-		app:iconSpaceReserved="false"
-		app:useSimpleSummaryProvider="true" />
+        <org.schabi.newpipe.settings.custom.DurationListPreference
+        	android:defaultValue="@string/streams_notifications_interval_default"
+        	android:dependency="@string/enable_streams_notifications"
+        	android:entries="@array/streams_notifications_interval_description"
+        	android:entryValues="@array/streams_notifications_interval_values"
+        	android:key="@string/streams_notifications_interval_key"
+        	android:summary="@string/vs_streams_notifications_interval_key"
+            android:title="@string/vt_streams_notifications_interval_key"
+        	app:singleLineTitle="false"
+        	app:iconSpaceReserved="false" />
 
-	<ListPreference
-		android:defaultValue="@string/streams_notifications_network_default"
-		android:dependency="@string/enable_streams_notifications"
-		android:entries="@array/streams_notifications_network_description"
-		android:entryValues="@array/streams_notifications_network_values"
-		android:key="@string/streams_notifications_network_key"
-		android:title="@string/streams_notifications_network_title"
-		app:singleLineTitle="false"
-		app:iconSpaceReserved="false"
-		app:useSimpleSummaryProvider="true" />
+        <ListPreference
+        	android:defaultValue="@string/streams_notifications_network_default"
+        	android:dependency="@string/enable_streams_notifications"
+        	android:entries="@array/streams_notifications_network_description"
+        	android:entryValues="@array/streams_notifications_network_values"
+        	android:key="@string/streams_notifications_network_key"
+        	android:summary="@string/vs_streams_notifications_network_key"
+            android:title="@string/vt_streams_notifications_network_key"
+        	app:singleLineTitle="false"
+        	app:iconSpaceReserved="false" />
 
-	<Preference
-		android:fragment="org.schabi.newpipe.settings.notifications.NotificationModeConfigFragment"
-		android:dependency="@string/enable_streams_notifications"
-		android:key="@string/streams_notifications_channels_key"
-		android:title="@string/channels"
-		app:singleLineTitle="false"
-		app:iconSpaceReserved="false" />
+        <Preference
+        	android:fragment="org.schabi.newpipe.settings.notifications.NotificationModeConfigFragment"
+        	android:dependency="@string/enable_streams_notifications"
+        	android:key="@string/streams_notifications_channels_key"
+        	android:summary="@string/vs_streams_notifications_channels_key"
+            android:title="@string/vt_streams_notifications_channels_key"
+        	app:singleLineTitle="false"
+        	app:iconSpaceReserved="false" />
 
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:layout="@layout/settings_category_header_layout"
+        android:title="@string/vt_cat_player"
+        app:iconSpaceReserved="false"
+        app:singleLineTitle="false">
+
+        <PreferenceScreen
+        	android:key="@string/player_notification_screen_key"
+        	android:fragment="org.schabi.newpipe.settings.PlayerNotificationSettingsFragment"
+        	android:summary="@string/vs_player_notification_screen_key"
+        	android:title="@string/vt_player_notification_screen_key"
+        	app:singleLineTitle="false"
+        	app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
 </PreferenceScreen>

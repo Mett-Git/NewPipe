@@ -3,67 +3,90 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:title="@string/settings_category_appearance_title">
 
-    <ListPreference
-        android:defaultValue="@string/default_theme_value"
-        android:entries="@array/theme_description_list"
-        android:entryValues="@array/theme_values_list"
-        android:key="@string/theme_key"
-        android:title="@string/theme_title"
-        app:singleLineTitle="false"
+    <PreferenceCategory
+        android:layout="@layout/settings_category_header_layout"
+        android:title="@string/vt_cat_theme"
         app:iconSpaceReserved="false"
-        app:useSimpleSummaryProvider="true" />
+        app:singleLineTitle="false">
 
-    <ListPreference
-        android:defaultValue="@string/default_night_theme_value"
-        android:entries="@array/night_theme_description_list"
-        android:entryValues="@array/night_theme_values_list"
-        android:key="@string/night_theme_key"
-        android:summary="@string/night_theme_summary"
-        android:title="@string/night_theme_title"
-        app:singleLineTitle="false"
-        app:iconSpaceReserved="false" />
+        <ListPreference
+            android:defaultValue="@string/default_theme_value"
+            android:entries="@array/theme_description_list"
+            android:entryValues="@array/theme_values_list"
+            android:key="@string/theme_key"
+            android:summary="@string/vs_theme_key"
+            android:title="@string/vt_theme_key"
+            app:singleLineTitle="false"
+            app:iconSpaceReserved="false" />
 
-    <SwitchPreferenceCompat
-        android:defaultValue="true"
-        android:key="@string/show_hold_to_append_key"
-        android:summary="@string/show_hold_to_append_summary"
-        android:title="@string/show_hold_to_append_title"
-        app:singleLineTitle="false"
-        app:iconSpaceReserved="false" />
+        <ListPreference
+            android:defaultValue="@string/default_night_theme_value"
+            android:entries="@array/night_theme_description_list"
+            android:entryValues="@array/night_theme_values_list"
+            android:key="@string/night_theme_key"
+            android:summary="@string/vs_night_theme_key"
+            android:title="@string/vt_night_theme_key"
+            app:singleLineTitle="false"
+            app:iconSpaceReserved="false" />
 
-    <ListPreference
-        android:defaultValue="@string/tablet_mode_auto_key"
-        android:entries="@array/tablet_mode_description"
-        android:entryValues="@array/tablet_mode_values"
-        android:key="@string/tablet_mode_key"
-        android:title="@string/tablet_mode_title"
-        app:singleLineTitle="false"
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:layout="@layout/settings_category_header_layout"
+        android:title="@string/vt_cat_layout"
         app:iconSpaceReserved="false"
-        app:useSimpleSummaryProvider="true" />
+        app:singleLineTitle="false">
 
-    <ListPreference
-        android:defaultValue="@string/list_view_mode_value"
-        android:entries="@array/list_view_mode_description"
-        android:entryValues="@array/list_view_mode_values"
-        android:key="@string/list_view_mode_key"
-        android:title="@string/list_view_mode"
-        app:singleLineTitle="false"
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="@string/main_tabs_position_key"
+            android:summary="@string/vs_main_tabs_position_key"
+            android:title="@string/vt_main_tabs_position_key"
+            app:singleLineTitle="false"
+            app:iconSpaceReserved="false" />
+
+        <ListPreference
+            android:defaultValue="@string/list_view_mode_value"
+            android:entries="@array/list_view_mode_description"
+            android:entryValues="@array/list_view_mode_values"
+            android:key="@string/list_view_mode_key"
+            android:summary="@string/vs_list_view_mode_key"
+            android:title="@string/vt_list_view_mode_key"
+            app:singleLineTitle="false"
+            app:iconSpaceReserved="false" />
+
+        <ListPreference
+            android:defaultValue="@string/tablet_mode_auto_key"
+            android:entries="@array/tablet_mode_description"
+            android:entryValues="@array/tablet_mode_values"
+            android:key="@string/tablet_mode_key"
+            android:summary="@string/vs_tablet_mode_key"
+            android:title="@string/vt_tablet_mode_key"
+            app:singleLineTitle="false"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:layout="@layout/settings_category_header_layout"
+        android:title="@string/vt_cat_other"
         app:iconSpaceReserved="false"
-        app:useSimpleSummaryProvider="true" />
+        app:singleLineTitle="false">
 
-    <Preference
-        android:key="@string/caption_settings_key"
-        android:summary="@string/caption_setting_description"
-        android:title="@string/caption_setting_title"
-        app:singleLineTitle="false"
-        app:iconSpaceReserved="false" />
+        <Preference
+            android:key="@string/caption_settings_key"
+            android:summary="@string/vs_caption_settings_key"
+            android:title="@string/vt_caption_settings_key"
+            app:singleLineTitle="false"
+            app:iconSpaceReserved="false" />
 
-    <SwitchPreferenceCompat
-        android:defaultValue="true"
-        android:key="@string/main_tabs_position_key"
-        android:summary="@string/main_tabs_position_summary"
-        android:title="@string/main_tabs_position_title"
-        app:singleLineTitle="false"
-        app:iconSpaceReserved="false" />
+        <SwitchPreferenceCompat
+            android:defaultValue="true"
+            android:key="@string/show_hold_to_append_key"
+            android:summary="@string/vs_show_hold_to_append_key"
+            android:title="@string/vt_show_hold_to_append_key"
+            app:singleLineTitle="false"
+            app:iconSpaceReserved="false" />
 
+    </PreferenceCategory>
 </PreferenceScreen>

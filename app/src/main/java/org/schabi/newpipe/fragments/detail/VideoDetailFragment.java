@@ -388,7 +388,14 @@ public final class VideoDetailFragment
     @Override
     public void onConfigurationChanged(@NonNull final Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (!isPlayerAvailable() || getView() == null || isInPictureInPicture()) {
+        if (!isPlayerAvailable() || getView() == null) {
+            return;
+        }
+        if (isInPictureInPicture()) {
+            // la finestrella cambia grandezza (quando la tocchi si ingrandisce): il video
+            // deve riempirla, altrimenti sotto spunta la pagina
+            final DisplayMetrics metrics = getResources().getDisplayMetrics();
+            setHeightThumbnail((int) (newConfig.screenHeightDp * metrics.density), metrics);
             return;
         }
         if (DeviceUtils.isLandscape(requireContext())) {
@@ -2058,6 +2065,13 @@ public final class VideoDetailFragment
     /*
      * Will scroll down to description view after long click on moreOptionsButton
      * */
+    @Override
+    public void onPipButtonClicked() {
+        if (isPipSupported()) {
+            openInPictureInPicture();
+        }
+    }
+
     @Override
     public void onMoreOptionsLongClicked() {
         final CoordinatorLayout.LayoutParams params =

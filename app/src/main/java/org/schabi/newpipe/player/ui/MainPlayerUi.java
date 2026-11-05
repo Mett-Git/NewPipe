@@ -19,6 +19,7 @@ import static org.schabi.newpipe.player.notification.NotificationConstants.ACTIO
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
@@ -166,6 +167,8 @@ public final class MainPlayerUi extends VideoPlayerUi implements View.OnLayoutCh
                 toggleFullscreen();
             }
         }));
+        binding.pipButton.setOnClickListener(v -> player.getFragmentListener()
+                .ifPresent(PlayerServiceEventListener::onPipButtonClicked));
         binding.queueButton.setOnClickListener(v -> onQueueClicked());
         binding.segmentsButton.setOnClickListener(v -> onSegmentsClicked());
 
@@ -199,6 +202,7 @@ public final class MainPlayerUi extends VideoPlayerUi implements View.OnLayoutCh
     protected void deinitListeners() {
         super.deinitListeners();
 
+        binding.pipButton.setOnClickListener(null);
         binding.queueButton.setOnClickListener(null);
         binding.segmentsButton.setOnClickListener(null);
         binding.addToPlaylistButton.setOnClickListener(null);
@@ -281,6 +285,9 @@ public final class MainPlayerUi extends VideoPlayerUi implements View.OnLayoutCh
         binding.resizeTextView.setVisibility(View.VISIBLE);
         binding.getRoot().findViewById(R.id.metadataView).setVisibility(View.VISIBLE);
         binding.moreOptionsButton.setVisibility(View.VISIBLE);
+        binding.pipButton.setVisibility(context.getPackageManager()
+                .hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
+                ? View.VISIBLE : View.GONE);
         binding.topControls.setOrientation(LinearLayout.VERTICAL);
         binding.primaryControls.getLayoutParams().width = MATCH_PARENT;
         binding.secondaryControls.setVisibility(View.INVISIBLE);

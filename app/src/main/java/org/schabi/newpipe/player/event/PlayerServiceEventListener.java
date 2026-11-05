@@ -11,6 +11,8 @@ public interface PlayerServiceEventListener extends PlayerEventListener {
 
     void onMoreOptionsLongClicked();
 
+    void onPipButtonClicked();
+
     void onPlayerError(PlaybackException error, boolean isCatchableException);
 
     void hideSystemUiIfNeeded();

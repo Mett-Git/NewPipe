@@ -16,4 +16,188 @@
     <string name="settings_summary_updates">Check for new versions of the app</string>
     <string name="settings_summary_backup">Save or restore subscriptions, history and settings</string>
     <string name="settings_summary_debug">Advanced: only for testing the app</string>
+
+    <!-- impostazioni riordinate e spiegate -->
+    <string name="vt_default_resolution_key">@string/default_resolution_title</string>
+    <string name="vs_default_resolution_key" formatted="false">%s</string>
+    <string name="vt_limit_mobile_data_usage_key">@string/limit_mobile_data_usage_title</string>
+    <string name="vs_limit_mobile_data_usage_key" formatted="false">%s</string>
+    <string name="vt_default_popup_resolution_key">@string/default_popup_resolution_title</string>
+    <string name="vs_default_popup_resolution_key" formatted="false">%s</string>
+    <string name="vt_show_higher_resolutions_key">@string/show_higher_resolutions_title</string>
+    <string name="vs_show_higher_resolutions_key" formatted="false">@string/show_higher_resolutions_summary</string>
+    <string name="vt_minimize_on_exit_key">@string/minimize_on_exit_title</string>
+    <string name="vs_minimize_on_exit_key" formatted="false">@string/minimize_on_exit_summary</string>
+    <string name="vt_preferred_open_action_key">@string/preferred_open_action_settings_title</string>
+    <string name="vs_preferred_open_action_key" formatted="false">@string/preferred_open_action_settings_summary</string>
+    <string name="vt_autoplay_key">@string/autoplay_title</string>
+    <string name="vs_autoplay_key" formatted="false">@string/autoplay_summary</string>
+    <string name="vt_auto_queue_key">@string/auto_queue_title</string>
+    <string name="vs_auto_queue_key" formatted="false">@string/auto_queue_summary</string>
+    <string name="vt_start_main_player_fullscreen_key">@string/start_main_player_fullscreen_title</string>
+    <string name="vs_start_main_player_fullscreen_key" formatted="false">@string/start_main_player_fullscreen_summary</string>
+    <string name="vt_resume_on_audio_focus_gain_key">@string/resume_on_audio_focus_gain_title</string>
+    <string name="vs_resume_on_audio_focus_gain_key" formatted="false">@string/resume_on_audio_focus_gain_summary</string>
+    <string name="vt_left_gesture_control_key">@string/left_gesture_control_title</string>
+    <string name="vs_left_gesture_control_key" formatted="false">%s</string>
+    <string name="vt_right_gesture_control_key">@string/right_gesture_control_title</string>
+    <string name="vs_right_gesture_control_key" formatted="false">%s</string>
+    <string name="vt_seek_duration_key">@string/seek_duration_title</string>
+    <string name="vs_seek_duration_key" formatted="false">%s</string>
+    <string name="vt_use_inexact_seek_key">@string/use_inexact_seek_title</string>
+    <string name="vs_use_inexact_seek_key" formatted="false">@string/use_inexact_seek_summary</string>
+    <string name="vt_seekbar_preview_thumbnail_key">@string/seekbar_preview_thumbnail_title</string>
+    <string name="vs_seekbar_preview_thumbnail_key" formatted="false">%s</string>
+    <string name="vt_popup_remember_size_pos_key">@string/popup_remember_size_pos_title</string>
+    <string name="vs_popup_remember_size_pos_key" formatted="false">@string/popup_remember_size_pos_summary</string>
+    <string name="vt_clear_queue_confirmation_key">@string/clear_queue_confirmation_title</string>
+    <string name="vs_clear_queue_confirmation_key" formatted="false">@string/clear_queue_confirmation_summary</string>
+    <string name="vt_prefer_original_audio_key">@string/prefer_original_audio_title</string>
+    <string name="vs_prefer_original_audio_key" formatted="false">@string/prefer_original_audio_summary</string>
+    <string name="vt_prefer_descriptive_audio_key">@string/prefer_descriptive_audio_title</string>
+    <string name="vs_prefer_descriptive_audio_key" formatted="false">@string/prefer_descriptive_audio_summary</string>
+    <string name="vt_default_video_format_key">@string/default_video_format_title</string>
+    <string name="vs_default_video_format_key" formatted="false">%s</string>
+    <string name="vt_default_audio_format_key">@string/default_audio_format_title</string>
+    <string name="vs_default_audio_format_key" formatted="false">%s</string>
+    <string name="vt_use_external_video_player_key">@string/use_external_video_player_title</string>
+    <string name="vs_use_external_video_player_key" formatted="false">@string/use_external_video_player_summary</string>
+    <string name="vt_use_external_audio_player_key">@string/use_external_audio_player_title</string>
+    <string name="vs_use_external_audio_player_key" formatted="false"></string>
+    <string name="vt_show_play_with_kodi_key">@string/show_play_with_kodi_title</string>
+    <string name="vs_show_play_with_kodi_key" formatted="false">@string/show_play_with_kodi_summary</string>
+    <string name="vt_ignore_hardware_media_buttons_key">@string/ignore_hardware_media_buttons_title</string>
+    <string name="vs_ignore_hardware_media_buttons_key" formatted="false">@string/ignore_hardware_media_buttons_summary</string>
+    <string name="vt_exoplayer_settings_key">@string/settings_category_exoplayer_title</string>
+    <string name="vs_exoplayer_settings_key" formatted="false">@string/settings_category_exoplayer_summary</string>
+    <string name="vt_theme_key">@string/theme_title</string>
+    <string name="vs_theme_key" formatted="false">%s</string>
+    <string name="vt_night_theme_key">@string/night_theme_title</string>
+    <string name="vs_night_theme_key" formatted="false">@string/night_theme_summary</string>
+    <string name="vt_main_tabs_position_key">@string/main_tabs_position_title</string>
+    <string name="vs_main_tabs_position_key" formatted="false">@string/main_tabs_position_summary</string>
+    <string name="vt_list_view_mode_key">@string/list_view_mode</string>
+    <string name="vs_list_view_mode_key" formatted="false">%s</string>
+    <string name="vt_tablet_mode_key">@string/tablet_mode_title</string>
+    <string name="vs_tablet_mode_key" formatted="false">%s</string>
+    <string name="vt_caption_settings_key">@string/caption_setting_title</string>
+    <string name="vs_caption_settings_key" formatted="false">@string/caption_setting_description</string>
+    <string name="vt_show_hold_to_append_key">@string/show_hold_to_append_title</string>
+    <string name="vs_show_hold_to_append_key" formatted="false">@string/show_hold_to_append_summary</string>
+    <string name="vt_app_language_key">@string/app_language_title</string>
+    <string name="vs_app_language_key" formatted="false">%s</string>
+    <string name="vt_app_language_android_13_and_up_key">@string/app_language_title</string>
+    <string name="vs_app_language_android_13_and_up_key" formatted="false"></string>
+    <string name="vt_content_language_key">@string/content_language_title</string>
+    <string name="vs_content_language_key" formatted="false">%s</string>
+    <string name="vt_content_country_key">@string/default_content_country_title</string>
+    <string name="vs_content_country_key" formatted="false">%s</string>
+    <string name="vt_main_page_content_key">@string/main_page_content</string>
+    <string name="vs_main_page_content_key" formatted="false">@string/main_page_content_summary</string>
+    <string name="vt_show_channel_tabs_key">@string/show_channel_tabs</string>
+    <string name="vs_show_channel_tabs_key" formatted="false">@string/show_channel_tabs_summary</string>
+    <string name="vt_show_comments_key">@string/show_comments_title</string>
+    <string name="vs_show_comments_key" formatted="false">@string/show_comments_summary</string>
+    <string name="vt_show_next_video_key">@string/show_next_and_similar_title</string>
+    <string name="vs_show_next_video_key" formatted="false"></string>
+    <string name="vt_show_description_key">@string/show_description_title</string>
+    <string name="vs_show_description_key" formatted="false">@string/show_description_summary</string>
+    <string name="vt_show_meta_info_key">@string/show_meta_info_title</string>
+    <string name="vs_show_meta_info_key" formatted="false">@string/show_meta_info_summary</string>
+    <string name="vt_feed_update_threshold_key">@string/feed_update_threshold_title</string>
+    <string name="vs_feed_update_threshold_key" formatted="false">@string/feed_update_threshold_summary</string>
+    <string name="vt_feed_fetch_channel_tabs_key">@string/feed_fetch_channel_tabs</string>
+    <string name="vs_feed_fetch_channel_tabs_key" formatted="false">@string/feed_fetch_channel_tabs_summary</string>
+    <string name="vt_show_age_restricted_content">@string/show_age_restricted_content_title</string>
+    <string name="vs_show_age_restricted_content" formatted="false">@string/show_age_restricted_content_summary</string>
+    <string name="vt_youtube_restricted_mode_enabled">@string/youtube_restricted_mode_enabled_title</string>
+    <string name="vs_youtube_restricted_mode_enabled" formatted="false">@string/youtube_restricted_mode_enabled_summary</string>
+    <string name="vt_show_search_suggestions_key">@string/show_search_suggestions_title</string>
+    <string name="vs_show_search_suggestions_key" formatted="false">@string/show_search_suggestions_summary</string>
+    <string name="vt_image_quality_key">@string/image_quality_title</string>
+    <string name="vs_image_quality_key" formatted="false">@string/image_quality_summary</string>
+    <string name="vt_feed_use_dedicated_fetch_method_key">@string/feed_use_dedicated_fetch_method_title</string>
+    <string name="vs_feed_use_dedicated_fetch_method_key" formatted="false">@string/feed_use_dedicated_fetch_method_summary</string>
+    <string name="vt_peertube_instance_setup_key">@string/peertube_instance_url_title</string>
+    <string name="vs_peertube_instance_setup_key" formatted="false">@string/peertube_instance_url_summary</string>
+    <string name="vt_enable_watch_history_key">@string/enable_watch_history_title</string>
+    <string name="vs_enable_watch_history_key" formatted="false">@string/enable_watch_history_summary</string>
+    <string name="vt_enable_search_history_key">@string/enable_search_history_title</string>
+    <string name="vs_enable_search_history_key" formatted="false">@string/enable_search_history_summary</string>
+    <string name="vt_enable_playback_resume_key">@string/enable_playback_resume_title</string>
+    <string name="vs_enable_playback_resume_key" formatted="false">@string/enable_playback_resume_summary</string>
+    <string name="vt_enable_playback_state_lists_key">@string/enable_playback_state_lists_title</string>
+    <string name="vs_enable_playback_state_lists_key" formatted="false">@string/enable_playback_state_lists_summary</string>
+    <string name="vt_clear_views_history_key">@string/clear_views_history_title</string>
+    <string name="vs_clear_views_history_key" formatted="false">@string/clear_views_history_summary</string>
+    <string name="vt_clear_playback_states_key">@string/clear_playback_states_title</string>
+    <string name="vs_clear_playback_states_key" formatted="false">@string/clear_playback_states_summary</string>
+    <string name="vt_clear_search_history_key">@string/clear_search_history_title</string>
+    <string name="vs_clear_search_history_key" formatted="false">@string/clear_search_history_summary</string>
+    <string name="vt_metadata_cache_wipe_key">@string/metadata_cache_wipe_title</string>
+    <string name="vs_metadata_cache_wipe_key" formatted="false">@string/metadata_cache_wipe_summary</string>
+    <string name="vt_clear_cookie_key">@string/clear_cookie_title</string>
+    <string name="vs_clear_cookie_key" formatted="false">@string/clear_cookie_summary</string>
+    <string name="vt_download_path_video_key">@string/download_path_title</string>
+    <string name="vs_download_path_video_key" formatted="false">@string/download_path_summary</string>
+    <string name="vt_download_path_audio_key">@string/download_path_audio_title</string>
+    <string name="vs_download_path_audio_key" formatted="false">@string/download_path_audio_summary</string>
+    <string name="vt_downloads_storage_ask">@string/downloads_storage_ask_title</string>
+    <string name="vs_downloads_storage_ask" formatted="false">@string/downloads_storage_ask_summary</string>
+    <string name="vt_downloads_queue_limit">@string/enable_queue_limit</string>
+    <string name="vs_downloads_queue_limit" formatted="false">@string/enable_queue_limit_desc</string>
+    <string name="vt_downloads_cross_network">@string/pause_downloads_on_mobile</string>
+    <string name="vs_downloads_cross_network" formatted="false">@string/pause_downloads_on_mobile_desc</string>
+    <string name="vt_downloads_maximum_retry">@string/max_retry_msg</string>
+    <string name="vs_downloads_maximum_retry" formatted="false">@string/max_retry_desc</string>
+    <string name="vt_storage_use_saf">@string/downloads_storage_use_saf_title</string>
+    <string name="vs_storage_use_saf" formatted="false">@string/downloads_storage_use_saf_summary</string>
+    <string name="vt_settings_file_charset_key">@string/settings_file_charset_title</string>
+    <string name="vs_settings_file_charset_key" formatted="false">%s</string>
+    <string name="vt_settings_file_replacement_character_key">@string/settings_file_replacement_character_title</string>
+    <string name="vs_settings_file_replacement_character_key" formatted="false">@string/settings_file_replacement_character_summary</string>
+    <string name="vt_enable_streams_notifications">@string/enable_streams_notifications_title</string>
+    <string name="vs_enable_streams_notifications" formatted="false">@string/enable_streams_notifications_summary</string>
+    <string name="vt_streams_notifications_interval_key">@string/streams_notifications_interval_title</string>
+    <string name="vs_streams_notifications_interval_key" formatted="false">%s</string>
+    <string name="vt_streams_notifications_network_key">@string/streams_notifications_network_title</string>
+    <string name="vs_streams_notifications_network_key" formatted="false">%s</string>
+    <string name="vt_streams_notifications_channels_key">@string/channels</string>
+    <string name="vs_streams_notifications_channels_key" formatted="false"></string>
+    <string name="vt_player_notification_screen_key">@string/settings_category_player_notification_title</string>
+    <string name="vs_player_notification_screen_key" formatted="false">@string/settings_category_player_notification_summary</string>
+    <string name="vt_export_data">@string/export_data_title</string>
+    <string name="vs_export_data" formatted="false">@string/export_data_summary</string>
+    <string name="vt_import_data">@string/import_data_title</string>
+    <string name="vs_import_data" formatted="false">@string/import_data_summary</string>
+    <string name="vt_export_subscriptions_key">@string/export_subscriptions_title</string>
+    <string name="vs_export_subscriptions_key" formatted="false">@string/export_subscriptions_summary</string>
+    <string name="vt_import_subscriptions_key">@string/import_subscriptions_title</string>
+    <string name="vs_import_subscriptions_key" formatted="false">@string/import_subscriptions_summary</string>
+    <string name="vt_reset_settings">@string/reset_settings_title</string>
+    <string name="vs_reset_settings" formatted="false">@string/reset_settings_summary</string>
+    <string name="vt_cat_quality">Quality</string>
+    <string name="vt_cat_watching">While watching</string>
+    <string name="vt_cat_gestures">Gestures and controls</string>
+    <string name="vt_cat_audio">Audio</string>
+    <string name="vt_cat_advanced">Advanced</string>
+    <string name="vt_cat_theme">Theme</string>
+    <string name="vt_cat_layout">Tabs and lists</string>
+    <string name="vt_cat_other">Other</string>
+    <string name="vt_cat_language">Language and country</string>
+    <string name="vt_cat_tabs">Tabs</string>
+    <string name="vt_cat_video_page">Video page</string>
+    <string name="vt_cat_channels">New videos</string>
+    <string name="vt_cat_filters">Filters and search</string>
+    <string name="vt_cat_remember">What to remember</string>
+    <string name="vt_cat_clear">Delete</string>
+    <string name="vt_cat_where">Where to save</string>
+    <string name="vt_cat_how">How to download</string>
+    <string name="vt_cat_player">Player</string>
+    <string name="vt_cat_full">Full backup</string>
+    <string name="vt_cat_subs">Subscriptions only</string>
+    <string name="vt_cat_reset">Reset</string>
+    <string name="vt_cat_main_watch">Watching</string>
+    <string name="vt_cat_main_app">App</string>
+    <string name="vt_cat_main_data">Your data</string>
 </resources>

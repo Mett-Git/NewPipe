@@ -15,4 +15,188 @@
     <string name="settings_summary_updates">Controllo delle nuove versioni dell\'app</string>
     <string name="settings_summary_backup">Salva o rimetti iscrizioni, cronologia, playlist e impostazioni</string>
     <string name="settings_summary_debug">Avanzate: solo per chi prova l\'app</string>
+
+    <!-- impostazioni riordinate e spiegate -->
+    <string name="vt_default_resolution_key">Qualità dei video</string>
+    <string name="vs_default_resolution_key" formatted="false">Con che qualità partono i video — %s</string>
+    <string name="vt_limit_mobile_data_usage_key">Qualità con i dati mobili</string>
+    <string name="vs_limit_mobile_data_usage_key" formatted="false">Il massimo quando non sei in Wi-Fi, per consumare meno — %s</string>
+    <string name="vt_default_popup_resolution_key">Qualità nel popup</string>
+    <string name="vs_default_popup_resolution_key" formatted="false">Con che qualità parte il video nella finestra popup di NewPipe — %s</string>
+    <string name="vt_show_higher_resolutions_key">Mostra anche 2K e 4K</string>
+    <string name="vs_show_higher_resolutions_key" formatted="false">Non tutti i telefoni riescono a riprodurli</string>
+    <string name="vt_minimize_on_exit_key">Quando esci dall\'app</string>
+    <string name="vs_minimize_on_exit_key" formatted="false">Cosa fa il video se vai alla home o in un\'altra app — %s</string>
+    <string name="vt_preferred_open_action_key">Quando apri un video da un\'altra app</string>
+    <string name="vs_preferred_open_action_key" formatted="false">Cosa succede se apri un link di YouTube da fuori — %s</string>
+    <string name="vt_autoplay_key">Partenza automatica</string>
+    <string name="vs_autoplay_key" formatted="false">Quando il video parte da solo appena lo apri — %s</string>
+    <string name="vt_auto_queue_key">Video successivo da solo</string>
+    <string name="vs_auto_queue_key" formatted="false">Finito un video, ne parte uno consigliato</string>
+    <string name="vt_start_main_player_fullscreen_key">Parti a schermo intero</string>
+    <string name="vs_start_main_player_fullscreen_key" formatted="false">Se la rotazione automatica è bloccata, il video si apre subito a tutto schermo</string>
+    <string name="vt_resume_on_audio_focus_gain_key">Riprendi dopo le interruzioni</string>
+    <string name="vs_resume_on_audio_focus_gain_key" formatted="false">Il video ricomincia da solo dopo una telefonata o un altro suono</string>
+    <string name="vt_left_gesture_control_key">Gesto a sinistra</string>
+    <string name="vs_left_gesture_control_key" formatted="false">Cosa regoli scorrendo su e giù sulla metà sinistra del video — %s</string>
+    <string name="vt_right_gesture_control_key">Gesto a destra</string>
+    <string name="vs_right_gesture_control_key" formatted="false">Cosa regoli scorrendo su e giù sulla metà destra del video — %s</string>
+    <string name="vt_seek_duration_key">Salto avanti e indietro</string>
+    <string name="vs_seek_duration_key" formatted="false">Di quanto si sposta il video col doppio tocco — %s</string>
+    <string name="vt_use_inexact_seek_key">Salto veloce</string>
+    <string name="vs_use_inexact_seek_key" formatted="false">Il video si sposta più in fretta ma meno preciso. I salti di 5, 15 e 25 secondi non funzionano</string>
+    <string name="vt_seekbar_preview_thumbnail_key">Anteprima sulla barra</string>
+    <string name="vs_seekbar_preview_thumbnail_key" formatted="false">Cosa vedi mentre trascini la barra del video — %s</string>
+    <string name="vt_popup_remember_size_pos_key">Ricorda il popup</string>
+    <string name="vs_popup_remember_size_pos_key" formatted="false">La finestra popup riapre con la stessa grandezza e nello stesso punto</string>
+    <string name="vt_clear_queue_confirmation_key">Chiedi prima di svuotare la coda</string>
+    <string name="vs_clear_queue_confirmation_key" formatted="false">Avvisa quando cambiare lettore sostituirebbe i video in coda</string>
+    <string name="vt_prefer_original_audio_key">Audio originale</string>
+    <string name="vs_prefer_original_audio_key" formatted="false">Scegli la lingua originale del video invece di quelle doppiate</string>
+    <string name="vt_prefer_descriptive_audio_key">Audio per ipovedenti</string>
+    <string name="vs_prefer_descriptive_audio_key" formatted="false">Se c\'è, usa la traccia audio che descrive le scene</string>
+    <string name="vt_default_video_format_key">Formato video</string>
+    <string name="vs_default_video_format_key" formatted="false">Il tipo di file preferito. Se non sai cos\'è, lascialo così — %s</string>
+    <string name="vt_default_audio_format_key">Formato audio</string>
+    <string name="vs_default_audio_format_key" formatted="false">Il tipo di file preferito. Se non sai cos\'è, lascialo così — %s</string>
+    <string name="vt_use_external_video_player_key">Apri i video con un\'altra app</string>
+    <string name="vs_use_external_video_player_key" formatted="false">Usa un lettore esterno. Con alcune qualità manca l\'audio</string>
+    <string name="vt_use_external_audio_player_key">Apri l\'audio con un\'altra app</string>
+    <string name="vs_use_external_audio_player_key" formatted="false">Usa un lettore esterno per l\'audio</string>
+    <string name="vt_show_play_with_kodi_key">Tasto \"Riproduci con Kodi\"</string>
+    <string name="vs_show_play_with_kodi_key" formatted="false">Mostra il tasto per mandare il video a Kodi, il programma per la TV</string>
+    <string name="vt_ignore_hardware_media_buttons_key">Ignora i tasti delle cuffie</string>
+    <string name="vs_ignore_hardware_media_buttons_key" formatted="false">Utile con cuffie che hanno i tasti rotti</string>
+    <string name="vt_exoplayer_settings_key">Motore video</string>
+    <string name="vs_exoplayer_settings_key" formatted="false">Da toccare solo se i video danno problemi. Poi va riavviato il lettore</string>
+    <string name="vt_theme_key">Tema</string>
+    <string name="vs_theme_key" formatted="false">I colori dell\'app — %s</string>
+    <string name="vt_night_theme_key">Tema di notte</string>
+    <string name="vs_night_theme_key" formatted="false">Quale tema usare quando il telefono è in modalità scura — %s</string>
+    <string name="vt_main_tabs_position_key">Barra delle schede in basso</string>
+    <string name="vs_main_tabs_position_key" formatted="false">Spegnila per riavere le schede in alto</string>
+    <string name="vt_list_view_mode_key">Come si vedono i video</string>
+    <string name="vs_list_view_mode_key" formatted="false">Anteprime grandi, lista o griglia — %s</string>
+    <string name="vt_tablet_mode_key">Modalità tablet</string>
+    <string name="vs_tablet_mode_key" formatted="false">Disposizione pensata per gli schermi grandi — %s</string>
+    <string name="vt_caption_settings_key">Sottotitoli</string>
+    <string name="vs_caption_settings_key" formatted="false">Grandezza e stile dei sottotitoli. Riavvia l\'app per applicarli</string>
+    <string name="vt_show_hold_to_append_key">Suggerimento \"Tieni premuto\"</string>
+    <string name="vs_show_hold_to_append_key" formatted="false">Ricorda che tenendo premuti Audio e Popup il video va in coda</string>
+    <string name="vt_app_language_key">Lingua dell\'app</string>
+    <string name="vs_app_language_key" formatted="false">In che lingua sono scritti i menu — %s</string>
+    <string name="vt_app_language_android_13_and_up_key">Lingua dell\'app</string>
+    <string name="vs_app_language_android_13_and_up_key" formatted="false">In che lingua sono scritti i menu</string>
+    <string name="vt_content_language_key">Lingua dei contenuti</string>
+    <string name="vs_content_language_key" formatted="false">In che lingua vuoi titoli e video, quando c\'è — %s</string>
+    <string name="vt_content_country_key">Paese dei contenuti</string>
+    <string name="vs_content_country_key" formatted="false">Da quale paese prendere tendenze e dirette — %s</string>
+    <string name="vt_main_page_content_key">Schede della barra</string>
+    <string name="vs_main_page_content_key" formatted="false">Quali schede vedi nella pagina principale e in che ordine</string>
+    <string name="vt_show_channel_tabs_key">Schede dei canali</string>
+    <string name="vs_show_channel_tabs_key" formatted="false">Cosa mostrare quando apri la pagina di un canale</string>
+    <string name="vt_show_comments_key">Commenti</string>
+    <string name="vs_show_comments_key" formatted="false">Spegnilo per nascondere i commenti</string>
+    <string name="vt_show_next_video_key">Video correlati</string>
+    <string name="vs_show_next_video_key" formatted="false">Mostra i video simili e il prossimo video</string>
+    <string name="vt_show_description_key">Descrizione</string>
+    <string name="vs_show_description_key" formatted="false">Spegnilo per nascondere la descrizione e le informazioni del video</string>
+    <string name="vt_show_meta_info_key">Riquadri informativi</string>
+    <string name="vs_show_meta_info_key" formatted="false">Gli avvisi aggiunti a certi video o ricerche, per esempio su salute o notizie</string>
+    <string name="vt_feed_update_threshold_key">Ogni quanto aggiornare</string>
+    <string name="vs_feed_update_threshold_key" formatted="false">Dopo quanto tempo un canale va ricontrollato — %s</string>
+    <string name="vt_feed_fetch_channel_tabs_key">Cosa controllare nei canali</string>
+    <string name="vs_feed_fetch_channel_tabs_key" formatted="false">Quali schede guardare (video, Shorts, dirette...) quando aggiorni le Novità</string>
+    <string name="vt_show_age_restricted_content">Contenuti vietati ai minori</string>
+    <string name="vs_show_age_restricted_content" formatted="false">Mostra anche i video con limite di età, per esempio 18+</string>
+    <string name="vt_youtube_restricted_mode_enabled">Modalità con restrizioni</string>
+    <string name="vs_youtube_restricted_mode_enabled" formatted="false">L\'opzione di YouTube che nasconde i video poco adatti ai minori</string>
+    <string name="vt_show_search_suggestions_key">Suggerimenti di ricerca</string>
+    <string name="vs_show_search_suggestions_key" formatted="false">Da dove prendere i suggerimenti mentre scrivi</string>
+    <string name="vt_image_quality_key">Qualità delle immagini</string>
+    <string name="vs_image_quality_key" formatted="false">Più bassa consuma meno dati. Se la cambi, la cache delle immagini si svuota — %s</string>
+    <string name="vt_feed_use_dedicated_fetch_method_key">Aggiornamento veloce delle Novità</string>
+    <string name="vs_feed_use_dedicated_fetch_method_key" formatted="false">Più rapido, ma con meno video e informazioni incomplete (durata, dirette)</string>
+    <string name="vt_peertube_instance_setup_key">Server PeerTube</string>
+    <string name="vs_peertube_instance_setup_key" formatted="false">Quali server usare per PeerTube, un\'alternativa libera a YouTube</string>
+    <string name="vt_enable_watch_history_key">Video guardati</string>
+    <string name="vs_enable_watch_history_key" formatted="false">Tiene la lista dei video che hai visto</string>
+    <string name="vt_enable_search_history_key">Ricerche</string>
+    <string name="vs_enable_search_history_key" formatted="false">Tiene le tue ricerche, solo sul telefono</string>
+    <string name="vt_enable_playback_resume_key">Riprendi da dove eri</string>
+    <string name="vs_enable_playback_resume_key" formatted="false">Il video riparte dal punto in cui l\'avevi lasciato</string>
+    <string name="vt_enable_playback_state_lists_key">Barretta \"visto fino a qui\"</string>
+    <string name="vs_enable_playback_state_lists_key" formatted="false">Mostra sulle anteprime fin dove hai guardato</string>
+    <string name="vt_clear_views_history_key">Cancella i video guardati</string>
+    <string name="vs_clear_views_history_key" formatted="false">Toglie la lista dei video visti e i punti in cui eri arrivato</string>
+    <string name="vt_clear_playback_states_key">Cancella i punti di ripresa</string>
+    <string name="vs_clear_playback_states_key" formatted="false">Toglie solo i punti in cui eri arrivato</string>
+    <string name="vt_clear_search_history_key">Cancella le ricerche</string>
+    <string name="vs_clear_search_history_key" formatted="false">Toglie tutte le ricerche salvate</string>
+    <string name="vt_metadata_cache_wipe_key">Svuota la cache</string>
+    <string name="vs_metadata_cache_wipe_key" formatted="false">Elimina i dati delle pagine salvati per caricarle più in fretta</string>
+    <string name="vt_clear_cookie_key">Cancella i cookie reCAPTCHA</string>
+    <string name="vs_clear_cookie_key" formatted="false">Quelli salvati quando risolvi un \"non sono un robot\"</string>
+    <string name="vt_download_path_video_key">Cartella dei video</string>
+    <string name="vs_download_path_video_key" formatted="false">Dove finiscono i video scaricati</string>
+    <string name="vt_download_path_audio_key">Cartella dell\'audio</string>
+    <string name="vs_download_path_audio_key" formatted="false">Dove finisce l\'audio scaricato</string>
+    <string name="vt_downloads_storage_ask">Chiedi ogni volta</string>
+    <string name="vs_downloads_storage_ask" formatted="false">A ogni download scegli tu dove salvare</string>
+    <string name="vt_downloads_queue_limit">Uno alla volta</string>
+    <string name="vs_downloads_queue_limit" formatted="false">Scarica un solo file per volta, gli altri aspettano</string>
+    <string name="vt_downloads_cross_network">Fermati con i dati mobili</string>
+    <string name="vs_downloads_cross_network" formatted="false">Mette in pausa se passi ai dati mobili. Alcuni download non si possono sospendere</string>
+    <string name="vt_downloads_maximum_retry">Tentativi se va male</string>
+    <string name="vs_downloads_maximum_retry" formatted="false">Quante volte riprovare prima di annullare il download</string>
+    <string name="vt_storage_use_saf">Selettore di cartelle di Android</string>
+    <string name="vs_storage_use_saf" formatted="false">Serve per salvare sulla scheda SD o su una memoria esterna</string>
+    <string name="vt_settings_file_charset_key">Caratteri nei nomi dei file</string>
+    <string name="vs_settings_file_charset_key" formatted="false">Quali caratteri sono ammessi — %s</string>
+    <string name="vt_settings_file_replacement_character_key">Carattere sostitutivo</string>
+    <string name="vs_settings_file_replacement_character_key" formatted="false">Cosa mettere al posto dei caratteri non ammessi</string>
+    <string name="vt_enable_streams_notifications">Avvisi dei video nuovi</string>
+    <string name="vs_enable_streams_notifications" formatted="false">Ti avvisa quando esce un video dei canali a cui sei iscritto</string>
+    <string name="vt_streams_notifications_interval_key">Ogni quanto controllare</string>
+    <string name="vs_streams_notifications_interval_key" formatted="false">Ogni quanto cercare i video nuovi — %s</string>
+    <string name="vt_streams_notifications_network_key">Con quale connessione</string>
+    <string name="vs_streams_notifications_network_key" formatted="false">Se controllare anche con i dati mobili — %s</string>
+    <string name="vt_streams_notifications_channels_key">Scegli i canali</string>
+    <string name="vs_streams_notifications_channels_key" formatted="false">Per quali canali vuoi gli avvisi</string>
+    <string name="vt_player_notification_screen_key">Notifica del lettore</string>
+    <string name="vs_player_notification_screen_key" formatted="false">La notifica col video in corso e i suoi tasti</string>
+    <string name="vt_export_data">Crea un backup</string>
+    <string name="vs_export_data" formatted="false">Salva cronologia, iscrizioni, playlist e impostazioni in un file</string>
+    <string name="vt_import_data">Ripristina un backup</string>
+    <string name="vs_import_data" formatted="false">Rimette tutto da un file. Sostituisce quello che c\'è ora</string>
+    <string name="vt_export_subscriptions_key">Salva le iscrizioni</string>
+    <string name="vs_export_subscriptions_key" formatted="false">Salva i canali a cui sei iscritto in un file .json</string>
+    <string name="vt_import_subscriptions_key">Carica le iscrizioni</string>
+    <string name="vs_import_subscriptions_key" formatted="false">Aggiunge i canali da un file .json salvato prima</string>
+    <string name="vt_reset_settings">Azzera le impostazioni</string>
+    <string name="vs_reset_settings" formatted="false">Riporta tutte le impostazioni a come erano all\'inizio</string>
+    <string name="vt_cat_quality">Qualità</string>
+    <string name="vt_cat_watching">Mentre guardi</string>
+    <string name="vt_cat_gestures">Gesti e comandi</string>
+    <string name="vt_cat_audio">Audio</string>
+    <string name="vt_cat_advanced">Avanzate</string>
+    <string name="vt_cat_theme">Tema</string>
+    <string name="vt_cat_layout">Schede e liste</string>
+    <string name="vt_cat_other">Altro</string>
+    <string name="vt_cat_language">Lingua e paese</string>
+    <string name="vt_cat_tabs">Schede</string>
+    <string name="vt_cat_video_page">Pagina del video</string>
+    <string name="vt_cat_channels">Video nuovi</string>
+    <string name="vt_cat_filters">Filtri e ricerca</string>
+    <string name="vt_cat_remember">Cosa ricordare</string>
+    <string name="vt_cat_clear">Cancella</string>
+    <string name="vt_cat_where">Dove salvare</string>
+    <string name="vt_cat_how">Come scaricare</string>
+    <string name="vt_cat_player">Lettore</string>
+    <string name="vt_cat_full">Backup completo</string>
+    <string name="vt_cat_subs">Solo le iscrizioni</string>
+    <string name="vt_cat_reset">Azzera</string>
+    <string name="vt_cat_main_watch">Guardare</string>
+    <string name="vt_cat_main_app">L\'app</string>
+    <string name="vt_cat_main_data">I tuoi dati</string>
 </resources>
