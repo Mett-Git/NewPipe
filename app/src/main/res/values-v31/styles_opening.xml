@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Da Android 12 l'apertura la disegna il sistema: nera anche lei. -->
+<resources>
+    <style name="OpeningTheme" parent="Base.OpeningTheme">
+        <item name="android:windowSplashScreenBackground">@android:color/black</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+    </style>
+</resources>

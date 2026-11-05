@@ -60,4 +60,26 @@
         <item name="android:textSize">11.5sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <!-- finestre di dialogo nei temi scuro e nero: vetro scuro arrotondato, tasti corallo -->
+    <style name="VetroAlertDialog" parent="ThemeOverlay.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/vetro_dialog_background</item>
+        <item name="colorAccent">@color/vetro_coral</item>
+        <item name="colorControlActivated">@color/vetro_coral</item>
+    </style>
+
+    <!-- la stessa finestra per il menu che esce tenendo premuto un video -->
+    <style name="VetroSystemAlertDialog" parent="android:Theme.Material.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/vetro_dialog_background</item>
+        <item name="android:colorAccent">@color/vetro_coral</item>
+    </style>
+
+    <!-- menu a tendina -->
+    <style name="VetroPopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@drawable/vetro_popup_background</item>
+    </style>
+
+    <style name="VetroOverflowMenu" parent="Widget.AppCompat.PopupMenu.Overflow">
+        <item name="android:popupBackground">@drawable/vetro_popup_background</item>
+    </style>
 </resources>

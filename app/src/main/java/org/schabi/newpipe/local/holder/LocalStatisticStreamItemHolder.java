@@ -16,6 +16,7 @@ import org.schabi.newpipe.local.LocalItemBuilder;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
 import org.schabi.newpipe.util.DependentPreferenceHelper;
 import org.schabi.newpipe.util.Localization;
+import org.schabi.newpipe.util.RestrictedVideos;
 import org.schabi.newpipe.util.ServiceHelper;
 import org.schabi.newpipe.util.image.CoilHelper;
 import org.schabi.newpipe.views.AnimatedProgressBar;
@@ -48,6 +49,7 @@ public class LocalStatisticStreamItemHolder extends LocalItemHolder {
     public final TextView itemVideoTitleView;
     public final TextView itemUploaderView;
     public final TextView itemDurationView;
+    private final TextView itemRestrictedView;
     @Nullable
     public final TextView itemAdditionalDetails;
     private final AnimatedProgressBar itemProgressView;
@@ -65,6 +67,7 @@ public class LocalStatisticStreamItemHolder extends LocalItemHolder {
         itemVideoTitleView = itemView.findViewById(R.id.itemVideoTitleView);
         itemUploaderView = itemView.findViewById(R.id.itemUploaderView);
         itemDurationView = itemView.findViewById(R.id.itemDurationView);
+        itemRestrictedView = itemView.findViewById(R.id.itemRestrictedView);
         itemAdditionalDetails = itemView.findViewById(R.id.itemAdditionalDetails);
         itemProgressView = itemView.findViewById(R.id.itemProgressView);
     }
@@ -89,6 +92,7 @@ public class LocalStatisticStreamItemHolder extends LocalItemHolder {
         final StreamStatisticsEntry item = (StreamStatisticsEntry) localItem;
 
         itemVideoTitleView.setText(item.getStreamEntity().getTitle());
+        RestrictedVideos.bind(itemRestrictedView, item.getStreamEntity().getUrl(), null);
         itemUploaderView.setText(item.getStreamEntity().getUploader());
 
         if (item.getStreamEntity().getDuration() > 0) {

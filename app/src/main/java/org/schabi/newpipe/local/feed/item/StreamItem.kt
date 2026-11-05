@@ -8,6 +8,7 @@ import androidx.preference.PreferenceManager
 import com.xwray.groupie.viewbinding.BindableItem
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
+import org.schabi.newpipe.App
 import org.schabi.newpipe.MainActivity
 import org.schabi.newpipe.R
 import org.schabi.newpipe.database.stream.StreamWithState
@@ -26,7 +27,9 @@ import org.schabi.newpipe.util.image.CoilHelper
 
 data class StreamItem(
     val streamWithState: StreamWithState,
-    var itemVersion: ItemVersion = ItemVersion.NORMAL
+    var itemVersion: ItemVersion = ItemVersion.NORMAL,
+    private val restricted: String? =
+        RestrictedVideos.known(App.instance, streamWithState.stream.url)
 ) : BindableItem<ListStreamItemBinding>() {
     companion object {
         const val UPDATE_RELATIVE_TIME = 1

@@ -61,8 +61,17 @@ public final class RestrictedVideos {
         if (badge == null) {
             return;
         }
-        final String known = isRestricted(availability) ? availability.name()
-                : preferences(badge.getContext()).getString(url, null);
+        final SharedPreferences preferences = preferences(badge.getContext());
+        final String known;
+        if (isRestricted(availability)) {
+            known = availability.name();
+            // visto in una lista qualsiasi: così si vede anche nelle altre (Novità, cronologia...)
+            if (url != null && !known.equals(preferences.getString(url, null))) {
+                preferences.edit().putString(url, known).apply();
+            }
+        } else {
+            known = preferences.getString(url, null);
+        }
         if (ContentAvailability.MEMBERSHIP.name().equals(known)) {
             badge.setText(R.string.video_members_only);
             badge.setVisibility(View.VISIBLE);
@@ -72,6 +81,16 @@ public final class RestrictedVideos {
         } else {
             badge.setVisibility(View.GONE);
         }
+    }
+
+    /**
+     * @param context per leggere l'elenco
+     * @param url     l'indirizzo del video
+     * @return cosa si sa di un video: serve alla scheda Novità per ridisegnarlo quando cambia
+     */
+    @Nullable
+    public static String known(@NonNull final Context context, @Nullable final String url) {
+        return preferences(context).getString(url, null);
     }
 
     private static boolean isRestricted(@Nullable final ContentAvailability availability) {

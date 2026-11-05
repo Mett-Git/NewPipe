@@ -16,6 +16,7 @@ import org.schabi.newpipe.local.LocalItemBuilder;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
 import org.schabi.newpipe.util.DependentPreferenceHelper;
 import org.schabi.newpipe.util.Localization;
+import org.schabi.newpipe.util.RestrictedVideos;
 import org.schabi.newpipe.util.ServiceHelper;
 import org.schabi.newpipe.util.image.CoilHelper;
 import org.schabi.newpipe.views.AnimatedProgressBar;
@@ -28,6 +29,7 @@ public class LocalPlaylistStreamItemHolder extends LocalItemHolder {
     public final TextView itemVideoTitleView;
     private final TextView itemAdditionalDetailsView;
     public final TextView itemDurationView;
+    private final TextView itemRestrictedView;
     private final View itemHandleView;
     private final AnimatedProgressBar itemProgressView;
 
@@ -39,6 +41,7 @@ public class LocalPlaylistStreamItemHolder extends LocalItemHolder {
         itemVideoTitleView = itemView.findViewById(R.id.itemVideoTitleView);
         itemAdditionalDetailsView = itemView.findViewById(R.id.itemAdditionalDetails);
         itemDurationView = itemView.findViewById(R.id.itemDurationView);
+        itemRestrictedView = itemView.findViewById(R.id.itemRestrictedView);
         itemHandleView = itemView.findViewById(R.id.itemHandle);
         itemProgressView = itemView.findViewById(R.id.itemProgressView);
     }
@@ -58,6 +61,7 @@ public class LocalPlaylistStreamItemHolder extends LocalItemHolder {
         final PlaylistStreamEntry item = (PlaylistStreamEntry) localItem;
 
         itemVideoTitleView.setText(item.getStreamEntity().getTitle());
+        RestrictedVideos.bind(itemRestrictedView, item.getStreamEntity().getUrl(), null);
         itemAdditionalDetailsView.setText(Localization
                 .concatenateStrings(item.getStreamEntity().getUploader(),
                         ServiceHelper.getNameOfServiceById(item.getStreamEntity().getServiceId())));

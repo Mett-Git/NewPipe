@@ -24,7 +24,7 @@ val youTubeLightScheme = lightColorScheme(
 )
 
 val youTubeDarkScheme = darkColorScheme(
-    primaryContainer = Color(0xFF992722),
+    primaryContainer = Color(0xFF05070B),
     onPrimaryContainer = Color(0xFFFFFFFF)
 )
 

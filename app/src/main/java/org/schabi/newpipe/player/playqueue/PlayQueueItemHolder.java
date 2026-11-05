@@ -16,6 +16,7 @@ import org.schabi.newpipe.R;
 public class PlayQueueItemHolder extends RecyclerView.ViewHolder {
     public final TextView itemVideoTitleView;
     public final TextView itemDurationView;
+    public final TextView itemRestrictedView;
     final TextView itemAdditionalDetailsView;
 
     public final ImageView itemThumbnailView;
@@ -28,6 +29,7 @@ public class PlayQueueItemHolder extends RecyclerView.ViewHolder {
         itemRoot = v.findViewById(R.id.itemRoot);
         itemVideoTitleView = v.findViewById(R.id.itemVideoTitleView);
         itemDurationView = v.findViewById(R.id.itemDurationView);
+        itemRestrictedView = v.findViewById(R.id.itemRestrictedView);
         itemAdditionalDetailsView = v.findViewById(R.id.itemAdditionalDetails);
         itemThumbnailView = v.findViewById(R.id.itemThumbnailView);
         itemHandle = v.findViewById(R.id.itemHandle);

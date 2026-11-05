@@ -1,0 +1,109 @@
+# Versione ritoccata: ogni giorno guarda se NewPipe ufficiale ha pubblicato una versione nuova.
+# Se c'è (o se abbiamo cambiato qualcosa noi) rimette sopra le nostre modifiche, compila, firma con
+# la nostra chiave e pubblica. L'app controlla data.json e avvisa che c'è l'aggiornamento.
+# Se le modifiche ufficiali si scontrano con le nostre il lavoro si ferma e GitHub manda una mail:
+# la versione già pubblicata resta quella di prima.
+name: Versione Vetro
+
+on:
+  schedule:
+    - cron: '23 5 * * *'
+  workflow_dispatch:
+  push:
+    branches: [vetro]
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: vetro-release
+
+jobs:
+  pubblica:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: vetro
+          fetch-depth: 0
+
+      # GitHub spegne i lavori programmati dopo 60 giorni senza novità: così restano accesi
+      - name: Tieni acceso il controllo giornaliero
+        run: gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/vetro-release.yml/enable" || true
+
+      - name: Unisci l'ultima versione ufficiale
+        id: unione
+        run: |
+          git config user.name "Inm0rt4l_"
+          git config user.email "290720712+Mett-Git@users.noreply.github.com"
+          git remote add ufficiale https://github.com/TeamNewPipe/NewPipe.git
+          ULTIMA=$(git ls-remote --tags --refs --sort=-version:refname ufficiale 'refs/tags/v[0-9]*' \
+            | grep -vE 'rc|beta|alpha' | head -1 | sed 's|.*refs/tags/||')
+          echo "Ultima versione ufficiale: $ULTIMA"
+          # l'etichetta dice da cosa è fatta la versione: ufficiale + nostre modifiche
+          ETICHETTA="vetro-$ULTIMA-$(git rev-parse --short HEAD)"
+          echo "etichetta=$ETICHETTA" >> "$GITHUB_OUTPUT"
+          if gh release view "$ETICHETTA" >/dev/null 2>&1; then
+            echo "Già pubblicata: niente da fare"
+            echo "compila=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch ufficiale "refs/tags/$ULTIMA:refs/tags/$ULTIMA" --force
+          # l'unione resta solo per questa compilazione: il ramo vetro non cambia
+          if ! git merge-base --is-ancestor "$ULTIMA" HEAD; then
+            if ! git merge --no-edit "$ULTIMA"; then
+              echo "::error::Le modifiche ufficiali di $ULTIMA si scontrano con le nostre:"
+              git diff --name-only --diff-filter=U
+              exit 1
+            fi
+          fi
+          echo "compila=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v5
+        if: steps.unione.outputs.compila == 'true'
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Compila
+        if: steps.unione.outputs.compila == 'true'
+        id: compila
+        run: |
+          BASE=$(sed -n 's/.*NEWPIPE_VERSION_CODE = \([0-9]*\).*/\1/p' buildSrc/src/main/kotlin/ProjectConfig.kt)
+          CODICE=$(( BASE * 1000 + GITHUB_RUN_NUMBER % 1000 ))
+          ./gradlew :app:assembleRelease --stacktrace \
+            -DversionCodeOverride="$CODICE" -DversionNameSuffix="-vetro.$GITHUB_RUN_NUMBER"
+          echo "codice=$CODICE" >> "$GITHUB_OUTPUT"
+
+      - name: Firma
+        if: steps.unione.outputs.compila == 'true'
+        env:
+          CHIAVE_B64: ${{ secrets.VETRO_KEYSTORE_B64 }}
+          CHIAVE_PASSWORD: ${{ secrets.VETRO_KEYSTORE_PASSWORD }}
+        run: |
+          STRUMENTI=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          echo "$CHIAVE_B64" | base64 -d > "$RUNNER_TEMP/chiave.jks"
+          "$STRUMENTI/zipalign" -f -p 4 app/build/outputs/apk/release/app-release-unsigned.apk "$RUNNER_TEMP/allineato.apk"
+          "$STRUMENTI/apksigner" sign --ks "$RUNNER_TEMP/chiave.jks" --ks-key-alias vetro \
+            --ks-pass env:CHIAVE_PASSWORD --key-pass env:CHIAVE_PASSWORD \
+            --out NewPipe-Vetro.apk "$RUNNER_TEMP/allineato.apk"
+          "$STRUMENTI/apksigner" verify NewPipe-Vetro.apk
+          rm -f "$RUNNER_TEMP/chiave.jks"
+
+      - name: Pubblica
+        if: steps.unione.outputs.compila == 'true'
+        env:
+          ETICHETTA: ${{ steps.unione.outputs.etichetta }}
+          CODICE: ${{ steps.compila.outputs.codice }}
+        run: |
+          VERSIONE=$(jq -r '.elements[0].versionName' app/build/outputs/apk/release/output-metadata.json)
+          APK="https://github.com/$GITHUB_REPOSITORY/releases/download/$ETICHETTA/NewPipe-Vetro.apk"
+          jq -n --arg v "$VERSIONE" --argjson c "$CODICE" --arg a "$APK" \
+            '{flavors: {newpipe: {version: $v, version_code: $c, apk: $a}}}' > data.json
+          gh release create "$ETICHETTA" NewPipe-Vetro.apk data.json \
+            --target vetro --latest --title "NewPipe $VERSIONE" \
+            --notes "NewPipe ritoccata (stile Vetro), su base $(git describe --tags --abbrev=0 --match 'v[0-9]*' 2>/dev/null || echo ufficiale). Licenza GPL-3.0, sorgente in questo repository."

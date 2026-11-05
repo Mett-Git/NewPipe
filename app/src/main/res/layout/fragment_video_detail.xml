@@ -11,7 +11,7 @@
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/detail_main_content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar_layout"
@@ -510,6 +510,121 @@
                         </LinearLayout>
                     </HorizontalScrollView>
 
+                    <!-- DESCRIZIONE: riquadro che si apre toccandolo -->
+                    <LinearLayout
+                        android:id="@+id/detail_description_box"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/vetro_box"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="vertical"
+                        android:paddingStart="14dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="14dp"
+                        android:paddingBottom="11dp"
+                        android:stateListAnimator="@animator/vetro_press_soft"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <org.schabi.newpipe.views.NewPipeTextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/description_tab_description"
+                            android:textColor="?android:attr/textColorPrimary"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+
+                        <org.schabi.newpipe.views.NewPipeTextView
+                            android:id="@+id/detail_description_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:textSize="13sp"
+                            tools:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit sed a ultricies ex." />
+                    </LinearLayout>
+
+                    <!-- COMMENTI: riquadro col primo commento, si apre toccandolo -->
+                    <LinearLayout
+                        android:id="@+id/detail_comments_box"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="12dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="12dp"
+                        android:background="@drawable/vetro_box"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:orientation="vertical"
+                        android:paddingStart="14dp"
+                        android:paddingTop="10dp"
+                        android:paddingEnd="14dp"
+                        android:paddingBottom="11dp"
+                        android:stateListAnimator="@animator/vetro_press_soft"
+                        android:visibility="gone"
+                        tools:visibility="visible">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <org.schabi.newpipe.views.NewPipeTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/comments_tab_description"
+                                android:textColor="?android:attr/textColorPrimary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <org.schabi.newpipe.views.NewPipeTextView
+                                android:id="@+id/detail_comments_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="7dp"
+                                android:textColor="?android:attr/textColorSecondary"
+                                android:textSize="13sp"
+                                tools:text="1,2 mila" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/detail_comment_preview"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="7dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:visibility="gone"
+                            tools:visibility="visible">
+
+                            <com.google.android.material.imageview.ShapeableImageView
+                                android:id="@+id/detail_comment_avatar"
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/placeholder_person"
+                                app:shapeAppearance="@style/CircularImageView" />
+
+                            <org.schabi.newpipe.views.NewPipeTextView
+                                android:id="@+id/detail_comment_text"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="9dp"
+                                android:layout_weight="1"
+                                android:ellipsize="end"
+                                android:maxLines="2"
+                                android:textColor="?android:attr/textColorPrimary"
+                                android:textSize="13sp"
+                                tools:text="Il pezzo sul mercato di Bangkok mi ha fatto venire una fame incredibile" />
+                        </LinearLayout>
+                    </LinearLayout>
+
                     <View
                         android:id="@+id/detail_meta_info_separator"
                         android:layout_width="match_parent"
@@ -535,9 +650,40 @@
 
                 </LinearLayout>
             </RelativeLayout>
+
+            <!-- titolo di descrizione o commenti quando sono aperti: resta in cima -->
+            <LinearLayout
+                android:id="@+id/detail_panel_header"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="?attr/windowBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingEnd="4dp"
+                android:visibility="gone">
+
+                <org.schabi.newpipe.views.NewPipeTextView
+                    android:id="@+id/detail_panel_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textColor="?android:attr/textColorPrimary"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    tools:text="Commenti" />
+
+                <ImageButton
+                    android:id="@+id/detail_panel_close"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/close"
+                    android:src="@drawable/ic_close" />
+            </LinearLayout>
         </com.google.android.material.appbar.AppBarLayout>
 
-        <androidx.viewpager.widget.ViewPager
+        <org.schabi.newpipe.views.NoSwipeViewPager
             android:id="@+id/view_pager"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

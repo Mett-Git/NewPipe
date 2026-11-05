@@ -249,6 +249,9 @@ public final class VideoDetailFragment
     /** Colore della barra di stato da rimettere quando si esce dalla finestrella. */
     @Nullable
     private Integer statusBarColorBeforePip = null;
+    /** Pagina tutta insieme come su YouTube; null sui tablet in orizzontale (hanno le schede). */
+    @Nullable
+    private VideoPagePanels panels;
     /** Tasto "Iscriviti" accanto al canale. */
     private final SubscribeButtonHelper subscribeButton = new SubscribeButtonHelper();
     /** Commenti, correlati e descrizione scorrono dietro la barra sospesa in fondo. */
@@ -259,8 +262,10 @@ public final class VideoDetailFragment
                                                   @NonNull final Fragment f,
                                                   @NonNull final View v,
                                                   @Nullable final Bundle savedInstanceState) {
-                    // la barra (48dp) più il suo margine (10dp) e un po' d'aria
-                    VetroBars.setListsBottomSpace(v, DeviceUtils.dpToPx(66, requireContext()));
+                    // la barra (48dp) più il suo margine (10dp) e un po' d'aria;
+                    // nella pagina tutta insieme la barra non c'è
+                    VetroBars.setListsBottomSpace(v, DeviceUtils.dpToPx(
+                            panels != null ? 12 : 66, requireContext()));
                 }
             };
 
@@ -508,6 +513,10 @@ public final class VideoDetailFragment
     public void onDestroyView() {
         super.onDestroyView();
         subscribeButton.dispose();
+        if (panels != null) {
+            panels.dispose();
+            panels = null;
+        }
         binding = null;
     }
 
@@ -698,6 +707,8 @@ public final class VideoDetailFragment
         pageAdapter = new TabAdapter(getChildFragmentManager());
         binding.viewPager.setAdapter(pageAdapter);
         binding.tabLayout.setupWithViewPager(binding.viewPager);
+        panels = binding.detailPanelHeader == null ? null : new VideoPagePanels(binding,
+                pageAdapter, RELATED_TAB_TAG, DESCRIPTION_TAB_TAG, COMMENTS_TAB_TAG);
 
         binding.detailThumbnailRootLayout.requestFocus();
 
@@ -788,6 +799,11 @@ public final class VideoDetailFragment
             }
             restoreDefaultOrientation();
             setAutoPlay(false);
+            return true;
+        }
+
+        // commenti o descrizione aperti: Indietro torna alla pagina del video
+        if (panels != null && panels.close()) {
             return true;
         }
 
@@ -979,7 +995,7 @@ public final class VideoDetailFragment
             tabContentDescriptions.add(R.string.comments_tab_description);
         }
 
-        if (showRelatedItems && binding.relatedItemsLayout == null) {
+        if ((showRelatedItems || panels != null) && binding.relatedItemsLayout == null) {
             // temp empty fragment. will be updated in handleResult
             pageAdapter.addFragment(EmptyFragment.newInstance(false), RELATED_TAB_TAG);
             tabIcons.add(R.drawable.ic_art_track);
@@ -998,6 +1014,11 @@ public final class VideoDetailFragment
         }
         pageAdapter.notifyDataSetUpdate();
 
+        if (panels != null) {
+            // si parte sempre dai video correlati, sotto ai riquadri
+            panels.close();
+            selectedTabTag = RELATED_TAB_TAG;
+        }
         if (pageAdapter.getCount() >= 2) {
             final int position = pageAdapter.getItemPositionByTitle(selectedTabTag);
             if (position != -1) {
@@ -1041,6 +1062,9 @@ public final class VideoDetailFragment
             pageAdapter.updateItem(DESCRIPTION_TAB_TAG, new DescriptionFragment(info));
         }
 
+        if (panels != null) {
+            panels.bind(info, showDescription, shouldShowComments());
+        }
         binding.viewPager.setVisibility(View.VISIBLE);
         // make sure the tab layout is visible
         updateTabLayoutVisibility();
@@ -1063,6 +1087,11 @@ public final class VideoDetailFragment
 
         if (binding == null) {
             //If binding is null we do not need to and should not do anything with its object(s)
+            return;
+        }
+
+        if (panels != null) {
+            binding.tabLayout.setVisibility(View.GONE);
             return;
         }
 
@@ -2010,6 +2039,9 @@ public final class VideoDetailFragment
 
     @Override
     public void onFullscreenStateChanged(final boolean fullscreen) {
+        if (fullscreen && panels != null) {
+            panels.close();
+        }
         // nella finestrella resta solo il video, anche quando finisce (il lettore esce
         // dallo schermo intero e mostrerebbe la pagina del video schiacciata)
         if (!fullscreen && isInPictureInPicture() && isPlayerAvailable()) {

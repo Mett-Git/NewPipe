@@ -11,9 +11,9 @@ import org.schabi.newpipe.error.ErrorUtil.Companion.createNotification
 import org.schabi.newpipe.error.UserAction
 
 object ReleaseVersionUtil {
-    // Public key of the certificate that is used in NewPipe release versions
+    // Certificato della versione ritoccata (stile Vetro): gli aggiornamenti sono solo i nostri
     private const val RELEASE_CERT_PUBLIC_KEY_SHA256 =
-        "cb84069bd68116bafae5ee4ee5b08a567aa6d898404e7cb12f9e756df5cf5cab"
+        "75a21d90fe8445dd75f9c3746e032c9bdbe87fb5829b4652784ee5fde1fba79f"
 
     @OptIn(ExperimentalStdlibApi::class)
     val isReleaseApk by lazy {

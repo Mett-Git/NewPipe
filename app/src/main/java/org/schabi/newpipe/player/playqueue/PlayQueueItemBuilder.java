@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 
+import org.schabi.newpipe.util.RestrictedVideos;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.ServiceHelper;
 import org.schabi.newpipe.util.image.CoilHelper;
@@ -21,6 +22,7 @@ public class PlayQueueItemBuilder {
     }
 
     public void buildStreamInfoItem(final PlayQueueItemHolder holder, final PlayQueueItem item) {
+        RestrictedVideos.bind(holder.itemRestrictedView, item.getUrl(), null);
         if (!TextUtils.isEmpty(item.getTitle())) {
             holder.itemVideoTitleView.setText(item.getTitle());
         }

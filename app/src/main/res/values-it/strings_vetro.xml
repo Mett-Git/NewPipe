@@ -208,4 +208,5 @@
     <string name="drawer_your_channels">I tuoi canali</string>
     <string name="drawer_show_all">Mostra tutti</string>
     <string name="channel_notify_disabled">Accendi gli avvisi dei video nuovi in Impostazioni > Notifiche</string>
+    <string name="video_box_more_info">Categoria, licenza e altre informazioni</string>
 </resources>

@@ -9,7 +9,7 @@
         <item name="android:windowBackground">@drawable/splash_background</item>
     </style>
     <style name="Base.OpeningTheme" parent="Base.V21.OpeningTheme">
-        <item name="android:navigationBarColor">@color/light_youtube_primary_color</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
     </style>
     <style name="OpeningTheme" parent="Base.OpeningTheme" />
 
@@ -52,6 +52,10 @@
         <item name="colorPrimary">@color/vetro_background</item>
         <!-- interruttori e cursori bianchi: il colore primario qui è quasi nero -->
         <item name="colorControlActivated">@color/white</item>
+        <item name="alertDialogTheme">@style/VetroAlertDialog</item>
+        <item name="android:alertDialogTheme">@style/VetroSystemAlertDialog</item>
+        <item name="popupMenuStyle">@style/VetroPopupMenu</item>
+        <item name="actionOverflowMenuStyle">@style/VetroOverflowMenu</item>
         <item name="colorPrimaryDark">@color/vetro_background</item>
         <item name="colorAccent">@color/white</item>
         <item name="android:windowBackground">@drawable/vetro_window_background</item>
