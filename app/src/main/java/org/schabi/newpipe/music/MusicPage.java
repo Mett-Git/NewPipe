@@ -18,6 +18,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
@@ -56,6 +57,7 @@ public abstract class MusicPage extends Fragment {
     private static final String TRENDING_KIOSK = "trending_music";
     private static final String TRENDING_FALLBACK = "top hits";
     private static final int COVER_SIZE = 600;
+    private static final int NEAR_END_DP = 500;
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
     protected LinearLayout content;
@@ -63,6 +65,11 @@ public abstract class MusicPage extends Fragment {
 
     /** Riempie la pagina. */
     protected abstract void build();
+
+    /** La lista è quasi finita: chi ha altre pagine le carica qui. */
+    protected void onNearEnd() {
+        // di solito non c'è altro
+    }
 
     @NonNull
     @Override
@@ -75,6 +82,12 @@ public abstract class MusicPage extends Fragment {
         content = new LinearLayout(inflater.getContext());
         content.setOrientation(LinearLayout.VERTICAL);
         scroll.addView(content);
+        scroll.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener)
+                (view, x, y, oldX, oldY) -> {
+                    if (y + view.getHeight() >= content.getHeight() - dp(NEAR_END_DP)) {
+                        onNearEnd();
+                    }
+                });
         return scroll;
     }
 
@@ -192,7 +205,17 @@ public abstract class MusicPage extends Fragment {
      */
     protected void addSongRows(@NonNull final ViewGroup parent,
                                @NonNull final List<StreamInfoItem> songs) {
-        for (int i = 0; i < songs.size(); i++) {
+        addSongRows(parent, songs, 0);
+    }
+
+    /**
+     * @param parent dove vanno messe
+     * @param songs  tutti i brani: ognuno fa partire la coda da sé
+     * @param from   il primo da aggiungere (i precedenti ci sono già)
+     */
+    protected void addSongRows(@NonNull final ViewGroup parent,
+                               @NonNull final List<StreamInfoItem> songs, final int from) {
+        for (int i = from; i < songs.size(); i++) {
             parent.addView(songRow(parent, songs, i));
         }
     }
@@ -228,18 +251,39 @@ public abstract class MusicPage extends Fragment {
         final Context context = requireContext();
         final PopupMenu menu = new PopupMenu(context, anchor);
         final boolean liked = MusicStore.isLiked(context, song.getUrl());
-        menu.getMenu().add(Menu.NONE, 1, 1, R.string.vm_add_to_queue);
-        menu.getMenu().add(Menu.NONE, 2, 2, liked ? R.string.vm_unlike : R.string.vm_like);
+        final AppCompatActivity activity = (AppCompatActivity) requireActivity();
+        menu.getMenu().add(Menu.NONE, 1, 1, R.string.vm_play_next);
+        menu.getMenu().add(Menu.NONE, 2, 2, R.string.vm_add_to_queue);
+        menu.getMenu().add(Menu.NONE, 3, 3, liked ? R.string.vm_unlike : R.string.vm_like);
+        menu.getMenu().add(Menu.NONE, 4, 4, R.string.vm_radio);
+        menu.getMenu().add(Menu.NONE, 5, 5, R.string.vm_add_to_playlist);
+        menu.getMenu().add(Menu.NONE, 6, 6, R.string.vm_download);
+        menu.getMenu().add(Menu.NONE, 7, 7, R.string.vm_share);
         if (!TextUtils.isEmpty(song.getUploaderName())) {
-            menu.getMenu().add(Menu.NONE, 3, 3, R.string.vm_go_to_artist);
+            menu.getMenu().add(Menu.NONE, 8, 8, R.string.vm_go_to_artist);
         }
         menu.setOnMenuItemClickListener(item -> {
             switch (item.getItemId()) {
                 case 1:
-                    host().enqueue(song);
+                    host().playNext(song);
                     break;
                 case 2:
+                    host().enqueue(song);
+                    break;
+                case 3:
                     MusicStore.toggleLiked(context, song);
+                    break;
+                case 4:
+                    MusicActions.radio(activity, host(), song, disposables);
+                    break;
+                case 5:
+                    MusicActions.addToPlaylist(activity, song, disposables);
+                    break;
+                case 6:
+                    MusicActions.download(activity, song, disposables);
+                    break;
+                case 7:
+                    MusicActions.share(activity, song);
                     break;
                 default:
                     host().openPage(MusicListPage.artist(song.getUploaderName(), null));

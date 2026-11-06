@@ -15,17 +15,21 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
@@ -35,6 +39,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.preference.PreferenceManager;
 
 import com.google.android.exoplayer2.PlaybackParameters;
 
@@ -42,13 +47,21 @@ import org.schabi.newpipe.R;
 import org.schabi.newpipe.databinding.ActivityMusicBinding;
 import org.schabi.newpipe.extractor.stream.StreamInfo;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
+import org.schabi.newpipe.music.MusicActions;
+import org.schabi.newpipe.music.MusicEqualizer;
+import org.schabi.newpipe.music.MusicEqualizerPanel;
 import org.schabi.newpipe.music.MusicExplorePage;
 import org.schabi.newpipe.music.MusicHomePage;
 import org.schabi.newpipe.music.MusicHost;
 import org.schabi.newpipe.music.MusicLibraryPage;
+import org.schabi.newpipe.music.MusicListPage;
+import org.schabi.newpipe.music.MusicLyricsPanel;
 import org.schabi.newpipe.music.MusicPage;
+import org.schabi.newpipe.music.MusicQueuePanel;
 import org.schabi.newpipe.music.MusicStore;
 import org.schabi.newpipe.player.event.PlayerEventListener;
+import org.schabi.newpipe.player.helper.PlaybackParameterDialog;
+import org.schabi.newpipe.player.helper.PlayerHelper;
 import org.schabi.newpipe.player.playqueue.PlayQueue;
 import org.schabi.newpipe.player.playqueue.PlayQueueItem;
 import org.schabi.newpipe.player.playqueue.SinglePlayQueue;
@@ -60,17 +73,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+
 /**
  * NewPipe Music: l'intro, la barra in basso, il mini lettore e il lettore a tutto schermo.
  * Il suono è quello del lettore in sottofondo di NewPipe; qui cambia tutta l'interfaccia.
  */
 public final class MusicActivity extends AppCompatActivity
-        implements MusicHost, PlayerEventListener {
+        implements MusicHost, PlayerEventListener, PlaybackParameterDialog.Callback {
     private static final String EXTRA_OPEN_PLAYER = "music_open_player";
     private static final String STATE_TAB = "music_tab";
     private static final long INTRO_MILLIS = 1500;
     private static final long POLL_MILLIS = 500;
     private static final int MAX_QUEUE_ROWS = 30;
+    private static final int MAX_SAVED_SONGS = 100;
+    private static final long SAVE_POSITION_MILLIS = 10000;
+    private static final int[] TIMER_MINUTES = {15, 30, 45, 60, 90};
     private static final int TAB_HOME = 0;
     private static final int TAB_EXPLORE = 1;
     private static final int TAB_LIBRARY = 2;
@@ -97,6 +115,12 @@ public final class MusicActivity extends AppCompatActivity
     private float playerProgress = 0f;
     @Nullable
     private ValueAnimator playerAnimator;
+    private final CompositeDisposable disposables = new CompositeDisposable();
+    @Nullable
+    private MusicLyricsPanel lyricsPanel;
+    @Nullable
+    private MusicQueuePanel queuePanel;
+    private long lastSavedPosition = 0;
 
     private final ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -194,6 +218,10 @@ public final class MusicActivity extends AppCompatActivity
     @Override
     protected void onDestroy() {
         handler.removeCallbacksAndMessages(null);
+        disposables.clear();
+        if (lyricsPanel != null) {
+            lyricsPanel.dispose();
+        }
         if (bound) {
             unbindService(connection);
             bound = false;
@@ -204,7 +232,9 @@ public final class MusicActivity extends AppCompatActivity
     @Override
     public void onBackPressed() {
         final FragmentManager fragments = getSupportFragmentManager();
-        if (playerOpen) {
+        if (binding.musicPanel.getVisibility() == View.VISIBLE) {
+            closePanel();
+        } else if (playerOpen) {
             settlePlayer(0f);
         } else if (fragments.getBackStackEntryCount() > 0) {
             fragments.popBackStack();
@@ -221,6 +251,7 @@ public final class MusicActivity extends AppCompatActivity
                 (ViewGroup.MarginLayoutParams) binding.musicBottom.getLayoutParams();
         params.bottomMargin = bottomInset + DeviceUtils.dpToPx(8, this);
         binding.musicBottom.setLayoutParams(params);
+        binding.musicPanel.setPadding(0, topInset, 0, bottomInset);
         binding.musicPlayerContent.setPadding(
                 binding.musicPlayerContent.getPaddingLeft(), topInset,
                 binding.musicPlayerContent.getPaddingRight(),
@@ -345,7 +376,17 @@ public final class MusicActivity extends AppCompatActivity
         if (shuffle) {
             Collections.shuffle(order);
         }
-        final PlayQueue queue = new SinglePlayQueue(order, shuffle ? 0 : index);
+        startQueue(new SinglePlayQueue(order, shuffle ? 0 : index));
+    }
+
+    @Override
+    public void resumeSession(@NonNull final MusicStore.Session saved) {
+        final PlayQueue queue = new SinglePlayQueue(saved.getSongs(), saved.getIndex());
+        queue.setRecovery(saved.getIndex(), saved.getPosition());
+        startQueue(queue);
+    }
+
+    private void startQueue(final PlayQueue queue) {
         session = true;
         final Intent intent = NavigationHelper.getPlayerIntent(this, PlayerService.class, queue,
                 PlayerIntentType.AllOthers)
@@ -361,6 +402,15 @@ public final class MusicActivity extends AppCompatActivity
             playSongs(Collections.singletonList(song), 0, false);
         } else {
             NavigationHelper.enqueueOnPlayer(this, new SinglePlayQueue(song), PlayerType.AUDIO);
+        }
+    }
+
+    @Override
+    public void playNext(@NonNull final StreamInfoItem song) {
+        if (player == null) {
+            playSongs(Collections.singletonList(song), 0, false);
+        } else {
+            NavigationHelper.enqueueNextOnPlayer(this, new SinglePlayQueue(song));
         }
     }
 
@@ -381,7 +431,14 @@ public final class MusicActivity extends AppCompatActivity
         }
         if (player == null || player.getPlayQueue() == null) {
             clearNowPlaying();
+        } else {
+            // spostare un brano nella coda non avvisa nessuno: qui se ne accorge lo stesso
+            showCurrentItem();
+            if (!player.exoPlayerIsNull()) {
+                MusicEqualizer.attach(this, player.getExoPlayer().getAudioSessionId());
+            }
         }
+        refreshTimerLabel();
         handler.postDelayed(poll, POLL_MILLIS);
     }
 
@@ -391,6 +448,7 @@ public final class MusicActivity extends AppCompatActivity
             playing = false;
             queueKey = "";
             binding.musicMini.setVisibility(View.GONE);
+            closePanel();
             if (playerOpen) {
                 settlePlayer(0f);
             }
@@ -419,13 +477,35 @@ public final class MusicActivity extends AppCompatActivity
             if (session && player.audioPlayerSelected()) {
                 MusicStore.addRecent(this, song);
             }
+            if (lyricsPanel != null) {
+                lyricsPanel.load(item.getTitle(), item.getUploader(), item.getDuration());
+            }
             refreshRows();
         }
-        final String key = queue.getIndex() + ":" + queue.size() + ":" + queue.isShuffled();
+        final String key = queue.getIndex() + ":" + queue.getStreams().hashCode();
         if (!key.equals(queueKey)) {
             queueKey = key;
             renderQueue(queue);
+            saveSession(queue);
+            if (queuePanel != null) {
+                queuePanel.refresh(playing);
+            }
         }
+    }
+
+    // per poter riprendere da qui la prossima volta (al massimo i prossimi 100 brani)
+    private void saveSession(final PlayQueue queue) {
+        if (!session || player == null || !player.audioPlayerSelected()) {
+            return;
+        }
+        final List<PlayQueueItem> items = queue.getStreams();
+        final int first = queue.getIndex();
+        final int last = Math.min(items.size(), first + MAX_SAVED_SONGS);
+        final List<StreamInfoItem> songs = new ArrayList<>();
+        for (int i = first; i < last; i++) {
+            songs.add(toSong(items.get(i)));
+        }
+        MusicStore.saveSession(this, songs, 0);
     }
 
     private static StreamInfoItem toSong(final PlayQueueItem item) {
@@ -457,8 +537,9 @@ public final class MusicActivity extends AppCompatActivity
             row.setOnClickListener(v -> queue.setIndex(index));
             rows.addView(row);
         }
-        binding.musicPlayerQueueLabel.setVisibility(
-                rows.getChildCount() == 0 ? View.GONE : View.VISIBLE);
+        final int visibility = rows.getChildCount() == 0 ? View.GONE : View.VISIBLE;
+        binding.musicPlayerQueueLabel.setVisibility(visibility);
+        binding.musicPlayerQueueEdit.setVisibility(visibility);
     }
     //endregion
 
@@ -493,6 +574,12 @@ public final class MusicActivity extends AppCompatActivity
                         ? R.drawable.ic_vm_repeat_one : R.drawable.ic_repeat);
         tint(binding.musicPlayerRepeat, repeatOn ? accent : idle);
         tint(binding.musicPlayerShuffle, shuffled ? accent : idle);
+        if (parameters != null) {
+            showSpeed(parameters.speed);
+        }
+        if (queuePanel != null) {
+            queuePanel.refresh(playing);
+        }
     }
 
     private static void tint(final ImageView view, final int color) {
@@ -510,6 +597,13 @@ public final class MusicActivity extends AppCompatActivity
         if (!seeking) {
             binding.musicPlayerSeek.setProgress(currentProgress);
             binding.musicPlayerNow.setText(Localization.getDurationString(currentProgress / 1000));
+        }
+        if (lyricsPanel != null) {
+            lyricsPanel.onProgress(currentProgress);
+        }
+        if (session && Math.abs(currentProgress - lastSavedPosition) > SAVE_POSITION_MILLIS) {
+            lastSavedPosition = currentProgress;
+            MusicStore.savePosition(this, currentProgress);
         }
     }
 
@@ -533,7 +627,7 @@ public final class MusicActivity extends AppCompatActivity
     @SuppressLint("ClickableViewAccessibility")
     private void setupMiniPlayer() {
         binding.musicMini.setOnClickListener(v -> settlePlayer(1f));
-        binding.musicMini.setOnTouchListener(new DragListener());
+        binding.musicMini.setOnTouchListener(new DragListener(true));
         binding.musicMiniPlay.setOnClickListener(v -> togglePlay());
         binding.musicMiniNext.setOnClickListener(v -> {
             if (player != null) {
@@ -552,8 +646,15 @@ public final class MusicActivity extends AppCompatActivity
     private void setupPlayer() {
         binding.musicPlayer.setVisibility(View.INVISIBLE);
         binding.musicPlayerClose.setOnClickListener(v -> settlePlayer(0f));
-        binding.musicPlayerHeader.setOnTouchListener(new DragListener());
-        binding.musicPlayerCover.setOnTouchListener(new DragListener());
+        binding.musicPlayerHeader.setOnTouchListener(new DragListener(false));
+        binding.musicPlayerCover.setOnTouchListener(new DragListener(true));
+        binding.musicActionSpeed.setOnClickListener(v -> openSpeedDialog());
+        binding.musicActionLyrics.setOnClickListener(v -> openLyrics());
+        binding.musicActionTimer.setOnClickListener(this::showTimerMenu);
+        binding.musicActionEqualizer.setOnClickListener(v -> openEqualizer());
+        binding.musicActionMore.setOnClickListener(this::showPlayerMenu);
+        binding.musicPlayerQueueEdit.setOnClickListener(v -> openQueue());
+        binding.musicPanelClose.setOnClickListener(v -> closePanel());
         binding.musicPlayerPlay.setOnClickListener(v -> togglePlay());
         binding.musicPlayerPrevious.setOnClickListener(v -> {
             if (player != null) {
@@ -600,6 +701,175 @@ public final class MusicActivity extends AppCompatActivity
             }
         });
     }
+
+    //region Velocità
+    private void openSpeedDialog() {
+        if (player != null) {
+            PlaybackParameterDialog.newInstance(player.getPlaybackSpeed(),
+                            player.getPlaybackPitch(), player.getPlaybackSkipSilence(), this)
+                    .show(getSupportFragmentManager(), "musicSpeed");
+        }
+    }
+
+    @Override
+    public void onPlaybackParameterChanged(final float playbackTempo, final float playbackPitch,
+                                           final boolean playbackSkipSilence) {
+        if (player != null) {
+            player.setPlaybackParameters(playbackTempo, playbackPitch, playbackSkipSilence);
+            showSpeed(player.getPlaybackSpeed());
+        }
+    }
+
+    private void showSpeed(final float speed) {
+        binding.musicActionSpeedValue.setText(PlayerHelper.formatSpeed(speed));
+        binding.musicActionSpeedValue.setTextColor(ContextCompat.getColor(this,
+                speed == 1f ? R.color.vm_text : R.color.vm_accent));
+    }
+    //endregion
+
+    //region Timer
+    private void showTimerMenu(final View anchor) {
+        final PopupMenu menu = new PopupMenu(this, anchor);
+        for (int i = 0; i < TIMER_MINUTES.length; i++) {
+            menu.getMenu().add(Menu.NONE, TIMER_MINUTES[i], i,
+                    getString(R.string.vm_timer_minutes, TIMER_MINUTES[i]));
+        }
+        if (MusicSleepTimer.minutesLeft() > 0) {
+            menu.getMenu().add(Menu.NONE, 0, TIMER_MINUTES.length, R.string.vm_timer_off);
+        }
+        menu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 0) {
+                MusicSleepTimer.cancel();
+            } else {
+                MusicSleepTimer.start(this, item.getItemId());
+                Toast.makeText(this, getString(R.string.vm_timer_set, item.getItemId()),
+                        Toast.LENGTH_SHORT).show();
+            }
+            refreshTimerLabel();
+            return true;
+        });
+        menu.show();
+    }
+
+    private void refreshTimerLabel() {
+        final int minutes = MusicSleepTimer.minutesLeft();
+        binding.musicActionTimerLabel.setText(minutes > 0
+                ? getString(R.string.vm_timer_minutes, minutes) : getString(R.string.vm_timer));
+        binding.musicActionTimerLabel.setTextColor(ContextCompat.getColor(this,
+                minutes > 0 ? R.color.vm_accent : R.color.vm_text_soft));
+    }
+    //endregion
+
+    //region Pannelli: testo, equalizzatore, coda
+    private void showPanel(@StringRes final int title) {
+        binding.musicPanelTitle.setText(title);
+        binding.musicPanelAction.setVisibility(View.GONE);
+        final View panel = binding.musicPanel;
+        panel.setVisibility(View.VISIBLE);
+        panel.setAlpha(0f);
+        panel.setTranslationY(DeviceUtils.dpToPx(40, this));
+        panel.animate().alpha(1f).translationY(0f).setDuration(240)
+                .setInterpolator(new DecelerateInterpolator(1.6f)).withEndAction(null).start();
+    }
+
+    private void closePanel() {
+        if (lyricsPanel != null) {
+            lyricsPanel.dispose();
+            lyricsPanel = null;
+        }
+        queuePanel = null;
+        final View panel = binding.musicPanel;
+        if (panel.getVisibility() == View.VISIBLE) {
+            panel.animate().alpha(0f).translationY(DeviceUtils.dpToPx(40, this)).setDuration(180)
+                    .withEndAction(() -> {
+                        panel.setVisibility(View.GONE);
+                        binding.musicPanelBody.removeAllViews();
+                    }).start();
+        }
+    }
+
+    private void openLyrics() {
+        final PlayQueue queue = player == null ? null : player.getPlayQueue();
+        final PlayQueueItem item = queue == null ? null : queue.getItem();
+        if (item == null) {
+            return;
+        }
+        showPanel(R.string.vm_lyrics);
+        lyricsPanel = new MusicLyricsPanel(binding.musicPanelBody, millis -> {
+            if (player != null) {
+                player.seekTo(millis);
+            }
+        });
+        lyricsPanel.load(item.getTitle(), item.getUploader(), item.getDuration());
+    }
+
+    private void openEqualizer() {
+        showPanel(R.string.vm_equalizer);
+        new MusicEqualizerPanel(binding.musicPanelBody);
+    }
+
+    private void openQueue() {
+        final PlayQueue queue = player == null ? null : player.getPlayQueue();
+        if (queue == null) {
+            return;
+        }
+        showPanel(R.string.vm_queue);
+        final MusicQueuePanel panel = new MusicQueuePanel(binding.musicPanelBody, queue);
+        queuePanel = panel;
+        binding.musicPanelAction.setVisibility(View.VISIBLE);
+        binding.musicPanelAction.setOnClickListener(v -> panel.clearOthers());
+    }
+    //endregion
+
+    //region Menu del lettore
+    private void showPlayerMenu(final View anchor) {
+        final PlayQueue queue = player == null ? null : player.getPlayQueue();
+        final PlayQueueItem item = queue == null ? null : queue.getItem();
+        if (item == null) {
+            return;
+        }
+        final StreamInfoItem song = toSong(item);
+        final PopupMenu menu = new PopupMenu(this, anchor);
+        menu.getMenu().add(Menu.NONE, 1, 1, R.string.vm_radio);
+        menu.getMenu().add(Menu.NONE, 2, 2, R.string.vm_add_to_playlist);
+        menu.getMenu().add(Menu.NONE, 3, 3, R.string.vm_download);
+        menu.getMenu().add(Menu.NONE, 4, 4, R.string.vm_share);
+        menu.getMenu().add(Menu.NONE, 5, 5, R.string.vm_go_to_artist);
+        menu.getMenu().add(Menu.NONE, 6, 6, R.string.vm_watch_video);
+        menu.getMenu().add(Menu.NONE, 7, 7, R.string.vm_autoplay).setCheckable(true)
+                .setChecked(PlayerHelper.isAutoQueueEnabled(this));
+        menu.setOnMenuItemClickListener(choice -> {
+            switch (choice.getItemId()) {
+                case 1:
+                    MusicActions.radio(this, this, song, disposables);
+                    break;
+                case 2:
+                    MusicActions.addToPlaylist(this, song, disposables);
+                    break;
+                case 3:
+                    MusicActions.download(this, song, disposables);
+                    break;
+                case 4:
+                    MusicActions.share(this, song);
+                    break;
+                case 5:
+                    settlePlayer(0f);
+                    openPage(MusicListPage.artist(song.getUploaderName(), null));
+                    break;
+                case 6:
+                    NavigationHelper.playOnMainPlayer((Context) this, queue, true);
+                    break;
+                default:
+                    PreferenceManager.getDefaultSharedPreferences(this).edit()
+                            .putBoolean(getString(R.string.auto_queue_key), !choice.isChecked())
+                            .apply();
+                    break;
+            }
+            return true;
+        });
+        menu.show();
+    }
+    //endregion
 
     private void toggleLike() {
         final PlayQueue queue = player == null ? null : player.getPlayQueue();
@@ -655,13 +925,22 @@ public final class MusicActivity extends AppCompatActivity
     }
 
     // Il lettore segue il dito, come la tendina: lasciandolo si apre o si chiude da solo.
+    // Dove si può, uno swipe di lato cambia brano: la copertina segue il dito.
     private final class DragListener implements View.OnTouchListener {
         private final int slop = DeviceUtils.dpToPx(6, MusicActivity.this);
+        private final int swipeDistance = DeviceUtils.dpToPx(70, MusicActivity.this);
+        private final boolean sideSwipe;
+        private float startX;
+        private boolean sideways;
         private float startY;
         private float startProgress;
         private boolean moved;
         @Nullable
         private VelocityTracker velocity;
+
+        DragListener(final boolean sideSwipe) {
+            this.sideSwipe = sideSwipe;
+        }
 
         @SuppressLint("ClickableViewAccessibility")
         @Override
@@ -669,6 +948,8 @@ public final class MusicActivity extends AppCompatActivity
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     startY = event.getRawY();
+                    startX = event.getRawX();
+                    sideways = false;
                     moved = false;
                     // il lettore scorre, ma qui il gesto è per trascinarlo
                     v.getParent().requestDisallowInterceptTouchEvent(true);
@@ -679,7 +960,12 @@ public final class MusicActivity extends AppCompatActivity
                     if (velocity != null) {
                         velocity.addMovement(event);
                     }
-                    drag(event.getRawY() - startY);
+                    if (!moved && sideSwipe && (sideways || isSideways(event))) {
+                        sideways = true;
+                        v.setTranslationX(event.getRawX() - startX);
+                    } else {
+                        drag(event.getRawY() - startY);
+                    }
                     break;
                 case MotionEvent.ACTION_UP:
                 case MotionEvent.ACTION_CANCEL:
@@ -691,12 +977,32 @@ public final class MusicActivity extends AppCompatActivity
                         velocity.recycle();
                         velocity = null;
                     }
-                    release(v, speed, event.getActionMasked());
+                    if (sideways) {
+                        finishSideSwipe(v, event.getRawX() - startX);
+                    } else {
+                        release(v, speed, event.getActionMasked());
+                    }
                     break;
                 default:
                     break;
             }
             return true;
+        }
+
+        private boolean isSideways(final MotionEvent event) {
+            final float x = Math.abs(event.getRawX() - startX);
+            return x > slop && x > Math.abs(event.getRawY() - startY);
+        }
+
+        private void finishSideSwipe(final View v, final float distance) {
+            v.animate().translationX(0f).setDuration(200).start();
+            if (player != null && Math.abs(distance) > swipeDistance) {
+                if (distance < 0) {
+                    player.playNext();
+                } else {
+                    player.playPrevious();
+                }
+            }
         }
 
         private void drag(final float distance) {

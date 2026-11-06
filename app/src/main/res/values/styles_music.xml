@@ -66,6 +66,33 @@
         <item name="android:stateListAnimator">@animator/vetro_press</item>
     </style>
 
+    <style name="VetroMusicAction">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">64dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:stateListAnimator">@animator/vetro_press</item>
+    </style>
+
+    <style name="VetroMusicActionIcon">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="tint">@color/vm_text</item>
+    </style>
+
+    <style name="VetroMusicActionLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@color/vm_text_soft</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
     <style name="VetroMusicNavIcon">
         <item name="android:layout_width">24dp</item>
         <item name="android:layout_height">24dp</item>

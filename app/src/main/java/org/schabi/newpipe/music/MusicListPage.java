@@ -13,6 +13,7 @@ import org.schabi.newpipe.NewPipeDatabase;
 import org.schabi.newpipe.R;
 import org.schabi.newpipe.database.playlist.PlaylistStreamEntry;
 import org.schabi.newpipe.extractor.InfoItem;
+import org.schabi.newpipe.extractor.Page;
 import org.schabi.newpipe.extractor.playlist.PlaylistInfoItem;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
 import org.schabi.newpipe.local.playlist.LocalPlaylistManager;
@@ -44,6 +45,9 @@ public class MusicListPage extends MusicPage {
 
     private LinearLayout box;
     private View header;
+    private final List<StreamInfoItem> shownSongs = new ArrayList<>();
+    private Page nextPage;
+    private boolean loadingMore = false;
 
     private static MusicListPage page(final int kind, @Nullable final String title) {
         final MusicListPage page = new MusicListPage();
@@ -145,7 +149,10 @@ public class MusicListPage extends MusicPage {
                         .subscribe(info -> {
                             box.removeView(spinner);
                             setSubtitle(info.getUploaderName());
-                            showSongs(onlySongs(info.getRelatedItems()));
+                            nextPage = info.getNextPage();
+                            shownSongs.clear();
+                            shownSongs.addAll(onlySongs(info.getRelatedItems()));
+                            showSongs(shownSongs);
                         }, error -> showError(spinner)));
                 break;
             case KIND_ARTIST:
@@ -190,6 +197,31 @@ public class MusicListPage extends MusicPage {
                         : MusicStore.recent(requireContext()));
                 break;
         }
+    }
+
+    @Override
+    protected void onNearEnd() {
+        if (loadingMore || !Page.isValid(nextPage)) {
+            return;
+        }
+        loadingMore = true;
+        final View spinner = addSpinner(box);
+        disposables.add(ExtractorHelper.getMorePlaylistItems(YOUTUBE,
+                        requireArguments().getString(ARG_URL), nextPage)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(page -> {
+                    box.removeView(spinner);
+                    loadingMore = false;
+                    nextPage = page.getNextPage();
+                    final int from = shownSongs.size();
+                    shownSongs.addAll(page.getItems());
+                    addSongRows(box, shownSongs, from);
+                }, error -> {
+                    box.removeView(spinner);
+                    loadingMore = false;
+                    nextPage = null;
+                }));
     }
 
     private void showError(final View spinner) {

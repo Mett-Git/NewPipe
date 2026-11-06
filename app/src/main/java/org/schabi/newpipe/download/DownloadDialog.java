@@ -106,6 +106,8 @@ public class DownloadDialog extends DialogFragment
     @State
     int selectedVideoIndex; // set in the constructor
     @State
+    boolean preferAudio = false;
+    @State
     int selectedAudioIndex = 0; // default to the first item
     @State
     int selectedSubtitleIndex = 0; // default to the first item
@@ -150,6 +152,11 @@ public class DownloadDialog extends DialogFragment
         // Just an empty default no-arg ctor to keep Fragment.instantiate() happy
         // otherwise InstantiationException will be thrown when fragment is recreated
         // TODO: Maybe use a custom FragmentFactory instead?
+    }
+
+    /** Da NewPipe Music: propone l'audio invece dell'ultimo tipo usato. */
+    public void preferAudio() {
+        preferAudio = true;
     }
 
     /**
@@ -658,7 +665,9 @@ public class DownloadDialog extends DialogFragment
                 ? View.VISIBLE : View.GONE);
 
         prefs = PreferenceManager.getDefaultSharedPreferences(requireContext());
-        final String defaultMedia = prefs.getString(getString(R.string.last_used_download_type),
+        final String defaultMedia = preferAudio
+                ? getString(R.string.last_download_type_audio_key)
+                : prefs.getString(getString(R.string.last_used_download_type),
                 getString(R.string.last_download_type_video_key));
 
         if (isVideoStreamsAvailable

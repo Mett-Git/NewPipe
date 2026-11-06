@@ -348,14 +348,118 @@
                         android:src="@drawable/ic_repeat" />
                 </LinearLayout>
 
-                <TextView
-                    android:id="@+id/musicPlayerQueueLabel"
-                    style="@style/VetroMusicSection"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="0dp"
-                    android:text="@string/vm_up_next"
-                    android:visibility="gone" />
+                    android:layout_marginTop="12dp"
+                    android:background="@drawable/vm_glass"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:id="@+id/musicActionSpeed"
+                        style="@style/VetroMusicAction">
+
+                        <TextView
+                            android:id="@+id/musicActionSpeedValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="24dp"
+                            android:gravity="center"
+                            android:text="1x"
+                            android:textColor="@color/vm_text"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            tools:ignore="HardcodedText" />
+
+                        <TextView
+                            android:id="@+id/musicActionSpeedLabel"
+                            style="@style/VetroMusicActionLabel"
+                            android:text="@string/vm_speed" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/musicActionLyrics"
+                        style="@style/VetroMusicAction">
+
+                        <ImageView
+                            style="@style/VetroMusicActionIcon"
+                            android:src="@drawable/ic_vm_lyrics" />
+
+                        <TextView
+                            android:id="@+id/musicActionLyricsLabel"
+                            style="@style/VetroMusicActionLabel"
+                            android:text="@string/vm_lyrics" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/musicActionTimer"
+                        style="@style/VetroMusicAction">
+
+                        <ImageView
+                            style="@style/VetroMusicActionIcon"
+                            android:src="@drawable/ic_vm_timer" />
+
+                        <TextView
+                            android:id="@+id/musicActionTimerLabel"
+                            style="@style/VetroMusicActionLabel"
+                            android:text="@string/vm_timer" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/musicActionEqualizer"
+                        style="@style/VetroMusicAction">
+
+                        <ImageView
+                            style="@style/VetroMusicActionIcon"
+                            android:src="@drawable/ic_vm_equalizer" />
+
+                        <TextView
+                            android:id="@+id/musicActionEqualizerLabel"
+                            style="@style/VetroMusicActionLabel"
+                            android:text="@string/vm_equalizer_short" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/musicActionMore"
+                        style="@style/VetroMusicAction">
+
+                        <ImageView
+                            style="@style/VetroMusicActionIcon"
+                            android:src="@drawable/ic_more_vert" />
+
+                        <TextView
+                            android:id="@+id/musicActionMoreLabel"
+                            style="@style/VetroMusicActionLabel"
+                            android:text="@string/vm_more" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:id="@+id/musicPlayerQueueLabel"
+                        style="@style/VetroMusicSection"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="0dp"
+                        android:text="@string/vm_up_next"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/musicPlayerQueueEdit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_gravity="end|center_vertical"
+                        android:layout_marginTop="6dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center"
+                        android:text="@string/vm_edit_queue"
+                        android:textColor="@color/vm_accent"
+                        android:textSize="14sp"
+                        android:visibility="gone" />
+                </FrameLayout>
 
                 <LinearLayout
                     android:id="@+id/musicPlayerQueue"
@@ -367,6 +471,65 @@
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/musicPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/vm_glow"
+        android:clickable="true"
+        android:elevation="14dp"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="6dp"
+            android:paddingEnd="14dp">
+
+            <ImageView
+                android:id="@+id/musicPanelClose"
+                style="@style/VetroMusicIcon"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:contentDescription="@string/close"
+                android:src="@drawable/ic_expand_more" />
+
+            <TextView
+                android:id="@+id/musicPanelTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/vm_text"
+                android:textSize="19sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/musicPanelAction"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="@string/vm_clear_queue"
+                android:textColor="@color/vm_accent"
+                android:textSize="14sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/musicPanelBody"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/musicIntro"

@@ -24,6 +24,7 @@ public class MusicHomePage extends MusicPage {
 
     private LinearLayout strip;
     private LinearLayout body;
+    private LinearLayout resumeBox;
     private int selectedChip = 0;
 
     @Override
@@ -60,6 +61,7 @@ public class MusicHomePage extends MusicPage {
         }
         disposables.clear();
         body.removeAllViews();
+        resumeBox = null;
         switch (index) {
             case 1:
                 showSearch(FILTER_SONGS, R.string.vm_for_you_songs);
@@ -86,7 +88,32 @@ public class MusicHomePage extends MusicPage {
         return DEFAULT_SEED;
     }
 
+    @Override
+    public void refreshNowPlaying() {
+        super.refreshNowPlaying();
+        // se la musica sta già andando non c'è niente da riprendere
+        if (resumeBox != null && host().nowPlayingUrl() != null) {
+            resumeBox.setVisibility(View.GONE);
+        }
+    }
+
+    private void addResumeRow() {
+        final MusicStore.Session session = MusicStore.session(requireContext());
+        if (session == null || host().nowPlayingUrl() != null) {
+            return;
+        }
+        final StreamInfoItem song = session.getSongs().get(session.getIndex());
+        resumeBox = box();
+        addSection(resumeBox, getString(R.string.vm_continue));
+        resumeBox.addView(linkRow(resumeBox, song.getName(), song.getUploaderName(),
+                song.getThumbnails(), v -> {
+                    resumeBox.setVisibility(View.GONE);
+                    host().resumeSession(session);
+                }));
+    }
+
     private void showAll() {
+        addResumeRow();
         final List<StreamInfoItem> recent = MusicStore.recent(requireContext());
         if (!recent.isEmpty()) {
             addSection(body, getString(R.string.vm_recent));

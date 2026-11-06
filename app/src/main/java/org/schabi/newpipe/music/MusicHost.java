@@ -23,6 +23,16 @@ public interface MusicHost {
     void enqueue(@NonNull StreamInfoItem song);
 
     /**
+     * @param song il brano da far partire dopo quello attuale
+     */
+    void playNext(@NonNull StreamInfoItem song);
+
+    /**
+     * @param session quello che si stava ascoltando, da riprendere dove era rimasto
+     */
+    void resumeSession(@NonNull MusicStore.Session session);
+
+    /**
      * @param page la pagina da aprire sopra quella attuale
      */
     void openPage(@NonNull Fragment page);
