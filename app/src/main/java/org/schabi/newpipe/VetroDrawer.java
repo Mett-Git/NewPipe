@@ -11,15 +11,17 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
+import android.view.VelocityTracker;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Consumer;
@@ -66,7 +68,10 @@ final class VetroDrawer {
     private final CompositeDisposable disposables = new CompositeDisposable();
     private List<ChannelsRow.Channel> shownChannels = Collections.emptyList();
     private boolean open = false;
-    private ValueAnimator blurAnimator;
+    private ValueAnimator settleAnimator;
+    private float progress = 0f;
+    @Nullable
+    private View handle;
 
     VetroDrawer(@NonNull final FragmentActivity activity,
                 @NonNull final Menu items,
@@ -101,7 +106,7 @@ final class VetroDrawer {
         scrim.setOnClickListener(v -> close());
         final View grip = root.findViewById(R.id.vetroMenuGrip);
         grip.setOnClickListener(v -> close());
-        grip.setOnTouchListener(new SwipeListener(-1, this::close));
+        grip.setOnTouchListener(new DragListener(false));
     }
 
     boolean isOpen() {
@@ -109,23 +114,136 @@ final class VetroDrawer {
     }
 
     /**
-     * @param handle la linietta in alto: swipe verso il basso o tocco per aprire il menu
+     * @param view la linietta in alto: la tendina scende seguendo il dito, come quella di Android
      */
-    void attachOpenHandle(@NonNull final View handle) {
-        handle.setOnClickListener(v -> open());
-        handle.setOnTouchListener(new SwipeListener(1, this::open));
+    void attachOpenHandle(@NonNull final View view) {
+        handle = view;
+        view.setOnClickListener(v -> open());
+        view.setOnTouchListener(new DragListener(true));
     }
 
-    // tocco o swipe nella direzione giusta su una linietta: 1 = in basso, -1 = in alto
-    private final class SwipeListener implements View.OnTouchListener {
-        private final int direction;
-        private final Runnable action;
-        private float startY;
-        private boolean done;
+    /** Apre con un'animazione: tasto del menu o tocco sulla linietta. */
+    void open() {
+        if (!open) {
+            prepare();
+            hideItems();
+        }
+        // l'altezza della tendina si conosce solo dopo che è stata misurata
+        panel.post(() -> {
+            settle(1f);
+            showItems();
+        });
+    }
 
-        SwipeListener(final int direction, final Runnable action) {
-            this.direction = direction;
-            this.action = action;
+    void close() {
+        if (open) {
+            settle(0f);
+        }
+    }
+
+    /** Chiude subito, senza animazione: quando si torna all'app da un'altra schermata. */
+    void closeNow() {
+        if (settleAnimator != null) {
+            settleAnimator.cancel();
+        }
+        finishClosing();
+    }
+
+    void dispose() {
+        disposables.clear();
+    }
+
+    // la tendina pronta sopra lo schermo; la linietta in alto sparisce, ora c'è quella che
+    // scende con la tendina
+    private void prepare() {
+        open = true;
+        refresh();
+        loadChannels();
+        if (settleAnimator != null) {
+            settleAnimator.cancel();
+        }
+        root.setVisibility(View.VISIBLE);
+        scrim.setAlpha(0f);
+        panel.setTranslationY(-activity.getResources().getDisplayMetrics().heightPixels);
+        progress = 0f;
+        if (handle != null) {
+            handle.setAlpha(0f);
+        }
+    }
+
+    // 0 = tendina chiusa, 1 = tutta aperta (oltre 1 durante il piccolo rimbalzo finale)
+    private void setProgress(final float value) {
+        progress = value;
+        final float visible = Math.max(0f, Math.min(1f, value));
+        panel.setTranslationY(-panel.getHeight() * (1f - value));
+        scrim.setAlpha(visible);
+        setBlur(BLUR_DP * visible);
+    }
+
+    private void settle(final float target) {
+        if (settleAnimator != null) {
+            settleAnimator.cancel();
+        }
+        final boolean opening = target > 0f;
+        settleAnimator = ValueAnimator.ofFloat(progress, target);
+        settleAnimator.setDuration(opening ? 340 : 230);
+        settleAnimator.setInterpolator(opening ? new OvershootInterpolator(0.8f)
+                : new DecelerateInterpolator(1.4f));
+        settleAnimator.addUpdateListener(a -> setProgress((float) a.getAnimatedValue()));
+        if (!opening) {
+            settleAnimator.addListener(new AnimatorListenerAdapter() {
+                private boolean cancelled = false;
+
+                @Override
+                public void onAnimationCancel(final Animator animation) {
+                    cancelled = true;
+                }
+
+                @Override
+                public void onAnimationEnd(final Animator animation) {
+                    if (!cancelled) {
+                        finishClosing();
+                    }
+                }
+            });
+        }
+        settleAnimator.start();
+    }
+
+    private void finishClosing() {
+        open = false;
+        progress = 0f;
+        disposables.clear();
+        setBlur(0f);
+        root.setVisibility(View.GONE);
+        serviceRows.setVisibility(View.GONE);
+        if (handle != null) {
+            handle.setAlpha(1f);
+        }
+    }
+
+    // la pagina dietro si sfoca da Android 12; prima la copre solo il velo scuro
+    private void setBlur(final float dp) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            return;
+        }
+        final float px = dp * activity.getResources().getDisplayMetrics().density;
+        blurTarget.setRenderEffect(px < 1f ? null
+                : RenderEffect.createBlurEffect(px, px, Shader.TileMode.CLAMP));
+    }
+
+    // La tendina segue il dito sulla linietta, come quella di Android: lasciandola si apre o si
+    // richiude da sola, a seconda di dove è arrivata e della velocità del gesto.
+    private final class DragListener implements View.OnTouchListener {
+        private final boolean opening;
+        private final int slop = DeviceUtils.dpToPx(6, activity);
+        private float startY;
+        private float startProgress;
+        private boolean moved;
+        private VelocityTracker velocity;
+
+        DragListener(final boolean opening) {
+            this.opening = opening;
         }
 
         @SuppressLint("ClickableViewAccessibility")
@@ -134,110 +252,59 @@ final class VetroDrawer {
             switch (event.getActionMasked()) {
                 case MotionEvent.ACTION_DOWN:
                     startY = event.getRawY();
-                    done = false;
+                    moved = false;
+                    velocity = VelocityTracker.obtain();
+                    velocity.addMovement(event);
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    if (!done && (event.getRawY() - startY) * direction
-                            > DeviceUtils.dpToPx(16, activity)) {
-                        done = true;
-                        action.run();
-                    }
+                    velocity.addMovement(event);
+                    drag(event.getRawY() - startY);
                     break;
                 case MotionEvent.ACTION_UP:
-                    if (!done) {
-                        v.performClick();
-                    }
+                case MotionEvent.ACTION_CANCEL:
+                    velocity.addMovement(event);
+                    velocity.computeCurrentVelocity(1000);
+                    release(v, velocity.getYVelocity(), event.getActionMasked());
+                    velocity.recycle();
                     break;
                 default:
                     break;
             }
             return true;
         }
-    }
 
-    void open() {
-        if (open) {
-            return;
+        private void drag(final float distance) {
+            if (!moved) {
+                if (Math.abs(distance) < slop) {
+                    return;
+                }
+                moved = true;
+                if (settleAnimator != null) {
+                    settleAnimator.cancel();
+                }
+                if (opening && !open) {
+                    prepare();
+                }
+                startProgress = progress;
+            }
+            if (panel.getHeight() > 0) {
+                setProgress(Math.max(0f, Math.min(1f,
+                        startProgress + distance / panel.getHeight())));
+            }
         }
-        open = true;
-        refresh();
-        loadChannels();
-        root.setVisibility(View.VISIBLE);
-        scrim.setAlpha(0f);
-        scrim.animate().alpha(1f).setDuration(260).setListener(null).start();
-        animateBlur(BLUR_DP);
-        hideItems();
-        // la tendina si conosce la sua altezza solo dopo essere stata misurata
-        panel.setVisibility(View.INVISIBLE);
-        panel.post(() -> {
-            panel.setVisibility(View.VISIBLE);
-            panel.setTranslationY(-panel.getHeight());
-            panel.animate().translationY(0f).setDuration(430)
-                    .setInterpolator(new OvershootInterpolator(0.7f)).setListener(null).start();
-            showItems();
-        });
-    }
 
-    void close() {
-        if (!open) {
-            return;
+        private void release(final View v, final float speed, final int action) {
+            if (!moved) {
+                if (action == MotionEvent.ACTION_UP) {
+                    v.performClick();
+                }
+                return;
+            }
+            final boolean fast = Math.abs(speed) > DeviceUtils.dpToPx(500, activity);
+            // per aprirla basta tirarla un po', per chiuderla pure: non serve arrivare in fondo
+            final boolean keepOpen = fast ? speed > 0 : progress > (opening ? 0.35f : 0.75f);
+            settle(keepOpen ? 1f : 0f);
         }
-        open = false;
-        disposables.clear();
-        scrim.animate().alpha(0f).setDuration(220).start();
-        animateBlur(0f);
-        panel.animate().translationY(-panel.getHeight()).setDuration(230)
-                .setInterpolator(new AccelerateInterpolator(1.4f))
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(final Animator animation) {
-                        if (!open) {
-                            root.setVisibility(View.GONE);
-                            serviceRows.setVisibility(View.GONE);
-                        }
-                    }
-                }).start();
-    }
-
-    /** Chiude subito, senza animazione: quando si torna all'app da un'altra schermata. */
-    void closeNow() {
-        open = false;
-        disposables.clear();
-        panel.animate().cancel();
-        scrim.animate().cancel();
-        if (blurAnimator != null) {
-            blurAnimator.cancel();
-        }
-        setBlur(0f);
-        root.setVisibility(View.GONE);
-        serviceRows.setVisibility(View.GONE);
-    }
-
-    void dispose() {
-        disposables.clear();
-    }
-
-    // la pagina dietro si sfoca da Android 12; prima la copre solo il velo scuro
-    private void animateBlur(final float toDp) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            return;
-        }
-        if (blurAnimator != null) {
-            blurAnimator.cancel();
-        }
-        blurAnimator = ValueAnimator.ofFloat(toDp == 0f ? BLUR_DP : 0f, toDp);
-        blurAnimator.setDuration(toDp == 0f ? 220 : 320);
-        blurAnimator.addUpdateListener(a -> setBlur((float) a.getAnimatedValue()));
-        blurAnimator.start();
-    }
-
-    private void setBlur(final float dp) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
-            return;
-        }
-        final float px = dp * activity.getResources().getDisplayMetrics().density;
-        blurTarget.setRenderEffect(px < 1f ? null
-                : RenderEffect.createBlurEffect(px, px, Shader.TileMode.CLAMP));
     }
 
     private void refresh() {
