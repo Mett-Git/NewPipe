@@ -2,6 +2,7 @@ package org.schabi.newpipe;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.animation.ValueAnimator;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
@@ -9,6 +10,7 @@ import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
@@ -97,10 +99,60 @@ final class VetroDrawer {
         root.findViewById(R.id.vetroMenuClose).setOnClickListener(v -> close());
         root.findViewById(R.id.vetroMenuService).setOnClickListener(v -> toggleServices());
         scrim.setOnClickListener(v -> close());
+        final View grip = root.findViewById(R.id.vetroMenuGrip);
+        grip.setOnClickListener(v -> close());
+        grip.setOnTouchListener(new SwipeListener(-1, this::close));
     }
 
     boolean isOpen() {
         return open;
+    }
+
+    /**
+     * @param handle la linietta in alto: swipe verso il basso o tocco per aprire il menu
+     */
+    void attachOpenHandle(@NonNull final View handle) {
+        handle.setOnClickListener(v -> open());
+        handle.setOnTouchListener(new SwipeListener(1, this::open));
+    }
+
+    // tocco o swipe nella direzione giusta su una linietta: 1 = in basso, -1 = in alto
+    private final class SwipeListener implements View.OnTouchListener {
+        private final int direction;
+        private final Runnable action;
+        private float startY;
+        private boolean done;
+
+        SwipeListener(final int direction, final Runnable action) {
+            this.direction = direction;
+            this.action = action;
+        }
+
+        @SuppressLint("ClickableViewAccessibility")
+        @Override
+        public boolean onTouch(final View v, final MotionEvent event) {
+            switch (event.getActionMasked()) {
+                case MotionEvent.ACTION_DOWN:
+                    startY = event.getRawY();
+                    done = false;
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    if (!done && (event.getRawY() - startY) * direction
+                            > DeviceUtils.dpToPx(16, activity)) {
+                        done = true;
+                        action.run();
+                    }
+                    break;
+                case MotionEvent.ACTION_UP:
+                    if (!done) {
+                        v.performClick();
+                    }
+                    break;
+                default:
+                    break;
+            }
+            return true;
+        }
     }
 
     void open() {

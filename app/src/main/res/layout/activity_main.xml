@@ -23,10 +23,30 @@
             layout="@layout/toolbar_layout"
             android:id="@+id/toolbar_layout"/>
 
+        <!-- la linietta in alto: swipe verso il basso per aprire il menu -->
+        <FrameLayout
+            android:id="@+id/vetroMenuHandle"
+            android:layout_width="140dp"
+            android:layout_height="26dp"
+            android:layout_gravity="top|center_horizontal"
+            android:clickable="true"
+            android:contentDescription="@string/drawer_open"
+            android:elevation="8dp"
+            android:focusable="true">
+
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="6dp"
+                android:background="@drawable/vetro_menu_handle" />
+        </FrameLayout>
+
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/fragment_player_holder"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:elevation="10dp"
             android:layout_gravity="center_horizontal"
             app:behavior_hideable="true"
             app:behavior_peekHeight="0dp"

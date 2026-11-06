@@ -303,6 +303,7 @@ public class MainActivity extends AppCompatActivity {
                 this::drawerItemSelected);
         mainBinding.getRoot().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
         toolbarLayoutBinding.toolbar.setNavigationOnClickListener(v -> vetroDrawer.open());
+        vetroDrawer.attachOpenHandle(mainBinding.vetroMenuHandle);
     }
 
     /**

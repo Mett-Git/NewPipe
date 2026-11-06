@@ -143,7 +143,7 @@
             android:paddingStart="16dp"
             android:paddingTop="8dp"
             android:paddingEnd="8dp"
-            android:paddingBottom="12dp">
+            android:paddingBottom="2dp">
 
             <LinearLayout
                 android:id="@+id/vetroMenuService"
@@ -217,5 +217,21 @@
                 android:src="@drawable/ic_info_outline"
                 android:stateListAnimator="@animator/vetro_press" />
         </LinearLayout>
+
+        <!-- la linietta in fondo: swipe verso l'alto per richiudere -->
+        <FrameLayout
+            android:id="@+id/vetroMenuGrip"
+            android:layout_width="match_parent"
+            android:layout_height="24dp"
+            android:clickable="true"
+            android:contentDescription="@string/close"
+            android:focusable="true">
+
+            <View
+                android:layout_width="40dp"
+                android:layout_height="4dp"
+                android:layout_gravity="center"
+                android:background="@drawable/vetro_menu_handle" />
+        </FrameLayout>
     </LinearLayout>
 </FrameLayout>
