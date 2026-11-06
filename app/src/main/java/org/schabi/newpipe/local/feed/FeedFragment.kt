@@ -52,6 +52,7 @@ import com.xwray.groupie.OnItemLongClickListener
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Single
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import io.reactivex.rxjava3.disposables.Disposable
 import io.reactivex.rxjava3.schedulers.Schedulers
 import java.time.OffsetDateTime
 import java.util.function.Consumer
@@ -75,10 +76,12 @@ import org.schabi.newpipe.ktx.animateHideRecyclerViewAllowingScrolling
 import org.schabi.newpipe.ktx.slideUp
 import org.schabi.newpipe.local.feed.item.StreamItem
 import org.schabi.newpipe.local.feed.service.FeedLoadService
+import org.schabi.newpipe.local.subscription.ChannelsRow
 import org.schabi.newpipe.local.subscription.SubscriptionManager
 import org.schabi.newpipe.util.DeviceUtils
 import org.schabi.newpipe.util.Localization
 import org.schabi.newpipe.util.NavigationHelper
+import org.schabi.newpipe.util.ServiceHelper
 import org.schabi.newpipe.util.ThemeHelper.getGridSpanCountStreams
 import org.schabi.newpipe.util.ThemeHelper.getItemViewMode
 import org.schabi.newpipe.util.ThemeHelper.resolveDrawable
@@ -97,6 +100,7 @@ class FeedFragment : BaseStateFragment<FeedState>() {
     var listState: Parcelable? = null
 
     private var groupId = FeedGroupEntity.GROUP_ALL_ID
+    private var channelsRowLoader: Disposable? = null
     private var groupName = ""
     private var oldestSubscriptionUpdate: OffsetDateTime? = null
 
@@ -170,6 +174,7 @@ class FeedFragment : BaseStateFragment<FeedState>() {
 
     override fun onResume() {
         super.onResume()
+        loadChannelsRow()
         updateRelativeTimeViews()
 
         if (updateListViewModeOnResume) {
@@ -297,7 +302,32 @@ class FeedFragment : BaseStateFragment<FeedState>() {
         }
     }
 
+    // i canali a cui sei iscritto, in cima alle Novità di tutti i canali
+    private fun loadChannelsRow() {
+        channelsRowLoader?.dispose()
+        if (groupId != FeedGroupEntity.GROUP_ALL_ID) {
+            return
+        }
+        channelsRowLoader = ChannelsRow.load(
+            requireContext(),
+            ServiceHelper.getSelectedServiceId(requireContext()),
+            30
+        )
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({ channels ->
+                _feedBinding?.let { binding ->
+                    binding.feedChannelsScroll.isVisible = channels.isNotEmpty()
+                    ChannelsRow.show(
+                        binding.feedChannels,
+                        channels,
+                        requireActivity().supportFragmentManager
+                    ) { }
+                }
+            }, { })
+    }
+
     override fun onDestroyView() {
+        channelsRowLoader?.dispose()
         // Ensure that all animations are canceled
         tryGetNewItemsLoadedButton()?.clearAnimation()
 

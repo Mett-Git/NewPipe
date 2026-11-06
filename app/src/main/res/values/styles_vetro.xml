@@ -82,4 +82,10 @@
     <style name="VetroOverflowMenu" parent="Widget.AppCompat.PopupMenu.Overflow">
         <item name="android:popupBackground">@drawable/vetro_popup_background</item>
     </style>
+
+    <!-- anteprime con gli angoli arrotondati -->
+    <style name="VetroRoundedImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
 </resources>

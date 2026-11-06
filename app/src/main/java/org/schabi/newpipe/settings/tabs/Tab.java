@@ -19,6 +19,7 @@ import org.schabi.newpipe.extractor.NewPipe;
 import org.schabi.newpipe.extractor.StreamingService;
 import org.schabi.newpipe.extractor.exceptions.ExtractionException;
 import org.schabi.newpipe.fragments.BlankFragment;
+import org.schabi.newpipe.fragments.ProfileFragment;
 import org.schabi.newpipe.fragments.list.channel.ChannelFragment;
 import org.schabi.newpipe.fragments.list.kiosk.DefaultKioskFragment;
 import org.schabi.newpipe.fragments.list.kiosk.HomeFragment;
@@ -167,7 +168,8 @@ public abstract class Tab {
         CHANNEL(new ChannelTab()),
         PLAYLIST(new PlaylistTab()),
         FEEDGROUP(new FeedGroupTab()),
-        HOME(new HomeTab());
+        HOME(new HomeTab()),
+        PROFILE(new ProfileTab());
 
         private final Tab tab;
 
@@ -486,6 +488,32 @@ public abstract class Tab {
     }
 
     /** Home: dirette, tendenze e video dei canali seguiti in un'unica pagina. */
+    public static class ProfileTab extends Tab {
+        // lontano dagli id della NewPipe ufficiale, che potrebbe aggiungerne altri
+        public static final int ID = 51;
+
+        @Override
+        public int getTabId() {
+            return ID;
+        }
+
+        @Override
+        public String getTabName(final Context context) {
+            return context.getString(R.string.tab_profile);
+        }
+
+        @DrawableRes
+        @Override
+        public int getTabIconRes(final Context context) {
+            return R.drawable.ic_person;
+        }
+
+        @Override
+        public ProfileFragment getFragment(final Context context) {
+            return new ProfileFragment();
+        }
+    }
+
     public static class HomeTab extends Tab {
         // lontano dagli id della NewPipe ufficiale, che potrebbe aggiungerne altri
         public static final int ID = 50;

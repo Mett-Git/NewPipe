@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Un canale nel menu a sinistra: foto, pallino dei video nuovi e nome. -->
+<!-- Un canale nel menu: foto, pallino dei video nuovi e nome. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="46dp"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="8dp"
+    android:layout_width="68dp"
+    android:layout_height="wrap_content"
     android:background="@drawable/vetro_drawer_row_background"
     android:clickable="true"
     android:focusable="true"
-    android:gravity="center_vertical"
-    android:orientation="horizontal"
-    android:paddingStart="8dp"
-    android:paddingEnd="10dp"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingTop="6dp"
+    android:paddingBottom="6dp"
     android:stateListAnimator="@animator/vetro_press">
 
     <FrameLayout
-        android:layout_width="32dp"
-        android:layout_height="32dp">
+        android:layout_width="50dp"
+        android:layout_height="50dp">
 
         <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/vetroRowIcon"
@@ -29,8 +27,8 @@
 
         <View
             android:id="@+id/vetroRowDot"
-            android:layout_width="11dp"
-            android:layout_height="11dp"
+            android:layout_width="13dp"
+            android:layout_height="13dp"
             android:layout_gravity="bottom|end"
             android:background="@drawable/vetro_drawer_dot"
             android:visibility="gone" />
@@ -40,10 +38,12 @@
         android:id="@+id/vetroRowTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginTop="4dp"
         android:ellipsize="end"
+        android:gravity="center"
+        android:paddingStart="3dp"
+        android:paddingEnd="3dp"
         android:singleLine="true"
         android:textColor="?android:attr/textColorPrimary"
-        android:textSize="14sp"
-        android:textStyle="bold" />
+        android:textSize="11.5sp" />
 </LinearLayout>

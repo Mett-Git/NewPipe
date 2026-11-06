@@ -83,6 +83,8 @@ import org.schabi.newpipe.player.event.OnKeyDownListener;
 import org.schabi.newpipe.player.helper.PlayerHolder;
 import org.schabi.newpipe.player.playqueue.PlayQueue;
 import org.schabi.newpipe.settings.UpdateSettingsFragment;
+import org.schabi.newpipe.settings.tabs.Tab;
+import org.schabi.newpipe.settings.tabs.TabsManager;
 import org.schabi.newpipe.settings.migration.MigrationManager;
 import org.schabi.newpipe.util.Constants;
 import org.schabi.newpipe.util.DeviceUtils;
@@ -125,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver broadcastReceiver;
 
     static final int ITEM_ID_SUBSCRIPTIONS = -1;
-    private static final int ITEM_ID_FEED = -2;
+    static final int ITEM_ID_FEED = -2;
     private static final int ITEM_ID_BOOKMARKS = -3;
     private static final int ITEM_ID_DOWNLOADS = -4;
     private static final int ITEM_ID_HISTORY = -5;
@@ -169,6 +171,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         sharedPrefEditor = sharedPreferences.edit();
+        moveTabsToMenu();
 
         mainBinding = ActivityMainBinding.inflate(getLayoutInflater());
         drawerLayoutBinding = mainBinding.drawerLayout;
@@ -254,6 +257,17 @@ public class MainActivity extends AppCompatActivity {
         sharedPrefEditor.putBoolean(KEY_IS_IN_BACKGROUND, true).apply();
         Log.d(TAG, "App moved to background");
     }
+    // Una volta sola: in basso solo Home, Novità e Profilo, il resto ora sta nel menu. Dopo si può
+    // cambiare come sempre da Impostazioni > Contenuto > Schede della barra.
+    private void moveTabsToMenu() {
+        final String key = "vetro_tabs_home_feed_profile";
+        if (!sharedPreferences.getBoolean(key, false)) {
+            TabsManager.getManager(this).saveTabs(List.of(Tab.Type.HOME.getTab(),
+                    Tab.Type.FEED.getTab(), Tab.Type.PROFILE.getTab()));
+            sharedPrefEditor.putBoolean(key, true).apply();
+        }
+    }
+
     private void setupDrawer() throws ExtractionException {
         addDrawerMenuForCurrentService();
 
@@ -279,20 +293,16 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            @Override
-            public void onDrawerStateChanged(final int newState) {
-                if (newState != DrawerLayout.STATE_IDLE && vetroDrawer != null
-                        && !mainBinding.getRoot().isDrawerVisible(GravityCompat.START)) {
-                    vetroDrawer.onOpening();
-                }
-            }
         });
 
         drawerLayoutBinding.navigation.setNavigationItemSelectedListener(this::drawerItemSelected);
         setupDrawerHeader();
-        vetroDrawer = new VetroDrawer(this, drawerLayoutBinding.navigation,
-                this::drawerItemSelected, this::toggleServices,
-                () -> mainBinding.getRoot().closeDrawers());
+        // il menu è la tendina dall'alto: quello laterale resta chiuso e tiene solo le voci
+        vetroDrawer = new VetroDrawer(this, drawerLayoutBinding.navigation.getMenu(),
+                mainBinding.mainContent, mainBinding.getRoot().findViewById(R.id.vetroMenu),
+                this::drawerItemSelected);
+        mainBinding.getRoot().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        toolbarLayoutBinding.toolbar.setNavigationOnClickListener(v -> vetroDrawer.open());
     }
 
     /**
@@ -464,9 +474,6 @@ public class MainActivity extends AppCompatActivity {
                 ErrorUtil.showUiErrorSnackbar(this, "Showing main page tabs", e);
             }
         }
-        if (vetroDrawer != null) {
-            vetroDrawer.setServicesShown(servicesShown);
-        }
     }
 
     private void showServices() {
@@ -555,6 +562,9 @@ public class MainActivity extends AppCompatActivity {
         // Close drawer on return, and don't show animation,
         // so it looks like the drawer isn't open when the user returns to MainActivity
         mainBinding.getRoot().closeDrawer(GravityCompat.START, false);
+        if (vetroDrawer != null) {
+            vetroDrawer.closeNow();
+        }
         try {
             final int selectedServiceId = ServiceHelper.getSelectedServiceId(this);
             final String selectedServiceName = NewPipe.getService(selectedServiceId)
@@ -656,8 +666,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // col menu aperto, Indietro chiude il menu e non l'app
-        if (mainBinding.getRoot().isDrawerOpen(drawerLayoutBinding.navigation)) {
-            mainBinding.getRoot().closeDrawers();
+        if (vetroDrawer != null && vetroDrawer.isOpen()) {
+            vetroDrawer.close();
             return;
         }
 
@@ -847,9 +857,11 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             if (toggle != null) {
                 toggle.syncState();
-                toolbarLayoutBinding.toolbar.setNavigationOnClickListener(v -> mainBinding.getRoot()
-                        .open());
-                mainBinding.getRoot().setDrawerLockMode(DrawerLayout.LOCK_MODE_UNDEFINED);
+                toolbarLayoutBinding.toolbar.setNavigationOnClickListener(v -> {
+                    if (vetroDrawer != null) {
+                        vetroDrawer.open();
+                    }
+                });
             }
         } else {
             mainBinding.getRoot().setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);

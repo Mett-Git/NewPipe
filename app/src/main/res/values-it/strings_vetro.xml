@@ -206,7 +206,10 @@
     <string name="vs_downloads_storage_ask_no_saf">A ogni download scegli tu dove salvare</string>
     <string name="drawer_discover">Scopri</string>
     <string name="drawer_your_channels">I tuoi canali</string>
-    <string name="drawer_show_all">Mostra tutti</string>
     <string name="channel_notify_disabled">Accendi gli avvisi dei video nuovi in Impostazioni > Notifiche</string>
     <string name="video_box_more_info">Categoria, licenza e altre informazioni</string>
+    <string name="tab_profile">Profilo</string>
+    <string name="profile_subscriptions">%d iscrizioni</string>
+    <string name="profile_name">Tu</string>
+    <string name="profile_see_all">Vedi tutto</string>
 </resources>

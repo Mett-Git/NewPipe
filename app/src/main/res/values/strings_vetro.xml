@@ -207,7 +207,10 @@
     <string name="vs_downloads_storage_ask_no_saf">@string/downloads_storage_ask_summary_no_saf_notice</string>
     <string name="drawer_discover">Discover</string>
     <string name="drawer_your_channels">Your channels</string>
-    <string name="drawer_show_all">Show all</string>
     <string name="channel_notify_disabled">Turn on new video notifications in Settings > Notifications</string>
     <string name="video_box_more_info">Category, license and more information</string>
+    <string name="tab_profile">Profile</string>
+    <string name="profile_subscriptions">%d subscriptions</string>
+    <string name="profile_name">You</string>
+    <string name="profile_see_all">See all</string>
 </resources>

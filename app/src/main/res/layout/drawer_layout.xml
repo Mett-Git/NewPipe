@@ -14,7 +14,4 @@
     app:itemShapeInsetEnd="12dp"
     app:itemShapeInsetStart="12dp"
     app:insetForeground="@android:color/transparent"
-    app:itemTextColor="@color/vetro_drawer_item_content">
-
-    <include layout="@layout/vetro_drawer_content" />
-</com.google.android.material.navigation.NavigationView>
+    app:itemTextColor="@color/vetro_drawer_item_content" />

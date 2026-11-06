@@ -43,4 +43,7 @@
     <!-- menu a sinistra e tasto "Iscritto" -->
     <color name="vetro_drawer_fill">#FFFFFFFF</color>
     <color name="vetro_subscribed_fill">#1F000000</color>
+    <!-- tendina del menu: senza sfocatura (prima di Android 12) è quasi piena -->
+    <color name="vetro_menu_fill">#F7FFFFFF</color>
+    <color name="vetro_menu_scrim">#59000000</color>
 </resources>
