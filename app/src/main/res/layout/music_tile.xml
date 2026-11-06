@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="68dp"
+    android:layout_margin="4dp"
+    android:layout_weight="1"
+    android:clickable="true"
+    android:ellipsize="end"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:maxLines="1"
+    android:paddingStart="14dp"
+    android:paddingEnd="10dp"
+    android:stateListAnimator="@animator/vetro_press_soft"
+    android:textColor="@color/vm_text"
+    android:textSize="15sp"
+    android:textStyle="bold" />

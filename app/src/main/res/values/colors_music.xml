@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="vm_background">#05070B</color>
+    <color name="vm_accent">#FF8A73</color>
+    <color name="vm_text">#FFFFFF</color>
+    <color name="vm_text_soft">#B3FFFFFF</color>
+    <color name="vm_text_faint">#59FFFFFF</color>
+    <color name="vm_glass">#17FFFFFF</color>
+    <color name="vm_glass_stroke">#24FFFFFF</color>
+    <color name="vm_bar">#E00B0E14</color>
+</resources>

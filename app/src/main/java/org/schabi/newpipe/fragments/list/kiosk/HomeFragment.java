@@ -14,7 +14,6 @@ import org.schabi.newpipe.extractor.kiosk.KioskInfo;
 import org.schabi.newpipe.extractor.kiosk.KioskList;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
 import org.schabi.newpipe.local.feed.FeedDatabaseManager;
-import org.schabi.newpipe.util.ExtractorHelper;
 import org.schabi.newpipe.util.Localization;
 
 import java.util.ArrayList;
@@ -67,7 +66,9 @@ public class HomeFragment extends KioskFragment {
             final String kioskUrl = kiosks.getListLinkHandlerFactoryByType(id).fromId(id)
                     .getUrl();
             // una sezione che non risponde (YouTube ne ha tolte alcune) non ferma le altre
-            sections.add(ExtractorHelper.getKioskInfo(serviceId, kioskUrl, forceReload)
+            // niente cache: qui sotto la prima sezione viene riempita con il misto di tutte, e
+            // non deve restare così per chi apre quella sezione da sola (o per NewPipe Music)
+            sections.add(Single.fromCallable(() -> KioskInfo.getInfo(service, kioskUrl))
                     .subscribeOn(Schedulers.io())
                     .map(Collections::singletonList)
                     .onErrorReturnItem(Collections.emptyList()));

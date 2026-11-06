@@ -3,6 +3,7 @@ package org.schabi.newpipe;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.animation.ValueAnimator;
 import android.graphics.RenderEffect;
 import android.graphics.Shader;
@@ -30,6 +31,7 @@ import androidx.fragment.app.FragmentActivity;
 import org.schabi.newpipe.extractor.NewPipe;
 import org.schabi.newpipe.extractor.StreamingService;
 import org.schabi.newpipe.local.subscription.ChannelsRow;
+import org.schabi.newpipe.player.MusicActivity;
 import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.ServiceHelper;
 
@@ -311,6 +313,7 @@ final class VetroDrawer {
         final LayoutInflater inflater = LayoutInflater.from(root.getContext());
         mainRows.removeAllViews();
         discoverRows.removeAllViews();
+        addMusicRow(inflater);
         LinearLayout pair = null;
         for (int i = 0; i < items.size(); i++) {
             final MenuItem item = items.getItem(i);
@@ -334,6 +337,18 @@ final class VetroDrawer {
         final int serviceId = ServiceHelper.getSelectedServiceId(activity);
         serviceIcon.setImageResource(ServiceHelper.getIcon(serviceId));
         serviceName.setText(ServiceHelper.getNameOfServiceById(serviceId));
+    }
+
+    private void addMusicRow(final LayoutInflater inflater) {
+        final View row = inflater.inflate(R.layout.vetro_menu_row, mainRows, false);
+        ((ImageView) row.findViewById(R.id.vetroRowIcon))
+                .setImageResource(R.drawable.ic_music_note);
+        ((TextView) row.findViewById(R.id.vetroRowTitle)).setText(R.string.vm_music);
+        row.setOnClickListener(v -> {
+            activity.startActivity(new Intent(activity, MusicActivity.class));
+            activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        });
+        mainRows.addView(row);
     }
 
     private void addBigRow(final LayoutInflater inflater, final MenuItem item) {

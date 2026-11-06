@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="vm_music">Musica</string>
+    <string name="vm_home">Home</string>
+    <string name="vm_explore">Esplora</string>
+    <string name="vm_library">Raccolta</string>
+    <string name="vm_recent">Ascoltati di recente</string>
+    <string name="vm_trending">In tendenza</string>
+    <string name="vm_more_of">Altro di %1$s</string>
+    <string name="vm_chip_all">Tutto</string>
+    <string name="vm_chip_songs">Brani</string>
+    <string name="vm_chip_videos">Video</string>
+    <string name="vm_chip_albums">Album</string>
+    <string name="vm_chip_playlists">Playlist</string>
+    <string name="vm_chip_artists">Artisti</string>
+    <string name="vm_for_you_songs">Brani per te</string>
+    <string name="vm_for_you_albums">Album per te</string>
+    <string name="vm_for_you_artists">Artisti per te</string>
+    <string name="vm_moods">Generi e momenti</string>
+    <string name="vm_mood_relax">Relax</string>
+    <string name="vm_mood_workout">Allenamento</string>
+    <string name="vm_mood_party">Festa</string>
+    <string name="vm_mood_focus">Concentrazione</string>
+    <string name="vm_mood_happy">Buonumore</string>
+    <string name="vm_mood_love">Romantica</string>
+    <string name="vm_mood_80s">Anni \'80</string>
+    <string name="vm_mood_italian">Italiana</string>
+    <string name="vm_liked">Brani che ti piacciono</string>
+    <string name="vm_your_playlists">Le tue playlist</string>
+    <string name="vm_artist">Artista</string>
+    <string name="vm_search_hint">Cerca brani, album, artisti</string>
+    <string name="vm_search">Cerca</string>
+    <string name="vm_back">Indietro</string>
+    <string name="vm_play">Riproduci</string>
+    <string name="vm_shuffle">Casuale</string>
+    <string name="vm_previous">Brano precedente</string>
+    <string name="vm_next">Brano successivo</string>
+    <string name="vm_repeat">Ripeti</string>
+    <string name="vm_now_playing">In riproduzione</string>
+    <string name="vm_up_next">In coda</string>
+    <string name="vm_add_to_queue">Aggiungi alla coda</string>
+    <string name="vm_like">Mi piace</string>
+    <string name="vm_unlike">Togli Mi piace</string>
+    <string name="vm_go_to_artist">Vai all\'artista</string>
+    <string name="vm_more">Altro</string>
+    <string name="vm_load_error">Non riesco a caricare. Tocca per riprovare.</string>
+    <string name="vm_nothing_found">Non ho trovato niente</string>
+    <plurals name="vm_songs_count">
+        <item quantity="one">%1$d brano</item>
+        <item quantity="other">%1$d brani</item>
+    </plurals>
+</resources>

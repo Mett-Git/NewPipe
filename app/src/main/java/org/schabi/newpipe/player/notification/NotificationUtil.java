@@ -24,6 +24,7 @@ import androidx.core.content.ContextCompat;
 
 import org.schabi.newpipe.MainActivity;
 import org.schabi.newpipe.R;
+import org.schabi.newpipe.player.MusicActivity;
 import org.schabi.newpipe.player.Player;
 import org.schabi.newpipe.player.PlayerIntentType;
 import org.schabi.newpipe.player.PlayerService;
@@ -273,6 +274,11 @@ public final class NotificationUtil {
 
     private Intent getIntentForNotification() {
         if (player.audioPlayerSelected() || player.popupPlayerSelected()) {
+            final Intent music = player.audioPlayerSelected()
+                    ? MusicActivity.notificationIntent(player.getContext()) : null;
+            if (music != null) {
+                return music;
+            }
             // Means we play in popup or audio only. Let's show the play queue
             return NavigationHelper.getPlayQueueActivityIntent(player.getContext());
         } else {
