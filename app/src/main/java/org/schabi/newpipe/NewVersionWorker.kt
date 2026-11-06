@@ -159,6 +159,7 @@ class NewVersionWorker(
     companion object {
         private val DEBUG = MainActivity.DEBUG
         private val TAG = NewVersionWorker::class.java.simpleName
+
         // le versioni ritoccate si pubblicano sul nostro fork (vedi vetro-release.yml)
         private const val NEWPIPE_API_URL =
             "https://github.com/Mett-Git/NewPipe/releases/latest/download/data.json"

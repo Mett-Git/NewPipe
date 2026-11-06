@@ -5,11 +5,11 @@
     android:id="@+id/itemRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/vetro_card"
+    android:background="@drawable/vetro_comment_background"
     android:clickable="true"
     android:focusable="true"
-    android:paddingHorizontal="20dp"
-    android:paddingVertical="16dp">
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="14dp">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/itemThumbnailView"

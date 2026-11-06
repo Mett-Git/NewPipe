@@ -69,6 +69,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
     private String youtubeRestrictedModeEnabledKey;
     private boolean mainTabsPositionBottom;
     private String mainTabsPositionKey;
+    private int miniPlayerSpace = 0;
 
     // Vetro: le liste delle schede scorrono anche dietro la barra sospesa; in fondo lasciano
     // lo spazio della barra, così l'ultimo video si può portare sopra di lei
@@ -310,11 +311,33 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         return mainTabsPositionBottom && !ThemeHelper.isLightThemeSelected(requireContext());
     }
 
-    // quanto spazio lasciare in fondo alle liste: la barra sospesa più il suo margine
+    // quanto spazio lasciare in fondo alle liste: la barra sospesa, il suo margine e, se c'è,
+    // il mini-player che le sta sopra
     private int barSpace() {
+        return floatingBarSpace() + miniPlayerSpace;
+    }
+
+    /**
+     * @return quanto occupa la barra sospesa dal fondo dello schermo, margini compresi;
+     *         0 se questa pagina non la mostra
+     */
+    public int floatingBarSpace() {
+        if (binding == null || !isVetroBar()) {
+            return 0;
+        }
         final int height = binding.mainTabLayout.getHeight();
         return (height > 0 ? height : DeviceUtils.dpToPx(72, requireContext()))
                 + DeviceUtils.dpToPx(20, requireContext());
+    }
+
+    /**
+     * @param space lo spazio in più da lasciare in fondo alle liste per il mini-player
+     */
+    public void setMiniPlayerSpace(final int space) {
+        if (miniPlayerSpace != space) {
+            miniPlayerSpace = space;
+            updateListsBottomSpace();
+        }
     }
 
     // rimette lo spazio giusto alle liste delle schede già aperte (anche dopo un cambio

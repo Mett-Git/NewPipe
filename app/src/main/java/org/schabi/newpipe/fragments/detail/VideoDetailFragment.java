@@ -252,6 +252,14 @@ public final class VideoDetailFragment
     /** Pagina tutta insieme come su YouTube; null sui tablet in orizzontale (hanno le schede). */
     @Nullable
     private VideoPagePanels panels;
+    /** Il video ridotto: mini-player arrotondato sospeso sopra la barra in basso. */
+    @Nullable
+    private FloatingMiniPlayer floatingMiniPlayer;
+    private final FragmentManager.OnBackStackChangedListener miniPlayerPageListener = () -> {
+        if (binding != null && bottomSheetState != BottomSheetBehavior.STATE_HIDDEN) {
+            manageSpaceAtTheBottom(false);
+        }
+    };
     /** Tasto "Iscriviti" accanto al canale. */
     private final SubscribeButtonHelper subscribeButton = new SubscribeButtonHelper();
     /** Commenti, correlati e descrizione scorrono dietro la barra sospesa in fondo. */
@@ -513,6 +521,12 @@ public final class VideoDetailFragment
     public void onDestroyView() {
         super.onDestroyView();
         subscribeButton.dispose();
+        activity.getSupportFragmentManager()
+                .removeOnBackStackChangedListener(miniPlayerPageListener);
+        if (floatingMiniPlayer != null) {
+            floatingMiniPlayer.reset();
+            floatingMiniPlayer = null;
+        }
         if (panels != null) {
             panels.dispose();
             panels = null;
@@ -2585,11 +2599,25 @@ public final class VideoDetailFragment
     private void manageSpaceAtTheBottom(final boolean showMore) {
         final int peekHeight = getResources().getDimensionPixelSize(R.dimen.mini_player_height);
         final ViewGroup holder = requireActivity().findViewById(R.id.fragment_holder);
+        final int gap = DeviceUtils.dpToPx(8, requireContext());
+        // con la barra sospesa il mini-player le sta sopra e le liste gli passano dietro;
+        // nelle altre pagine si stacca solo un po' dal fondo
+        final Fragment page = requireActivity().getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_holder);
+        final int barSpace = page instanceof MainFragment
+                ? ((MainFragment) page).floatingBarSpace() : 0;
+        if (page instanceof MainFragment) {
+            ((MainFragment) page).setMiniPlayerSpace(showMore || barSpace == 0
+                    ? 0 : peekHeight + gap);
+        }
+        if (floatingMiniPlayer != null) {
+            floatingMiniPlayer.setLift(barSpace > 0 ? barSpace : gap);
+        }
         final int newBottomPadding;
-        if (showMore) {
+        if (showMore || barSpace > 0) {
             newBottomPadding = 0;
         } else {
-            newBottomPadding = peekHeight;
+            newBottomPadding = peekHeight + gap;
         }
         if (holder.getPaddingBottom() == newBottomPadding) {
             return;
@@ -2611,8 +2639,14 @@ public final class VideoDetailFragment
         updateBottomSheetState(lastStableBottomSheetState);
 
         final int peekHeight = getResources().getDimensionPixelSize(R.dimen.mini_player_height);
+        floatingMiniPlayer = new FloatingMiniPlayer(bottomSheetLayout, binding.getRoot(),
+                peekHeight);
+        activity.getSupportFragmentManager()
+                .addOnBackStackChangedListener(miniPlayerPageListener);
         if (bottomSheetState != BottomSheetBehavior.STATE_HIDDEN) {
             manageSpaceAtTheBottom(false);
+            floatingMiniPlayer.apply(
+                    bottomSheetState == BottomSheetBehavior.STATE_EXPANDED ? 1f : 0f);
             bottomSheetBehavior.setPeekHeight(peekHeight);
             if (bottomSheetState == BottomSheetBehavior.STATE_COLLAPSED) {
                 binding.overlayLayout.setAlpha(MAX_OVERLAY_ALPHA);
@@ -2631,6 +2665,7 @@ public final class VideoDetailFragment
                     case BottomSheetBehavior.STATE_HIDDEN:
                         moveFocusToMainFragment(true);
                         manageSpaceAtTheBottom(true);
+                        floatingMiniPlayer.reset();
 
                         bottomSheetBehavior.setPeekHeight(0);
                         cleanUp();
@@ -2638,6 +2673,7 @@ public final class VideoDetailFragment
                     case BottomSheetBehavior.STATE_EXPANDED:
                         moveFocusToMainFragment(false);
                         manageSpaceAtTheBottom(false);
+                        floatingMiniPlayer.apply(1f);
 
                         bottomSheetBehavior.setPeekHeight(peekHeight);
                         // Disable click because overlay buttons located on top of buttons
@@ -2658,6 +2694,7 @@ public final class VideoDetailFragment
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         moveFocusToMainFragment(true);
                         manageSpaceAtTheBottom(false);
+                        floatingMiniPlayer.apply(0f);
 
                         bottomSheetBehavior.setPeekHeight(peekHeight);
 
@@ -2690,6 +2727,9 @@ public final class VideoDetailFragment
             @Override
             public void onSlide(@NonNull final View bottomSheet, final float slideOffset) {
                 setOverlayLook(binding.appBarLayout, behavior, slideOffset);
+                if (slideOffset >= 0) {
+                    floatingMiniPlayer.apply(slideOffset);
+                }
             }
         };
 

@@ -10,6 +10,7 @@ import org.schabi.newpipe.error.ReCaptchaActivity;
 import org.schabi.newpipe.extractor.downloader.Downloader;
 import org.schabi.newpipe.extractor.downloader.Request;
 import org.schabi.newpipe.extractor.downloader.Response;
+import org.schabi.newpipe.util.YoutubeCommentAvatars;
 import org.schabi.newpipe.extractor.exceptions.ReCaptchaException;
 import org.schabi.newpipe.util.InfoCache;
 
@@ -174,7 +175,7 @@ public final class DownloaderImpl extends Downloader {
                     response.code(),
                     response.message(),
                     response.headers().toMultimap(),
-                    responseBodyToReturn,
+                    YoutubeCommentAvatars.fix(url, responseBodyToReturn),
                     latestUrl);
         }
     }

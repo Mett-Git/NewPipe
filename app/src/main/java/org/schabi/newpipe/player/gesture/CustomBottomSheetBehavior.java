@@ -49,6 +49,14 @@ public class CustomBottomSheetBehavior extends BottomSheetBehavior<FrameLayout> 
         // The interception listens for the child view with the id "fragment_player_holder",
         // so the following two-finger gesture will be triggered only for the player view on
         // portrait and for the top controls (visible) on landscape.
+        // Mini-player sospeso: i tocchi sotto di lui sono della barra in basso
+        if (getState() == BottomSheetBehavior.STATE_COLLAPSED
+                && event.getAction() == MotionEvent.ACTION_DOWN
+                && event.getY() > child.getTop() + child.getTranslationY() + getPeekHeight()) {
+            skippingInterception = true;
+            return false;
+        }
+
         setSkipCollapsed(event.getPointerCount() == 2);
         if (event.getPointerCount() == 2) {
             return super.onInterceptTouchEvent(parent, child, event);

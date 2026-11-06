@@ -21,6 +21,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
+import android.os.Build;
 import android.database.ContentObserver;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -418,6 +419,27 @@ public final class MainPlayerUi extends VideoPlayerUi implements View.OnLayoutCh
         }
         if (isQueueVisible) {
             updateQueueTime(currentProgress);
+        }
+    }
+
+    // nella finestrella di Android i comandi sono i suoi: i nostri non devono comparire
+    private boolean isInPictureInPicture() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                && getParentActivity().map(AppCompatActivity::isInPictureInPictureMode)
+                .orElse(false);
+    }
+
+    @Override
+    public void showControls(final long duration) {
+        if (!isInPictureInPicture()) {
+            super.showControls(duration);
+        }
+    }
+
+    @Override
+    public void showControlsThenHide() {
+        if (!isInPictureInPicture()) {
+            super.showControlsThenHide();
         }
     }
 
