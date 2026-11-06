@@ -273,7 +273,6 @@ public class MainActivity extends AppCompatActivity {
 
         toggle = new ActionBarDrawerToggle(this, mainBinding.getRoot(),
                 toolbarLayoutBinding.toolbar, R.string.drawer_open, R.string.drawer_close);
-        toggle.syncState();
         mainBinding.getRoot().addDrawerListener(toggle);
         mainBinding.getRoot().addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
             private int lastService;
@@ -857,7 +856,6 @@ public class MainActivity extends AppCompatActivity {
         if (fragment instanceof MainFragment) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(false);
             if (toggle != null) {
-                toggle.syncState();
                 toolbarLayoutBinding.toolbar.setNavigationOnClickListener(v -> {
                     if (vetroDrawer != null) {
                         vetroDrawer.open();
