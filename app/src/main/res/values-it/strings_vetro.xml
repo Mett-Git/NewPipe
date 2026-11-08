@@ -209,7 +209,15 @@
     <string name="channel_notify_disabled">Accendi gli avvisi dei video nuovi in Impostazioni > Notifiche</string>
     <string name="video_box_more_info">Categoria, licenza e altre informazioni</string>
     <string name="tab_profile">Profilo</string>
-    <string name="profile_subscriptions">%d iscrizioni</string>
+    <plurals name="profile_subscriptions">
+        <item quantity="one">%d iscrizione</item>
+        <item quantity="other">%d iscrizioni</item>
+    </plurals>
     <string name="profile_name">Tu</string>
     <string name="profile_see_all">Vedi tutto</string>
+    <string name="vt_night_theme_available">Solo se il Tema è “%s”</string>
+    <plurals name="vt_notified_channels">
+        <item quantity="one">%1$d canale su %2$d ti avvisa</item>
+        <item quantity="other">%1$d canali su %2$d ti avvisano</item>
+    </plurals>
 </resources>

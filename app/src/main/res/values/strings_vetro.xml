@@ -210,7 +210,15 @@
     <string name="channel_notify_disabled">Turn on new video notifications in Settings > Notifications</string>
     <string name="video_box_more_info">Category, license and more information</string>
     <string name="tab_profile">Profile</string>
-    <string name="profile_subscriptions">%d subscriptions</string>
+    <plurals name="profile_subscriptions">
+        <item quantity="one">%d subscription</item>
+        <item quantity="other">%d subscriptions</item>
+    </plurals>
     <string name="profile_name">You</string>
     <string name="profile_see_all">See all</string>
+    <string name="vt_night_theme_available">Only when Theme is set to "%s"</string>
+    <plurals name="vt_notified_channels">
+        <item quantity="one">%1$d of %2$d channel notifies you</item>
+        <item quantity="other">%1$d of %2$d channels notify you</item>
+    </plurals>
 </resources>

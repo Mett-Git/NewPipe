@@ -5,17 +5,18 @@
 
 package net.newpipe.app
 
+import android.graphics.Color as AndroidColor
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
+import androidx.compose.ui.graphics.luminance
 import kotlinx.serialization.json.Json
 import net.newpipe.Constants
 import net.newpipe.app.navigation.Destination
-import net.newpipe.app.theme.currentService
+import net.newpipe.app.theme.currentColorScheme
 
 /**
  * Entry point for compose-related UI components on Android
@@ -33,15 +34,17 @@ class ComposeActivity : ComponentActivity() {
                 ),
                 onCloseRequest = ::finish
             ) {
-                val view = LocalView.current
-                val service = currentService()
-
-                DisposableEffect(service) {
-                    val windowController = WindowCompat.getInsetsController(window, view)
-                    windowController.isAppearanceLightStatusBars = service.isSchemeColorDensityLight
-                    onDispose {
-                        windowController.isAppearanceLightStatusBars = false
+                // barre di sistema come il tema scelto nell'app (con il tema Nero restano scure),
+                // non come quello del telefono
+                val dark = currentColorScheme().background.luminance() < 0.5f
+                DisposableEffect(dark) {
+                    val style = if (dark) {
+                        SystemBarStyle.dark(AndroidColor.TRANSPARENT)
+                    } else {
+                        SystemBarStyle.light(AndroidColor.TRANSPARENT, AndroidColor.TRANSPARENT)
                     }
+                    enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+                    onDispose { }
                 }
             }
         }

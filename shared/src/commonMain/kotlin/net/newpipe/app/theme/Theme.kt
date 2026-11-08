@@ -100,7 +100,12 @@ private val darkScheme = darkColorScheme(
     surfaceContainerHighest = surfaceContainerHighestDark
 )
 
-private val blackScheme = darkScheme.copy(surface = Color.Black)
+private val blackScheme = darkScheme.copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceDim = Color.Black,
+    surfaceContainerLowest = Color.Black
+)
 
 /**
  * Gets current color scheme chosen by the user

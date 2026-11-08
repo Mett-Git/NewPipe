@@ -351,6 +351,12 @@ final class VetroDrawer {
         mainRows.addView(row);
     }
 
+    // "Musica" da sola si confonderebbe con NewPipe Music, che sta in cima al menu
+    private String shortKioskName(final String title) {
+        final String shortName = title.replace(" in tendenza", "");
+        return shortName.equals(activity.getString(R.string.vm_music)) ? title : shortName;
+    }
+
     private void addBigRow(final LayoutInflater inflater, final MenuItem item) {
         final View row = inflater.inflate(R.layout.vetro_menu_row, mainRows, false);
         ((ImageView) row.findViewById(R.id.vetroRowIcon)).setImageDrawable(item.getIcon());
@@ -365,7 +371,7 @@ final class VetroDrawer {
         ((ImageView) cell.findViewById(R.id.vetroRowIcon)).setImageDrawable(item.getIcon());
         // nella sezione "Scopri" basta la parola: "Musica", non "Musica in tendenza"
         ((TextView) cell.findViewById(R.id.vetroRowTitle))
-                .setText(String.valueOf(item.getTitle()).replace(" in tendenza", ""));
+                .setText(shortKioskName(String.valueOf(item.getTitle())));
         cell.setContentDescription(item.getTitle());
         cell.setOnClickListener(v -> choose(item));
         parent.addView(cell, new LinearLayout.LayoutParams(0,

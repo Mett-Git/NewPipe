@@ -125,7 +125,12 @@ class NotificationsSettingsFragment : BasePreferenceFragment(), OnSharedPreferen
     private fun updateSubscriptions(subscriptions: List<SubscriptionEntity>) {
         val notified = subscriptions.count { it.notificationMode != NotificationMode.DISABLED }
         val preference = requirePreference<Preference>(R.string.streams_notifications_channels_key)
-        preference.summary = "$notified/${subscriptions.size}"
+        preference.summary = resources.getQuantityString(
+            R.plurals.vt_notified_channels,
+            notified,
+            notified,
+            subscriptions.size
+        )
     }
 
     private fun onError(e: Throwable) {

@@ -177,7 +177,8 @@ public class MusicListPage extends MusicPage {
                                 search(args.getString(ARG_ARTIST, ""), FILTER_SONGS)
                                         .map(MusicPage::onlySongs)
                                         .onErrorReturnItem(new ArrayList<>()),
-                                MusicListPage::mixTogether)
+                                // prima i brani dell'artista, poi a turno quelli simili
+                                (related, own) -> mixTogether(own, related))
                         .subscribe(songs -> {
                             box.removeView(spinner);
                             showSongs(songs);

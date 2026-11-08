@@ -121,7 +121,7 @@ public class StatisticsPlaylistFragment
     protected void initViews(final View rootView, final Bundle savedInstanceState) {
         super.initViews(rootView, savedInstanceState);
         if (!useAsFrontPage) {
-            setTitle(getString(R.string.title_last_played));
+            setTitle(getString(R.string.title_activity_history));
         }
     }
 
@@ -300,12 +300,12 @@ public class StatisticsPlaylistFragment
     private void toggleSortMode() {
         if (sortMode == StatisticSortMode.LAST_PLAYED) {
             sortMode = StatisticSortMode.MOST_PLAYED;
-            setTitle(getString(R.string.title_most_played));
+            setTitle(getString(R.string.title_activity_history));
             headerBinding.sortButtonIcon.setImageResource(R.drawable.ic_history);
             headerBinding.sortButtonText.setText(R.string.title_last_played);
         } else {
             sortMode = StatisticSortMode.LAST_PLAYED;
-            setTitle(getString(R.string.title_last_played));
+            setTitle(getString(R.string.title_activity_history));
             headerBinding.sortButtonIcon.setImageResource(
                 R.drawable.ic_filter_list);
             headerBinding.sortButtonText.setText(R.string.title_most_played);
@@ -385,8 +385,7 @@ public class StatisticsPlaylistFragment
     }
 
     private void displaySortMode(final StatisticSortMode mode) {
-        final int resourceIdOfSortMode = mode.getResourceId();
-        setTitle(getString(resourceIdOfSortMode));
+        setTitle(getString(R.string.title_activity_history));
     }
 
     private enum StatisticSortMode {

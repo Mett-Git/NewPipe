@@ -297,8 +297,8 @@ public final class MusicStore {
     public static List<TopArtist> topArtists(@NonNull final Context context, final int limit) {
         final Map<String, TopArtist> artists = new LinkedHashMap<>();
         for (final Play play : plays(context)) {
-            final String name = play.song.getUploaderName();
-            if (name == null || name.isEmpty()) {
+            final String name = artistName(play.song.getUploaderName());
+            if (name.isEmpty()) {
                 continue;
             }
             final TopArtist artist = artists.get(name);
@@ -311,6 +311,15 @@ public final class MusicStore {
         final List<TopArtist> sorted = new ArrayList<>(artists.values());
         Collections.sort(sorted, (x, y) -> Integer.compare(y.plays, x.plays));
         return new ArrayList<>(sorted.subList(0, Math.min(limit, sorted.size())));
+    }
+
+    // "Queen", "Queen Official", "Queen - Topic" e "QueenVEVO" sono lo stesso artista
+    private static String artistName(@Nullable final String uploader) {
+        return uploader == null ? "" : uploader
+                .replaceAll("(?i)\\s*-\\s*topic$", "")
+                .replaceAll("(?i)\\s+official$", "")
+                .replaceAll("VEVO$", "")
+                .trim();
     }
 
     private static String monthKey() {

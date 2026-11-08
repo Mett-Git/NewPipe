@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Sotto l'orologio le pagine sfumano nello sfondo invece di finirci sotto. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:centerColor="#E605070B"
+        android:centerY="0.7"
+        android:endColor="#0005070B"
+        android:startColor="#F205070B" />
+</shape>

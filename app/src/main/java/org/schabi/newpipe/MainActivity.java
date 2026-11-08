@@ -68,6 +68,7 @@ import org.schabi.newpipe.databinding.InstanceSpinnerLayoutBinding;
 import org.schabi.newpipe.databinding.ToolbarLayoutBinding;
 import org.schabi.newpipe.error.ErrorUtil;
 import org.schabi.newpipe.extractor.NewPipe;
+import org.schabi.newpipe.extractor.ServiceList;
 import org.schabi.newpipe.extractor.StreamingService;
 import org.schabi.newpipe.extractor.comments.CommentsInfoItem;
 import org.schabi.newpipe.extractor.exceptions.ExtractionException;
@@ -337,6 +338,11 @@ public class MainActivity extends AppCompatActivity {
         int kioskMenuItemId = 0;
 
         for (final String ks : service.getKioskList().getAvailableKiosks()) {
+            if (isRemovedKiosk(service, ks)) {
+                // l'id resta occupato: kioskSelected() conta allo stesso modo
+                kioskMenuItemId++;
+                continue;
+            }
             drawerLayoutBinding.navigation.getMenu()
                     .add(R.id.menu_kiosks_group, kioskMenuItemId, 0, KioskTranslator
                             .getTranslatedKioskName(ks, this))
@@ -407,6 +413,12 @@ public class MainActivity extends AppCompatActivity {
                 NavigationHelper.openStatisticFragment(getSupportFragmentManager());
                 break;
         }
+    }
+
+    // YouTube ha tolto la pagina Tendenze: aprirla dà solo un errore
+    private static boolean isRemovedKiosk(final StreamingService service, final String kioskId) {
+        return service.getServiceId() == ServiceList.YouTube.getServiceId()
+                && "Trending".equals(kioskId);
     }
 
     private void kioskSelected(final MenuItem item) throws ExtractionException {

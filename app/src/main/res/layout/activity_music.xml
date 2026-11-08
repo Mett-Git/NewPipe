@@ -12,6 +12,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <View
+        android:id="@+id/musicStatusScrim"
+        android:layout_width="match_parent"
+        android:layout_height="24dp"
+        android:background="@drawable/vm_status_scrim" />
+
     <LinearLayout
         android:id="@+id/musicBottom"
         android:layout_width="match_parent"

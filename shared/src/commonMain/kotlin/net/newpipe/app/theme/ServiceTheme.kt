@@ -13,14 +13,15 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalInspectionMode
 import com.russhwolf.settings.Settings
 import net.newpipe.app.Constants.KEY_STREAMING_SERVICE
 import org.koin.compose.koinInject
 
 val youTubeLightScheme = lightColorScheme(
-    primaryContainer = Color(0xFFE53935),
-    onPrimaryContainer = Color(0xFFFFFFFF)
+    primaryContainer = Color(0xFFFFFFFF),
+    onPrimaryContainer = Color(0xFF000000)
 )
 
 val youTubeDarkScheme = darkColorScheme(
@@ -135,7 +136,12 @@ fun currentService(settings: Settings = koinInject()): Service {
 @Composable
 fun currentServiceScheme(
     isPreview: Boolean = LocalInspectionMode.current,
-    useDarkTheme: Boolean = isSystemInDarkTheme(),
+    // il tema scelto nell'app, non quello del telefono: con il tema Nero la barra resta scura
+    useDarkTheme: Boolean = if (isPreview) {
+        isSystemInDarkTheme()
+    } else {
+        currentColorScheme().background.luminance() < 0.5f
+    },
     service: Service = if (isPreview) Service.YOUTUBE else currentService()
 ): ColorScheme {
     return when {

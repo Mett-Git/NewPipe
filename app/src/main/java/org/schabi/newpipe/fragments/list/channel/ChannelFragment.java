@@ -451,9 +451,10 @@ public class ChannelFragment extends BaseStateFragment<ChannelInfo>
         final boolean enabled = available
                 && subscription.getNotificationMode() == NotificationMode.ENABLED;
         binding.channelNotifyButton.setAlpha(available ? 1f : 0.45f);
+        // spenta: dello stesso colore delle altre icone (prima restava nera sul tema scuro)
         binding.channelNotifyButton.setImageTintList(enabled
                 ? ColorStateList.valueOf(ContextCompat.getColor(activity, R.color.vetro_coral))
-                : null);
+                : ContextCompat.getColorStateList(activity, R.color.defaultIconTint));
         binding.channelNotifyButton.setOnClickListener(v -> {
             if (available) {
                 setNotify(!enabled);

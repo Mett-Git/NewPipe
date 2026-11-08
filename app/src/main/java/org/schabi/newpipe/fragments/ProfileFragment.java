@@ -102,8 +102,9 @@ public class ProfileFragment extends BaseFragment {
         disposables.add(new SubscriptionManager(requireContext()).subscriptions().firstOrError()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(list -> subtitle.setText(
-                        getString(R.string.profile_subscriptions, list.size())), error -> { }));
+                .subscribe(list -> subtitle.setText(getResources().getQuantityString(
+                        R.plurals.profile_subscriptions, list.size(), list.size())),
+                        error -> { }));
     }
 
     @Override

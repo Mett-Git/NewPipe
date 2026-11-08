@@ -284,6 +284,9 @@ public final class MusicActivity extends AppCompatActivity
         params.bottomMargin = bottomInset + DeviceUtils.dpToPx(8, this);
         binding.musicBottom.setLayoutParams(params);
         binding.musicPanel.setPadding(0, topInset, 0, bottomInset);
+        final ViewGroup.LayoutParams scrim = binding.musicStatusScrim.getLayoutParams();
+        scrim.height = topInset + DeviceUtils.dpToPx(16, this);
+        binding.musicStatusScrim.setLayoutParams(scrim);
         binding.musicPlayerContent.setPadding(
                 binding.musicPlayerContent.getPaddingLeft(), topInset,
                 binding.musicPlayerContent.getPaddingRight(),
@@ -900,7 +903,10 @@ public final class MusicActivity extends AppCompatActivity
         binding.musicPlayerTint.setBackground(top);
         final GradientDrawable glow = new GradientDrawable();
         glow.setGradientType(GradientDrawable.RADIAL_GRADIENT);
-        glow.setGradientRadius(DeviceUtils.dpToPx(210, this));
+        // il bagliore deve sparire prima dei bordi del riquadro, o se ne vede il rettangolo
+        final int box = Math.min(binding.musicPlayerCoverBox.getWidth(),
+                binding.musicPlayerCoverBox.getHeight());
+        glow.setGradientRadius(box > 0 ? box / 2f : DeviceUtils.dpToPx(150, this));
         glow.setColors(new int[]{ColorUtils.setAlphaComponent(color, 0x88), Color.TRANSPARENT});
         binding.musicPlayerCoverBox.setBackground(glow);
     }
