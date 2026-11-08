@@ -64,8 +64,8 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
             android:stateListAnimator="@animator/vetro_press"
             android:text="@string/vm_play"
             android:textColor="#000000"
@@ -80,12 +80,40 @@
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
-            android:paddingStart="24dp"
-            android:paddingEnd="24dp"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
             android:stateListAnimator="@animator/vetro_press"
             android:text="@string/vm_shuffle"
             android:textColor="@color/vm_text"
             android:textSize="14sp"
             android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/musicListExtra"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/vm_glass"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:stateListAnimator="@animator/vetro_press"
+            android:textColor="@color/vm_text"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/musicListAddAll"
+            style="@style/VetroMusicIcon"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="10dp"
+            android:background="@drawable/vm_glass"
+            android:contentDescription="@string/vm_add_all"
+            android:src="@drawable/ic_playlist_add"
+            android:visibility="gone" />
     </LinearLayout>
 </LinearLayout>

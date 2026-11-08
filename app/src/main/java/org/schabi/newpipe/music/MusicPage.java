@@ -56,7 +56,7 @@ public abstract class MusicPage extends Fragment {
     protected static final String FILTER_ARTISTS = "music_artists";
     private static final String TRENDING_KIOSK = "trending_music";
     private static final String TRENDING_FALLBACK = "top hits";
-    private static final int COVER_SIZE = 600;
+    private static final int COVER_SIZE = 800;
     private static final int NEAR_END_DP = 500;
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
@@ -231,7 +231,12 @@ public abstract class MusicPage extends Fragment {
         RestrictedVideos.bind(row.findViewById(R.id.musicRowBadge), song.getUrl(),
                 song.getContentAvailability());
         row.setOnClickListener(v -> host().playSongs(songs, index, false));
-        row.findViewById(R.id.musicRowMore).setOnClickListener(v -> showSongMenu(v, song));
+        final View more = row.findViewById(R.id.musicRowMore);
+        more.setOnClickListener(v -> showSongMenu(v, song));
+        row.setOnLongClickListener(v -> {
+            showSongMenu(more, song);
+            return true;
+        });
         songRows.add(row);
         markRow(row);
         return row;
@@ -286,7 +291,7 @@ public abstract class MusicPage extends Fragment {
                     MusicActions.share(activity, song);
                     break;
                 default:
-                    host().openPage(MusicListPage.artist(song.getUploaderName(), null));
+                    host().openPage(MusicArtistPage.create(song.getUploaderName(), null));
                     break;
             }
             return true;
@@ -355,6 +360,10 @@ public abstract class MusicPage extends Fragment {
                     .setText(song.getUploaderName());
             loadCover(card.findViewById(R.id.musicCardCover), song.getThumbnails());
             card.setOnClickListener(v -> host().playSongs(songs, index, false));
+            card.setOnLongClickListener(v -> {
+                showSongMenu(v, song);
+                return true;
+            });
             strip.addView(card);
         }
         scroll.addView(strip);
@@ -363,7 +372,7 @@ public abstract class MusicPage extends Fragment {
 
     private void openItem(final InfoItem item) {
         if (item instanceof ChannelInfoItem) {
-            host().openPage(MusicListPage.artist(item.getName(),
+            host().openPage(MusicArtistPage.create(item.getName(),
                     ImageStrategy.INSTANCE.imageListToDbUrl(item.getThumbnails())));
         } else {
             host().openPage(MusicListPage.playlist(item.getName(), item.getUrl()));
@@ -376,10 +385,20 @@ public abstract class MusicPage extends Fragment {
      */
     public static void loadCover(@NonNull final ImageView view,
                                  @NonNull final List<Image> images) {
+        CoilHelper.INSTANCE.loadThumbnail(view, coverUrl(images));
+    }
+
+    /**
+     * @param images le misure disponibili
+     * @return l'indirizzo da usare per la copertina
+     */
+    @Nullable
+    public static String coverUrl(@NonNull final List<Image> images) {
         final String url = ImageStrategy.INSTANCE.choosePreferredImage(images);
         // YouTube Music dà copertine minuscole, ma nell'indirizzo si può chiedere la misura
-        CoilHelper.INSTANCE.loadThumbnail(view, url == null ? null
-                : url.replaceAll("=w\\d+-h\\d+", "=w" + COVER_SIZE + "-h" + COVER_SIZE));
+        return url == null ? null
+                : url.replaceAll("=w\\d+-h\\d+", "=w" + COVER_SIZE + "-h" + COVER_SIZE)
+                .replaceAll("=s\\d+(?=-|$)", "=s" + COVER_SIZE);
     }
     //endregion
 

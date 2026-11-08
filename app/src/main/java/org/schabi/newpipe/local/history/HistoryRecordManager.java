@@ -44,6 +44,7 @@ import org.schabi.newpipe.extractor.InfoItem;
 import org.schabi.newpipe.extractor.stream.StreamInfo;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
 import org.schabi.newpipe.local.feed.FeedViewModel;
+import org.schabi.newpipe.music.MusicStore;
 import org.schabi.newpipe.player.playqueue.PlayQueueItem;
 import org.schabi.newpipe.util.ExtractorHelper;
 
@@ -182,7 +183,8 @@ public class HistoryRecordManager {
     }
 
     private boolean isStreamHistoryEnabled() {
-        return sharedPreferences.getBoolean(streamHistoryKey, false);
+        return sharedPreferences.getBoolean(streamHistoryKey, false)
+                && !sharedPreferences.getBoolean(MusicStore.PRIVATE_SESSION_KEY, false);
     }
 
     ///////////////////////////////////////////////////////

@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.preference.PreferenceManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,10 +15,17 @@ import org.schabi.newpipe.extractor.stream.StreamType;
 import org.schabi.newpipe.util.image.ImageStrategy;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /** I brani ascoltati di recente e quelli che piacciono: restano solo sul telefono. */
 public final class MusicStore {
+    /** Nelle impostazioni normali: la legge anche la cronologia di NewPipe. */
+    public static final String PRIVATE_SESSION_KEY = "vetro_music_private_session";
     private static final String PREFERENCES = "vetro_music";
     private static final String RECENT = "recent";
     private static final String LIKED = "liked";
@@ -25,6 +33,10 @@ public final class MusicStore {
     private static final String SESSION_SONGS = "session_songs";
     private static final String SESSION_INDEX = "session_index";
     private static final String SESSION_POSITION = "session_position";
+    private static final String PLAYS = "plays";
+    private static final String SECONDS = "seconds_";
+    private static final String FOLLOWED = "followed";
+    private static final String FADE = "fade_seconds";
     private static final int MAX_RECENT = 50;
     private static final int MAX_SEARCHES = 8;
 
@@ -202,6 +214,302 @@ public final class MusicStore {
         }
     }
 
+    private static JSONObject toJson(final StreamInfoItem song) throws JSONException {
+        return new JSONObject()
+                .put("service", song.getServiceId())
+                .put("url", song.getUrl())
+                .put("title", song.getName())
+                .put("type", song.getStreamType().name())
+                .put("artist", song.getUploaderName())
+                .put("artistUrl", song.getUploaderUrl())
+                .put("duration", song.getDuration())
+                .put("cover", ImageStrategy.INSTANCE.imageListToDbUrl(song.getThumbnails()));
+    }
+
+    private static StreamInfoItem fromJson(final JSONObject json) throws JSONException {
+        final StreamInfoItem song = new StreamInfoItem(json.getInt("service"),
+                json.getString("url"), json.getString("title"),
+                StreamType.valueOf(json.getString("type")));
+        song.setUploaderName(json.optString("artist"));
+        song.setUploaderUrl(json.optString("artistUrl"));
+        song.setDuration(json.optLong("duration"));
+        song.setThumbnails(ImageStrategy.INSTANCE.dbUrlToImageList(
+                json.optString("cover", null)));
+        return song;
+    }
+
+    //region Quanto si ascolta
+
+    /**
+     * @param context per scrivere
+     * @param song    il brano appena partito
+     */
+    public static void addPlay(@NonNull final Context context,
+                               @NonNull final StreamInfoItem song) {
+        try {
+            final JSONObject plays = new JSONObject(preferences(context).getString(PLAYS, "{}"));
+            final JSONObject old = plays.optJSONObject(song.getUrl());
+            plays.put(song.getUrl(), new JSONObject()
+                    .put("count", old == null ? 1 : old.optInt("count") + 1)
+                    .put("song", toJson(song)));
+            preferences(context).edit().putString(PLAYS, plays.toString()).apply();
+        } catch (final JSONException e) {
+            // un ascolto non contato non è grave
+        }
+    }
+
+    private static List<Play> plays(final Context context) {
+        final List<Play> plays = new ArrayList<>();
+        try {
+            final JSONObject json = new JSONObject(preferences(context).getString(PLAYS, "{}"));
+            final Iterator<String> urls = json.keys();
+            while (urls.hasNext()) {
+                final JSONObject play = json.getJSONObject(urls.next());
+                plays.add(new Play(fromJson(play.getJSONObject("song")), play.optInt("count")));
+            }
+        } catch (final JSONException | IllegalArgumentException e) {
+            return new ArrayList<>();
+        }
+        Collections.sort(plays, (x, y) -> Integer.compare(y.count, x.count));
+        return plays;
+    }
+
+    /**
+     * @param context per leggere
+     * @param limit   quanti al massimo
+     * @return i brani più ascoltati
+     */
+    public static List<StreamInfoItem> topSongs(@NonNull final Context context, final int limit) {
+        final List<StreamInfoItem> songs = new ArrayList<>();
+        for (final Play play : plays(context)) {
+            if (songs.size() < limit) {
+                songs.add(play.song);
+            }
+        }
+        return songs;
+    }
+
+    /**
+     * @param context per leggere
+     * @param limit   quanti al massimo
+     * @return gli artisti più ascoltati, ognuno col suo brano più ascoltato
+     */
+    public static List<TopArtist> topArtists(@NonNull final Context context, final int limit) {
+        final Map<String, TopArtist> artists = new LinkedHashMap<>();
+        for (final Play play : plays(context)) {
+            final String name = play.song.getUploaderName();
+            if (name == null || name.isEmpty()) {
+                continue;
+            }
+            final TopArtist artist = artists.get(name);
+            if (artist == null) {
+                artists.put(name, new TopArtist(name, play.song, play.count));
+            } else {
+                artist.plays += play.count;
+            }
+        }
+        final List<TopArtist> sorted = new ArrayList<>(artists.values());
+        Collections.sort(sorted, (x, y) -> Integer.compare(y.plays, x.plays));
+        return new ArrayList<>(sorted.subList(0, Math.min(limit, sorted.size())));
+    }
+
+    private static String monthKey() {
+        final Calendar now = Calendar.getInstance();
+        return SECONDS + now.get(Calendar.YEAR) + "_" + now.get(Calendar.MONTH);
+    }
+
+    /**
+     * @param context per scrivere
+     * @param seconds quanti secondi in più sono stati ascoltati
+     */
+    public static void addListenedSeconds(@NonNull final Context context, final int seconds) {
+        final String key = monthKey();
+        preferences(context).edit()
+                .putInt(key, preferences(context).getInt(key, 0) + seconds).apply();
+    }
+
+    /**
+     * @param context per leggere
+     * @return i minuti ascoltati in questo mese
+     */
+    public static int minutesThisMonth(@NonNull final Context context) {
+        return preferences(context).getInt(monthKey(), 0) / 60;
+    }
+
+    /** Un artista tra i più ascoltati. */
+    public static final class TopArtist {
+        private final String name;
+        private final StreamInfoItem song;
+        private int plays;
+
+        TopArtist(final String name, final StreamInfoItem song, final int plays) {
+            this.name = name;
+            this.song = song;
+            this.plays = plays;
+        }
+
+        /**
+         * @return il nome
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * @return il suo brano più ascoltato
+         */
+        public StreamInfoItem getSong() {
+            return song;
+        }
+
+        /**
+         * @return quante volte sono partiti i suoi brani
+         */
+        public int getPlays() {
+            return plays;
+        }
+    }
+
+    private static final class Play {
+        private final StreamInfoItem song;
+        private final int count;
+
+        Play(final StreamInfoItem song, final int count) {
+            this.song = song;
+            this.count = count;
+        }
+    }
+    //endregion
+
+    //region Artisti seguiti
+
+    /**
+     * @param context per leggere
+     * @return gli artisti seguiti
+     */
+    public static List<FollowedArtist> followed(@NonNull final Context context) {
+        final List<FollowedArtist> artists = new ArrayList<>();
+        try {
+            final JSONArray array = new JSONArray(preferences(context).getString(FOLLOWED, "[]"));
+            for (int i = 0; i < array.length(); i++) {
+                final JSONObject json = array.getJSONObject(i);
+                artists.add(new FollowedArtist(json.getString("name"),
+                        json.optString("cover", null)));
+            }
+        } catch (final JSONException e) {
+            return new ArrayList<>();
+        }
+        return artists;
+    }
+
+    /**
+     * @param context per leggere
+     * @param name    il nome dell'artista
+     * @return true se lo si segue
+     */
+    public static boolean isFollowed(@NonNull final Context context, final String name) {
+        for (final FollowedArtist artist : followed(context)) {
+            if (artist.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param context per scrivere
+     * @param name    il nome dell'artista
+     * @param cover   la sua foto
+     * @return true se ora lo si segue
+     */
+    public static boolean toggleFollow(@NonNull final Context context, @NonNull final String name,
+                                       @Nullable final String cover) {
+        final JSONArray array = new JSONArray();
+        boolean found = false;
+        try {
+            for (final FollowedArtist artist : followed(context)) {
+                if (artist.getName().equals(name)) {
+                    found = true;
+                } else {
+                    array.put(new JSONObject().put("name", artist.getName())
+                            .put("cover", artist.getCover()));
+                }
+            }
+            if (!found) {
+                array.put(new JSONObject().put("name", name).put("cover", cover));
+            }
+        } catch (final JSONException e) {
+            return found;
+        }
+        preferences(context).edit().putString(FOLLOWED, array.toString()).apply();
+        return !found;
+    }
+
+    /** Un artista seguito. */
+    public static final class FollowedArtist {
+        private final String name;
+        @Nullable
+        private final String cover;
+
+        FollowedArtist(final String name, @Nullable final String cover) {
+            this.name = name;
+            this.cover = cover;
+        }
+
+        /**
+         * @return il nome
+         */
+        public String getName() {
+            return name;
+        }
+
+        /**
+         * @return la foto, se si conosce
+         */
+        @Nullable
+        public String getCover() {
+            return cover;
+        }
+    }
+    //endregion
+
+    //region Scelte
+
+    /**
+     * @param context per leggere
+     * @return true se la sessione privata è accesa
+     */
+    public static boolean isPrivate(@NonNull final Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(PRIVATE_SESSION_KEY, false);
+    }
+
+    /**
+     * @param context per scrivere
+     * @param value   true per non salvare ascolti né cronologia
+     */
+    public static void setPrivate(@NonNull final Context context, final boolean value) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putBoolean(PRIVATE_SESSION_KEY, value).apply();
+    }
+
+    /**
+     * @param context per leggere
+     * @return quanti secondi dura la dissolvenza, 0 se è spenta
+     */
+    public static int fadeSeconds(@NonNull final Context context) {
+        return preferences(context).getInt(FADE, 0);
+    }
+
+    /**
+     * @param context per scrivere
+     * @param seconds quanti secondi deve durare la dissolvenza, 0 per spegnerla
+     */
+    public static void setFadeSeconds(@NonNull final Context context, final int seconds) {
+        preferences(context).edit().putInt(FADE, seconds).apply();
+    }
+    //endregion
+
     private static boolean remove(final List<StreamInfoItem> songs, final String url) {
         for (int i = 0; i < songs.size(); i++) {
             if (songs.get(i).getUrl().equals(url)) {
@@ -221,15 +529,7 @@ public final class MusicStore {
         try {
             final JSONArray array = new JSONArray(preferences(context).getString(key, "[]"));
             for (int i = 0; i < array.length(); i++) {
-                final JSONObject json = array.getJSONObject(i);
-                final StreamInfoItem song = new StreamInfoItem(json.getInt("service"),
-                        json.getString("url"), json.getString("title"),
-                        StreamType.valueOf(json.getString("type")));
-                song.setUploaderName(json.optString("artist"));
-                song.setUploaderUrl(json.optString("artistUrl"));
-                song.setDuration(json.optLong("duration"));
-                song.setThumbnails(ImageStrategy.INSTANCE.dbUrlToImageList(
-                        json.optString("cover", null)));
+                final StreamInfoItem song = fromJson(array.getJSONObject(i));
                 songs.add(song);
             }
         } catch (final JSONException | IllegalArgumentException e) {
@@ -243,16 +543,7 @@ public final class MusicStore {
         final JSONArray array = new JSONArray();
         try {
             for (final StreamInfoItem song : songs) {
-                array.put(new JSONObject()
-                        .put("service", song.getServiceId())
-                        .put("url", song.getUrl())
-                        .put("title", song.getName())
-                        .put("type", song.getStreamType().name())
-                        .put("artist", song.getUploaderName())
-                        .put("artistUrl", song.getUploaderUrl())
-                        .put("duration", song.getDuration())
-                        .put("cover", ImageStrategy.INSTANCE.imageListToDbUrl(
-                                song.getThumbnails())));
+                array.put(toJson(song));
             }
         } catch (final JSONException e) {
             return;

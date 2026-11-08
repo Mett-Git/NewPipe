@@ -159,6 +159,11 @@
         android:focusable="true"
         android:visibility="invisible">
 
+        <View
+            android:id="@+id/musicPlayerTint"
+            android:layout_width="match_parent"
+            android:layout_height="440dp" />
+
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -208,6 +213,7 @@
                 </LinearLayout>
 
                 <FrameLayout
+                    android:id="@+id/musicPlayerCoverBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/vm_cover_glow"

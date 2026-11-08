@@ -683,6 +683,7 @@ public final class Player implements PlaybackListener, Listener {
     }
 
     public void destroy() {
+        MusicPlayerHook.onPlayerDestroyed(this);
         if (DEBUG) {
             Log.d(TAG, "destroy() called");
         }
@@ -996,6 +997,7 @@ public final class Player implements PlaybackListener, Listener {
                                   final int duration,
                                   final int bufferPercent) {
         if (isPrepared) {
+            MusicPlayerHook.onProgress(this, currentProgress, duration);
             UIs.call(ui -> ui.onUpdateProgress(currentProgress, duration, bufferPercent));
             notifyProgressUpdateToListeners(currentProgress, duration, bufferPercent);
         }
@@ -1916,6 +1918,7 @@ public final class Player implements PlaybackListener, Listener {
 
         loadCurrentThumbnail(info.getThumbnails());
         registerStreamViewed();
+        MusicPlayerHook.onSongStarted(this);
 
         notifyMetadataUpdateToListeners();
         notifyAudioTrackUpdateToListeners();

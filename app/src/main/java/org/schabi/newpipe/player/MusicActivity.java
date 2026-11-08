@@ -3,13 +3,16 @@ package org.schabi.newpipe.player;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -32,6 +35,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.graphics.ColorUtils;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -47,14 +51,15 @@ import org.schabi.newpipe.R;
 import org.schabi.newpipe.databinding.ActivityMusicBinding;
 import org.schabi.newpipe.extractor.stream.StreamInfo;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
+import org.schabi.newpipe.local.dialog.PlaylistDialog;
 import org.schabi.newpipe.music.MusicActions;
+import org.schabi.newpipe.music.MusicArtistPage;
 import org.schabi.newpipe.music.MusicEqualizer;
 import org.schabi.newpipe.music.MusicEqualizerPanel;
 import org.schabi.newpipe.music.MusicExplorePage;
 import org.schabi.newpipe.music.MusicHomePage;
 import org.schabi.newpipe.music.MusicHost;
 import org.schabi.newpipe.music.MusicLibraryPage;
-import org.schabi.newpipe.music.MusicListPage;
 import org.schabi.newpipe.music.MusicLyricsPanel;
 import org.schabi.newpipe.music.MusicPage;
 import org.schabi.newpipe.music.MusicQueuePanel;
@@ -68,12 +73,16 @@ import org.schabi.newpipe.player.playqueue.SinglePlayQueue;
 import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.NavigationHelper;
+import org.schabi.newpipe.util.image.CoilHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 /**
  * NewPipe Music: l'intro, la barra in basso, il mini lettore e il lettore a tutto schermo.
@@ -82,19 +91,19 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 public final class MusicActivity extends AppCompatActivity
         implements MusicHost, PlayerEventListener, PlaybackParameterDialog.Callback {
     private static final String EXTRA_OPEN_PLAYER = "music_open_player";
+    private static final String EXTRA_SKIP_INTRO = "music_skip_intro";
+    private static boolean wasOpen = false;
     private static final String STATE_TAB = "music_tab";
     private static final long INTRO_MILLIS = 1500;
     private static final long POLL_MILLIS = 500;
     private static final int MAX_QUEUE_ROWS = 30;
-    private static final int MAX_SAVED_SONGS = 100;
-    private static final long SAVE_POSITION_MILLIS = 10000;
+    private static final int[] FADE_SECONDS = {0, 3, 6, 12};
     private static final int[] TIMER_MINUTES = {15, 30, 45, 60, 90};
+    private static final int DEFAULT_COVER_COLOR = 0xFFFF8A73;
+    private static final float MIN_COLOR_WEIGHT = 8f;
     private static final int TAB_HOME = 0;
     private static final int TAB_EXPLORE = 1;
     private static final int TAB_LIBRARY = 2;
-
-    // la musica è partita da qui: l'avviso del lettore deve riportare qui, non alla coda classica
-    private static boolean session = false;
 
     private ActivityMusicBinding binding;
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -120,7 +129,9 @@ public final class MusicActivity extends AppCompatActivity
     private MusicLyricsPanel lyricsPanel;
     @Nullable
     private MusicQueuePanel queuePanel;
-    private long lastSavedPosition = 0;
+    private int coverColor = 0;
+    @Nullable
+    private ValueAnimator colorAnimator;
 
     private final ServiceConnection connection = new ServiceConnection() {
         @Override
@@ -138,12 +149,29 @@ public final class MusicActivity extends AppCompatActivity
     };
 
     /**
+     * L'icona dell'app chiude le schermate sopra quella principale: se si era in Music, bisogna
+     * tornarci.
+     *
+     * @param activity la schermata principale, appena riaperta dall'icona
+     * @param intent   come è stata riaperta
+     */
+    public static void returnIfWasOpen(@NonNull final Activity activity,
+                                       @Nullable final Intent intent) {
+        if (wasOpen && intent != null && Intent.ACTION_MAIN.equals(intent.getAction())
+                && intent.hasCategory(Intent.CATEGORY_LAUNCHER)) {
+            activity.startActivity(new Intent(activity, MusicActivity.class)
+                    .putExtra(EXTRA_SKIP_INTRO, true));
+            activity.overridePendingTransition(0, 0);
+        }
+    }
+
+    /**
      * @param context per preparare l'indirizzo
      * @return dove deve portare l'avviso del lettore, null se la musica non è partita da qui
      */
     @Nullable
     public static Intent notificationIntent(@NonNull final Context context) {
-        return session
+        return MusicPlayerHook.isSession()
                 ? new Intent(context, MusicActivity.class).putExtra(EXTRA_OPEN_PLAYER, true)
                 : null;
     }
@@ -152,6 +180,7 @@ public final class MusicActivity extends AppCompatActivity
     @Override
     protected void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        wasOpen = true;
         binding = ActivityMusicBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
@@ -172,6 +201,8 @@ public final class MusicActivity extends AppCompatActivity
             if (getIntent().getBooleanExtra(EXTRA_OPEN_PLAYER, false)) {
                 binding.musicIntro.setVisibility(View.GONE);
                 binding.getRoot().post(() -> settlePlayer(1f));
+            } else if (getIntent().getBooleanExtra(EXTRA_SKIP_INTRO, false)) {
+                binding.musicIntro.setVisibility(View.GONE);
             } else {
                 playIntro();
             }
@@ -241,6 +272,7 @@ public final class MusicActivity extends AppCompatActivity
         } else if (tab != TAB_HOME) {
             selectTab(TAB_HOME);
         } else {
+            wasOpen = false;
             super.onBackPressed();
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
         }
@@ -387,7 +419,7 @@ public final class MusicActivity extends AppCompatActivity
     }
 
     private void startQueue(final PlayQueue queue) {
-        session = true;
+        MusicPlayerHook.setSession(true);
         final Intent intent = NavigationHelper.getPlayerIntent(this, PlayerService.class, queue,
                 PlayerIntentType.AllOthers)
                 .putExtra(Player.PLAYER_TYPE, PlayerType.AUDIO)
@@ -471,12 +503,10 @@ public final class MusicActivity extends AppCompatActivity
             binding.musicPlayerArtist.setText(item.getUploader());
             MusicPage.loadCover(binding.musicMiniCover, item.getThumbnails());
             MusicPage.loadCover(binding.musicPlayerCover, item.getThumbnails());
-            final StreamInfoItem song = toSong(item);
+            final StreamInfoItem song = MusicPlayerHook.toSong(item);
             binding.musicPlayerLike.setImageResource(MusicStore.isLiked(this, song.getUrl())
                     ? R.drawable.ic_favorite : R.drawable.ic_vm_favorite_border);
-            if (session && player.audioPlayerSelected()) {
-                MusicStore.addRecent(this, song);
-            }
+            loadCoverColor(item);
             if (lyricsPanel != null) {
                 lyricsPanel.load(item.getTitle(), item.getUploader(), item.getDuration());
             }
@@ -486,36 +516,10 @@ public final class MusicActivity extends AppCompatActivity
         if (!key.equals(queueKey)) {
             queueKey = key;
             renderQueue(queue);
-            saveSession(queue);
             if (queuePanel != null) {
                 queuePanel.refresh(playing);
             }
         }
-    }
-
-    // per poter riprendere da qui la prossima volta (al massimo i prossimi 100 brani)
-    private void saveSession(final PlayQueue queue) {
-        if (!session || player == null || !player.audioPlayerSelected()) {
-            return;
-        }
-        final List<PlayQueueItem> items = queue.getStreams();
-        final int first = queue.getIndex();
-        final int last = Math.min(items.size(), first + MAX_SAVED_SONGS);
-        final List<StreamInfoItem> songs = new ArrayList<>();
-        for (int i = first; i < last; i++) {
-            songs.add(toSong(items.get(i)));
-        }
-        MusicStore.saveSession(this, songs, 0);
-    }
-
-    private static StreamInfoItem toSong(final PlayQueueItem item) {
-        final StreamInfoItem song = new StreamInfoItem(item.getServiceId(), item.getUrl(),
-                item.getTitle(), item.getStreamType());
-        song.setUploaderName(item.getUploader());
-        song.setUploaderUrl(item.getUploaderUrl());
-        song.setDuration(item.getDuration());
-        song.setThumbnails(item.getThumbnails());
-        return song;
     }
 
     private void renderQueue(final PlayQueue queue) {
@@ -601,10 +605,6 @@ public final class MusicActivity extends AppCompatActivity
         if (lyricsPanel != null) {
             lyricsPanel.onProgress(currentProgress);
         }
-        if (session && Math.abs(currentProgress - lastSavedPosition) > SAVE_POSITION_MILLIS) {
-            lastSavedPosition = currentProgress;
-            MusicStore.savePosition(this, currentProgress);
-        }
     }
 
     @Override
@@ -614,7 +614,6 @@ public final class MusicActivity extends AppCompatActivity
 
     @Override
     public void onServiceStopped() {
-        session = false;
         if (player != null) {
             player.removeActivityListener(this);
             player = null;
@@ -821,6 +820,92 @@ public final class MusicActivity extends AppCompatActivity
     }
     //endregion
 
+    //region Dissolvenza e colore
+    private void showFadeMenu(final View anchor) {
+        final PopupMenu menu = new PopupMenu(this, anchor);
+        final int current = MusicStore.fadeSeconds(this);
+        for (int i = 0; i < FADE_SECONDS.length; i++) {
+            menu.getMenu().add(Menu.NONE, FADE_SECONDS[i], i, FADE_SECONDS[i] == 0
+                            ? getString(R.string.vm_fade_off)
+                            : getString(R.string.vm_fade_seconds, FADE_SECONDS[i]))
+                    .setCheckable(true).setChecked(FADE_SECONDS[i] == current);
+        }
+        menu.setOnMenuItemClickListener(item -> {
+            MusicStore.setFadeSeconds(this, item.getItemId());
+            return true;
+        });
+        menu.show();
+    }
+
+    // Come su Spotify: il lettore prende il colore della copertina.
+    private void loadCoverColor(final PlayQueueItem item) {
+        final String url = MusicPage.coverUrl(item.getThumbnails());
+        final Context application = getApplicationContext();
+        disposables.add(Single.fromCallable(() -> {
+                    final Bitmap bitmap =
+                            CoilHelper.INSTANCE.loadBitmapBlocking(application, url, 0);
+                    return bitmap == null ? DEFAULT_COVER_COLOR : mainColor(bitmap);
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::showCoverColor, error -> showCoverColor(DEFAULT_COVER_COLOR)));
+    }
+
+    // Il colore medio dei punti più vivi: il bianco, il nero e i grigi non contano.
+    private static int mainColor(final Bitmap bitmap) {
+        final Bitmap small = Bitmap.createScaledBitmap(
+                bitmap.copy(Bitmap.Config.ARGB_8888, false), 24, 24, true);
+        final float[] hsv = new float[3];
+        float red = 0;
+        float green = 0;
+        float blue = 0;
+        float total = 0;
+        for (int x = 0; x < small.getWidth(); x++) {
+            for (int y = 0; y < small.getHeight(); y++) {
+                final int pixel = small.getPixel(x, y);
+                Color.colorToHSV(pixel, hsv);
+                final float weight = hsv[1] * hsv[2] * hsv[1];
+                red += Color.red(pixel) * weight;
+                green += Color.green(pixel) * weight;
+                blue += Color.blue(pixel) * weight;
+                total += weight;
+            }
+        }
+        if (total < MIN_COLOR_WEIGHT) {
+            return DEFAULT_COVER_COLOR;
+        }
+        Color.colorToHSV(Color.rgb((int) (red / total), (int) (green / total),
+                (int) (blue / total)), hsv);
+        hsv[1] = Math.max(hsv[1], 0.45f);
+        hsv[2] = Math.max(hsv[2], 0.7f);
+        return Color.HSVToColor(hsv);
+    }
+
+    private void showCoverColor(final int color) {
+        if (colorAnimator != null) {
+            colorAnimator.cancel();
+        }
+        colorAnimator = ValueAnimator.ofArgb(coverColor == 0 ? color : coverColor, color);
+        colorAnimator.setDuration(450);
+        colorAnimator.addUpdateListener(animation -> {
+            coverColor = (int) animation.getAnimatedValue();
+            paintCoverColor(coverColor);
+        });
+        colorAnimator.start();
+    }
+
+    private void paintCoverColor(final int color) {
+        final GradientDrawable top = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{ColorUtils.setAlphaComponent(color, 0x99), Color.TRANSPARENT});
+        binding.musicPlayerTint.setBackground(top);
+        final GradientDrawable glow = new GradientDrawable();
+        glow.setGradientType(GradientDrawable.RADIAL_GRADIENT);
+        glow.setGradientRadius(DeviceUtils.dpToPx(210, this));
+        glow.setColors(new int[]{ColorUtils.setAlphaComponent(color, 0x88), Color.TRANSPARENT});
+        binding.musicPlayerCoverBox.setBackground(glow);
+    }
+    //endregion
+
     //region Menu del lettore
     private void showPlayerMenu(final View anchor) {
         final PlayQueue queue = player == null ? null : player.getPlayQueue();
@@ -828,7 +913,7 @@ public final class MusicActivity extends AppCompatActivity
         if (item == null) {
             return;
         }
-        final StreamInfoItem song = toSong(item);
+        final StreamInfoItem song = MusicPlayerHook.toSong(item);
         final PopupMenu menu = new PopupMenu(this, anchor);
         menu.getMenu().add(Menu.NONE, 1, 1, R.string.vm_radio);
         menu.getMenu().add(Menu.NONE, 2, 2, R.string.vm_add_to_playlist);
@@ -836,7 +921,9 @@ public final class MusicActivity extends AppCompatActivity
         menu.getMenu().add(Menu.NONE, 4, 4, R.string.vm_share);
         menu.getMenu().add(Menu.NONE, 5, 5, R.string.vm_go_to_artist);
         menu.getMenu().add(Menu.NONE, 6, 6, R.string.vm_watch_video);
-        menu.getMenu().add(Menu.NONE, 7, 7, R.string.vm_autoplay).setCheckable(true)
+        menu.getMenu().add(Menu.NONE, 8, 7, R.string.vm_save_queue);
+        menu.getMenu().add(Menu.NONE, 9, 8, R.string.vm_fade);
+        menu.getMenu().add(Menu.NONE, 7, 9, R.string.vm_autoplay).setCheckable(true)
                 .setChecked(PlayerHelper.isAutoQueueEnabled(this));
         menu.setOnMenuItemClickListener(choice -> {
             switch (choice.getItemId()) {
@@ -854,10 +941,18 @@ public final class MusicActivity extends AppCompatActivity
                     break;
                 case 5:
                     settlePlayer(0f);
-                    openPage(MusicListPage.artist(song.getUploaderName(), null));
+                    openPage(MusicArtistPage.create(song.getUploaderName(), null));
                     break;
                 case 6:
+                    wasOpen = false;
                     NavigationHelper.playOnMainPlayer((Context) this, queue, true);
+                    break;
+                case 8:
+                    disposables.add(PlaylistDialog.showForPlayQueue(player,
+                            getSupportFragmentManager()));
+                    break;
+                case 9:
+                    showFadeMenu(anchor);
                     break;
                 default:
                     PreferenceManager.getDefaultSharedPreferences(this).edit()
@@ -875,7 +970,7 @@ public final class MusicActivity extends AppCompatActivity
         final PlayQueue queue = player == null ? null : player.getPlayQueue();
         final PlayQueueItem item = queue == null ? null : queue.getItem();
         if (item != null) {
-            final boolean liked = MusicStore.toggleLiked(this, toSong(item));
+            final boolean liked = MusicStore.toggleLiked(this, MusicPlayerHook.toSong(item));
             binding.musicPlayerLike.setImageResource(
                     liked ? R.drawable.ic_favorite : R.drawable.ic_vm_favorite_border);
         }

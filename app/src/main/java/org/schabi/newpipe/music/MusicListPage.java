@@ -5,24 +5,29 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 
 import org.schabi.newpipe.NewPipeDatabase;
 import org.schabi.newpipe.R;
 import org.schabi.newpipe.database.playlist.PlaylistStreamEntry;
-import org.schabi.newpipe.extractor.InfoItem;
+import org.schabi.newpipe.database.stream.model.StreamEntity;
 import org.schabi.newpipe.extractor.Page;
-import org.schabi.newpipe.extractor.playlist.PlaylistInfoItem;
+import org.schabi.newpipe.extractor.playlist.PlaylistInfo;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
+import org.schabi.newpipe.local.dialog.PlaylistDialog;
 import org.schabi.newpipe.local.playlist.LocalPlaylistManager;
+import org.schabi.newpipe.local.playlist.RemotePlaylistManager;
 import org.schabi.newpipe.util.ExtractorHelper;
 import org.schabi.newpipe.util.image.ImageStrategy;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
@@ -36,12 +41,12 @@ public class MusicListPage extends MusicPage {
     private static final String ARG_COVER = "cover";
     private static final String ARG_ID = "id";
     private static final int KIND_PLAYLIST = 0;
-    private static final int KIND_ARTIST = 1;
     private static final int KIND_MOOD = 2;
     private static final int KIND_LIKED = 3;
     private static final int KIND_RECENT = 4;
     private static final int KIND_LOCAL = 5;
-    private static final int MAX_ALBUMS = 12;
+    private static final int KIND_MIX = 6;
+    private static final String ARG_ARTIST = "artist";
 
     private LinearLayout box;
     private View header;
@@ -71,17 +76,6 @@ public class MusicListPage extends MusicPage {
     }
 
     /**
-     * @param name  il nome dell'artista
-     * @param cover la sua foto, se si conosce
-     * @return la pagina
-     */
-    public static MusicListPage artist(@Nullable final String name, @Nullable final String cover) {
-        final MusicListPage page = page(KIND_ARTIST, name);
-        page.requireArguments().putString(ARG_COVER, cover);
-        return page;
-    }
-
-    /**
      * @param mood il genere o lo stato d'animo da cercare tra le playlist
      * @return la pagina
      */
@@ -103,6 +97,22 @@ public class MusicListPage extends MusicPage {
      */
     public static MusicListPage recent(@NonNull final String title) {
         return page(KIND_RECENT, title);
+    }
+
+    /**
+     * @param title  il titolo del mix
+     * @param artist l'artista da cui parte
+     * @param seed   il suo brano più ascoltato: i brani simili partono da qui
+     * @return la pagina
+     */
+    public static MusicListPage mix(@NonNull final String title, @NonNull final String artist,
+                                    @NonNull final StreamInfoItem seed) {
+        final MusicListPage page = page(KIND_MIX, title);
+        page.requireArguments().putString(ARG_ARTIST, artist);
+        page.requireArguments().putString(ARG_URL, seed.getUrl());
+        page.requireArguments().putString(ARG_COVER,
+                ImageStrategy.INSTANCE.imageListToDbUrl(seed.getThumbnails()));
+        return page;
     }
 
     /**
@@ -150,20 +160,27 @@ public class MusicListPage extends MusicPage {
                             box.removeView(spinner);
                             setSubtitle(info.getUploaderName());
                             nextPage = info.getNextPage();
+                            setupSaveButton(info);
                             shownSongs.clear();
                             shownSongs.addAll(onlySongs(info.getRelatedItems()));
                             showSongs(shownSongs);
                         }, error -> showError(spinner)));
                 break;
-            case KIND_ARTIST:
+            case KIND_MIX:
                 disposables.add(Single.zip(
-                                search(title, FILTER_SONGS),
-                                search(title, FILTER_ALBUMS)
+                                ExtractorHelper.getStreamInfo(YOUTUBE,
+                                                args.getString(ARG_URL), false)
+                                        .subscribeOn(Schedulers.io())
+                                        .observeOn(AndroidSchedulers.mainThread())
+                                        .map(info -> onlySongs(info.getRelatedItems()))
                                         .onErrorReturnItem(new ArrayList<>()),
-                                ArtistResults::new)
-                        .subscribe(results -> {
+                                search(args.getString(ARG_ARTIST, ""), FILTER_SONGS)
+                                        .map(MusicPage::onlySongs)
+                                        .onErrorReturnItem(new ArrayList<>()),
+                                MusicListPage::mixTogether)
+                        .subscribe(songs -> {
                             box.removeView(spinner);
-                            showArtist(title, results);
+                            showSongs(songs);
                         }, error -> showError(spinner)));
                 break;
             case KIND_MOOD:
@@ -224,6 +241,74 @@ public class MusicListPage extends MusicPage {
                 }));
     }
 
+    // uno a testa, senza doppioni
+    private static List<StreamInfoItem> mixTogether(final List<StreamInfoItem> first,
+                                                    final List<StreamInfoItem> second) {
+        final Map<String, StreamInfoItem> mixed = new LinkedHashMap<>();
+        for (int i = 0; i < Math.max(first.size(), second.size()); i++) {
+            if (i < first.size()) {
+                mixed.putIfAbsent(first.get(i).getUrl(), first.get(i));
+            }
+            if (i < second.size()) {
+                mixed.putIfAbsent(second.get(i).getUrl(), second.get(i));
+            }
+        }
+        return new ArrayList<>(mixed.values());
+    }
+
+    // l'album o la playlist finisce nella Raccolta, con i segnalibri di NewPipe
+    private void setupSaveButton(final PlaylistInfo info) {
+        final TextView button = header.findViewById(R.id.musicListExtra);
+        final RemotePlaylistManager manager =
+                new RemotePlaylistManager(NewPipeDatabase.getInstance(requireContext()));
+        button.setVisibility(View.VISIBLE);
+        disposables.add(manager.getPlaylist(info)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(saved -> {
+                    button.setText(saved.isEmpty() ? R.string.vm_save : R.string.vm_saved);
+                    button.setOnClickListener(v -> disposables.add((saved.isEmpty()
+                            ? manager.onBookmark(info).map(id -> 0)
+                            : manager.deletePlaylist(saved.get(0).getUid()))
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(done -> { }, error -> { })));
+                }, error -> button.setVisibility(View.GONE)));
+    }
+
+    // Prima carica anche le pagine non ancora scorse: devono entrare tutti i brani.
+    private void addAllToPlaylist(final List<StreamInfoItem> songs) {
+        final List<StreamInfoItem> all = new ArrayList<>(songs);
+        if (Page.isValid(nextPage)) {
+            Toast.makeText(requireContext(), R.string.vm_loading_all, Toast.LENGTH_SHORT).show();
+        }
+        disposables.add(loadRemaining(all, nextPage)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(complete -> {
+                    final List<StreamEntity> entities = new ArrayList<>();
+                    for (final StreamInfoItem song : complete) {
+                        entities.add(new StreamEntity(song));
+                    }
+                    final AppCompatActivity activity = (AppCompatActivity) requireActivity();
+                    disposables.add(PlaylistDialog.createCorrespondingDialog(activity, entities,
+                            dialog -> dialog.show(activity.getSupportFragmentManager(),
+                                    "musicAddAll")));
+                }, error -> Toast.makeText(requireContext(), R.string.vm_load_error,
+                        Toast.LENGTH_SHORT).show()));
+    }
+
+    private Single<List<StreamInfoItem>> loadRemaining(final List<StreamInfoItem> songs,
+                                                       @Nullable final Page page) {
+        if (!Page.isValid(page)) {
+            return Single.just(songs);
+        }
+        return ExtractorHelper.getMorePlaylistItems(YOUTUBE,
+                        requireArguments().getString(ARG_URL), page)
+                .subscribeOn(Schedulers.io())
+                .flatMap(more -> {
+                    songs.addAll(more.getItems());
+                    return loadRemaining(songs, more.getNextPage());
+                });
+    }
+
     private void showError(final View spinner) {
         box.removeView(spinner);
         addMessage(box, R.string.vm_load_error, this::loadContent);
@@ -253,44 +338,9 @@ public class MusicListPage extends MusicPage {
                 .setOnClickListener(v -> host().playSongs(songs, 0, false));
         header.findViewById(R.id.musicListShuffle)
                 .setOnClickListener(v -> host().playSongs(songs, 0, true));
+        final View addAll = header.findViewById(R.id.musicListAddAll);
+        addAll.setVisibility(View.VISIBLE);
+        addAll.setOnClickListener(v -> addAllToPlaylist(songs));
         addSongRows(box, songs);
-    }
-
-    // lo stesso nome porta anche a brani di altri: tiene quelli dell'artista, se ce ne sono
-    private void showArtist(final String name, final ArtistResults results) {
-        final List<StreamInfoItem> all = onlySongs(results.songs);
-        final List<StreamInfoItem> songs = new ArrayList<>();
-        for (final StreamInfoItem song : all) {
-            if (matches(song.getUploaderName(), name)) {
-                songs.add(song);
-            }
-        }
-        showSongs(songs.isEmpty() ? all : songs);
-        final List<InfoItem> albums = new ArrayList<>();
-        for (final InfoItem album : results.albums) {
-            if (albums.size() < MAX_ALBUMS && album instanceof PlaylistInfoItem
-                    && matches(((PlaylistInfoItem) album).getUploaderName(), name)) {
-                albums.add(album);
-            }
-        }
-        if (!albums.isEmpty()) {
-            addSection(box, getString(R.string.vm_chip_albums));
-            addItemRows(box, albums);
-        }
-    }
-
-    private static boolean matches(@Nullable final String uploader, @NonNull final String name) {
-        return uploader != null && uploader.toLowerCase(Locale.ROOT)
-                .contains(name.toLowerCase(Locale.ROOT));
-    }
-
-    private static final class ArtistResults {
-        private final List<InfoItem> songs;
-        private final List<InfoItem> albums;
-
-        ArtistResults(final List<InfoItem> songs, final List<InfoItem> albums) {
-            this.songs = songs;
-            this.albums = albums;
-        }
     }
 }
