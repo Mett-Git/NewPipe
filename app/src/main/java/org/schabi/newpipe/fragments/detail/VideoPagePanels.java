@@ -151,13 +151,13 @@ final class VideoPagePanels {
     // testo semplice su una riga sola, per le anteprime
     @NonNull
     private static String plainText(@Nullable final Description description) {
-        if (description == null || description.getContent() == null) {
+        if (description == null || description.content() == null) {
             return "";
         }
-        final CharSequence text = description.getType() == Description.HTML
-                ? HtmlCompat.fromHtml(description.getContent(),
+        final CharSequence text = description.type() == Description.Type.HTML
+                ? HtmlCompat.fromHtml(description.content(),
                         HtmlCompat.FROM_HTML_MODE_COMPACT)
-                : description.getContent();
+                : description.content();
         return text.toString().replaceAll("\\s+", " ").trim();
     }
 }
