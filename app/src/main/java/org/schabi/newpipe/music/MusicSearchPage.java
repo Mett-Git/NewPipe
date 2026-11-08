@@ -10,45 +10,49 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+
 import org.schabi.newpipe.R;
 import org.schabi.newpipe.extractor.InfoItem;
-import org.schabi.newpipe.extractor.Page;
+import org.schabi.newpipe.extractor.channel.ChannelInfoItem;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
 import org.schabi.newpipe.util.ExtractorHelper;
+import org.schabi.newpipe.util.Localization;
+import org.schabi.newpipe.util.image.ImageStrategy;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-/** La ricerca su YouTube Music: ricerche recenti, suggerimenti e risultati senza fine. */
+/**
+ * La ricerca su YouTube Music: ricerche recenti, suggerimenti e poi tutto in una schermata,
+ * prima gli artisti, poi brani, album e playlist.
+ */
 public class MusicSearchPage extends MusicPage {
     private static final long SUGGESTION_DELAY_MILLIS = 300;
-    private static final int[] CHIPS = {
-            R.string.vm_chip_songs, R.string.vm_chip_videos, R.string.vm_chip_albums,
-            R.string.vm_chip_playlists, R.string.vm_chip_artists};
-    private static final String[] FILTERS = {
-            FILTER_SONGS, FILTER_VIDEOS, FILTER_ALBUMS, FILTER_PLAYLISTS, FILTER_ARTISTS};
+    private static final int SONGS_SHOWN = 6;
+    private static final int MAX_ARTISTS = 12;
+    private static final int MAX_ALBUMS = 15;
+    private static final int MAX_PLAYLISTS = 15;
+    // segna una ricerca andata male, per distinguerla da una che non ha trovato niente
+    private static final List<InfoItem> FAILED = new ArrayList<>();
 
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable loadSuggestions = this::showSuggestions;
-    private final List<StreamInfoItem> shownSongs = new ArrayList<>();
     private EditText field;
-    private LinearLayout strip;
+    private View clear;
     private LinearLayout results;
-    private int selectedChip = 0;
     private String lastQuery = "";
     private boolean showingResults = false;
-    private boolean loadingMore = false;
-    private Page nextPage;
     private Disposable suggestions;
 
     @Override
@@ -57,6 +61,12 @@ public class MusicSearchPage extends MusicPage {
         content.addView(bar);
         bar.findViewById(R.id.musicSearchBack).setOnClickListener(v -> host().goBack());
         field = bar.findViewById(R.id.musicSearchField);
+        clear = bar.findViewById(R.id.musicSearchClear);
+        clear.setOnClickListener(v -> {
+            field.setText("");
+            field.requestFocus();
+            keyboard().showSoftInput(field, 0);
+        });
         field.setOnEditorActionListener((final TextView v, final int action,
                                          final KeyEvent event) -> {
             if (action == EditorInfo.IME_ACTION_SEARCH || event != null) {
@@ -80,28 +90,13 @@ public class MusicSearchPage extends MusicPage {
 
             @Override
             public void afterTextChanged(final Editable s) {
+                clear.setVisibility(s.length() == 0 ? View.GONE : View.VISIBLE);
                 onQueryChanged();
             }
         });
-        final HorizontalScrollView chips = new HorizontalScrollView(requireContext());
-        chips.setHorizontalScrollBarEnabled(false);
-        chips.setClipToPadding(false);
-        chips.setPadding(dp(12), 0, dp(12), 0);
-        strip = new LinearLayout(requireContext());
-        for (int i = 0; i < CHIPS.length; i++) {
-            final int index = i;
-            final TextView chip = (TextView) inflater()
-                    .inflate(R.layout.music_chip, strip, false);
-            chip.setText(CHIPS[i]);
-            chip.setSelected(i == selectedChip);
-            chip.setOnClickListener(v -> select(index));
-            strip.addView(chip);
-        }
-        chips.addView(strip);
-        content.addView(chips);
         results = new LinearLayout(requireContext());
         results.setOrientation(LinearLayout.VERTICAL);
-        results.setPadding(0, dp(8), 0, 0);
+        results.setPadding(0, dp(4), 0, 0);
         content.addView(results);
         showRecentSearches();
         field.requestFocus();
@@ -118,14 +113,6 @@ public class MusicSearchPage extends MusicPage {
     private InputMethodManager keyboard() {
         return (InputMethodManager) requireContext()
                 .getSystemService(Context.INPUT_METHOD_SERVICE);
-    }
-
-    private void select(final int index) {
-        selectedChip = index;
-        for (int i = 0; i < strip.getChildCount(); i++) {
-            strip.getChildAt(i).setSelected(i == index);
-        }
-        runSearch();
     }
 
     //region Recenti e suggerimenti
@@ -152,6 +139,7 @@ public class MusicSearchPage extends MusicPage {
     }
 
     private void showRecentSearches() {
+        disposables.clear();
         results.removeAllViews();
         final List<String> searches = MusicStore.searches(requireContext());
         if (searches.isEmpty()) {
@@ -179,6 +167,7 @@ public class MusicSearchPage extends MusicPage {
                     if (showingResults) {
                         return;
                     }
+                    disposables.clear();
                     results.removeAllViews();
                     for (final String suggestion : list) {
                         results.addView(textRow(suggestion, R.drawable.ic_search,
@@ -209,6 +198,10 @@ public class MusicSearchPage extends MusicPage {
     //endregion
 
     //region Risultati
+    private Single<List<InfoItem>> searchOrFail(final String query, final String filter) {
+        return search(query, filter).onErrorReturnItem(FAILED);
+    }
+
     private void runSearch() {
         final String query = field.getText().toString().trim();
         if (query.isEmpty()) {
@@ -222,58 +215,118 @@ public class MusicSearchPage extends MusicPage {
         keyboard().hideSoftInputFromWindow(field.getWindowToken(), 0);
         disposables.clear();
         results.removeAllViews();
-        shownSongs.clear();
-        nextPage = null;
-        loadingMore = false;
         final View spinner = addSpinner(results);
-        disposables.add(ExtractorHelper.searchFor(YOUTUBE, query,
-                        Collections.singletonList(FILTERS[selectedChip]), "")
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(info -> {
+        // le quattro ricerche partono insieme, la pagina si mostra quando ci sono tutte
+        disposables.add(Single.zip(
+                        searchOrFail(query, FILTER_ARTISTS),
+                        searchOrFail(query, FILTER_SONGS),
+                        searchOrFail(query, FILTER_ALBUMS),
+                        searchOrFail(query, FILTER_PLAYLISTS),
+                        (artists, songs, albums, playlists) -> {
+                            final List<List<InfoItem>> all = new ArrayList<>();
+                            all.add(artists);
+                            all.add(songs);
+                            all.add(albums);
+                            all.add(playlists);
+                            return all;
+                        })
+                .subscribe(all -> {
                     results.removeView(spinner);
-                    nextPage = info.getNextPage();
-                    show(new ArrayList<>(info.getRelatedItems()), true);
+                    show(all.get(0), onlySongs(all.get(1)), all.get(2), all.get(3));
+                    if (results.getChildCount() == 0) {
+                        final boolean failed = all.get(0) == FAILED && all.get(1) == FAILED
+                                && all.get(2) == FAILED && all.get(3) == FAILED;
+                        addMessage(results, failed ? R.string.vm_load_error
+                                : R.string.vm_nothing_found, failed ? this::runSearch : null);
+                    }
                 }, error -> {
                     results.removeView(spinner);
                     addMessage(results, R.string.vm_load_error, this::runSearch);
                 }));
     }
 
-    private void show(final List<InfoItem> items, final boolean first) {
-        final List<StreamInfoItem> songs = onlySongs(items);
+    private void show(final List<InfoItem> artistItems, final List<StreamInfoItem> songs,
+                      final List<InfoItem> albums, final List<InfoItem> playlists) {
+        final List<ChannelInfoItem> artists = new ArrayList<>();
+        for (final InfoItem item : artistItems) {
+            if (item instanceof ChannelInfoItem) {
+                artists.add((ChannelInfoItem) item);
+            }
+        }
+        if (!artists.isEmpty()) {
+            addTopResult(artists.get(0), songs);
+            if (artists.size() > 1) {
+                addSection(results, getString(R.string.vm_chip_artists));
+                addItemStrip(results, artists.subList(1, artists.size()), MAX_ARTISTS);
+            }
+        }
         if (!songs.isEmpty()) {
-            final int from = shownSongs.size();
-            shownSongs.addAll(songs);
-            addSongRows(results, shownSongs, from);
-        } else if (!items.isEmpty()) {
-            addItemRows(results, items);
-        } else if (first) {
-            addMessage(results, R.string.vm_nothing_found, null);
+            addSection(results, getString(R.string.vm_chip_songs));
+            addSongs(songs);
+        }
+        final LinearLayout albumsBox = new LinearLayout(requireContext());
+        albumsBox.setOrientation(LinearLayout.VERTICAL);
+        addSection(albumsBox, getString(R.string.vm_chip_albums));
+        if (addItemStrip(albumsBox, albums, MAX_ALBUMS) > 0) {
+            results.addView(albumsBox);
+        }
+        final LinearLayout playlistsBox = new LinearLayout(requireContext());
+        playlistsBox.setOrientation(LinearLayout.VERTICAL);
+        addSection(playlistsBox, getString(R.string.vm_chip_playlists));
+        if (addItemStrip(playlistsBox, playlists, MAX_PLAYLISTS) > 0) {
+            results.addView(playlistsBox);
         }
     }
 
-    @Override
-    protected void onNearEnd() {
-        if (!showingResults || loadingMore || !Page.isValid(nextPage)) {
+    // L'artista in primo piano: toccandolo si apre il profilo, il tasto fa partire i suoi brani.
+    private void addTopResult(@NonNull final ChannelInfoItem artist,
+                              @NonNull final List<StreamInfoItem> songs) {
+        final View card = inflater().inflate(R.layout.music_top_result, results, false);
+        ((TextView) card.findViewById(R.id.musicTopName)).setText(artist.getName());
+        String info = getString(R.string.vm_artist);
+        if (artist.getSubscriberCount() >= 0) {
+            info += " · " + Localization.shortSubscriberCount(requireContext(),
+                    artist.getSubscriberCount());
+        }
+        ((TextView) card.findViewById(R.id.musicTopInfo)).setText(info);
+        loadCover(card.findViewById(R.id.musicTopCover), artist.getThumbnails());
+        card.setOnClickListener(v -> host().openPage(MusicArtistPage.create(artist.getName(),
+                ImageStrategy.INSTANCE.imageListToDbUrl(artist.getThumbnails()))));
+        final List<StreamInfoItem> theirs = new ArrayList<>();
+        final String name = artist.getName() == null ? ""
+                : artist.getName().toLowerCase(Locale.ROOT);
+        for (final StreamInfoItem song : songs) {
+            final String uploader = song.getUploaderName();
+            if (!name.isEmpty() && uploader != null
+                    && uploader.toLowerCase(Locale.ROOT).contains(name)) {
+                theirs.add(song);
+            }
+        }
+        final View play = card.findViewById(R.id.musicTopPlay);
+        play.setVisibility(theirs.isEmpty() ? View.GONE : View.VISIBLE);
+        play.setOnClickListener(v -> host().playSongs(theirs, 0, false));
+        results.addView(card);
+    }
+
+    // i primi brani subito, gli altri con "Mostra tutti"
+    private void addSongs(final List<StreamInfoItem> songs) {
+        final int rowsStart = results.getChildCount();
+        addSongRows(results, songs);
+        if (songs.size() <= SONGS_SHOWN) {
             return;
         }
-        loadingMore = true;
-        final View spinner = addSpinner(results);
-        disposables.add(ExtractorHelper.getMoreSearchItems(YOUTUBE, lastQuery,
-                        Collections.singletonList(FILTERS[selectedChip]), "", nextPage)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(page -> {
-                    results.removeView(spinner);
-                    loadingMore = false;
-                    nextPage = page.getNextPage();
-                    show(new ArrayList<>(page.getItems()), false);
-                }, error -> {
-                    results.removeView(spinner);
-                    loadingMore = false;
-                    nextPage = null;
-                }));
+        for (int i = rowsStart + SONGS_SHOWN; i < results.getChildCount(); i++) {
+            results.getChildAt(i).setVisibility(View.GONE);
+        }
+        final TextView more = (TextView) inflater()
+                .inflate(R.layout.music_show_more, results, false);
+        more.setOnClickListener(v -> {
+            for (int i = rowsStart; i < results.indexOfChild(more); i++) {
+                results.getChildAt(i).setVisibility(View.VISIBLE);
+            }
+            results.removeView(more);
+        });
+        results.addView(more);
     }
     //endregion
 }

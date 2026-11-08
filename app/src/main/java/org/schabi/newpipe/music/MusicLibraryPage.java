@@ -1,10 +1,12 @@
 package org.schabi.newpipe.music;
 
 import android.view.View;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
@@ -43,15 +45,21 @@ public class MusicLibraryPage extends MusicPage {
         final String recentTitle = getString(R.string.vm_recent);
         final List<StreamInfoItem> liked = MusicStore.liked(requireContext());
         final List<StreamInfoItem> recent = MusicStore.recent(requireContext());
-        content.addView(iconRow(likedTitle, songsCount(liked.size()), R.drawable.ic_favorite,
+        // quattro riquadri di vetro, due per riga
+        final LinearLayout first = gridRow();
+        first.addView(shortcut(first, likedTitle, songsCount(liked.size()),
+                R.drawable.ic_favorite, R.color.vm_accent,
                 v -> host().openPage(MusicListPage.liked(likedTitle))));
-        content.addView(iconRow(recentTitle, songsCount(recent.size()), R.drawable.ic_history,
+        first.addView(shortcut(first, recentTitle, songsCount(recent.size()),
+                R.drawable.ic_history, R.color.vm_text,
                 v -> host().openPage(MusicListPage.recent(recentTitle))));
-        content.addView(iconRow(getString(R.string.vm_stats), getResources().getQuantityString(
-                R.plurals.vm_minutes_count, MusicStore.minutesThisMonth(requireContext()),
-                MusicStore.minutesThisMonth(requireContext())), R.drawable.ic_vm_equalizer,
+        final LinearLayout second = gridRow();
+        final int minutes = MusicStore.minutesThisMonth(requireContext());
+        second.addView(shortcut(second, getString(R.string.vm_stats),
+                getResources().getQuantityString(R.plurals.vm_minutes_count, minutes, minutes),
+                R.drawable.ic_vm_equalizer, R.color.vm_text,
                 v -> host().openPage(new MusicStatsPage())));
-        addPrivateSwitch();
+        second.addView(privateTile(second));
         addFollowedArtists();
         addSection(content, getString(R.string.vm_your_playlists));
         final LinearLayout box = new LinearLayout(requireContext());
@@ -84,45 +92,75 @@ public class MusicLibraryPage extends MusicPage {
                 }, error -> addMessage(box, R.string.vm_load_error, null)));
     }
 
-    private void addPrivateSwitch() {
-        final SwitchCompat toggle = (SwitchCompat) inflater()
-                .inflate(R.layout.music_switch_row, content, false);
-        toggle.setChecked(MusicStore.isPrivate(requireContext()));
-        toggle.setOnCheckedChangeListener((button, checked) ->
-                MusicStore.setPrivate(requireContext(), checked));
-        content.addView(toggle);
+    private LinearLayout gridRow() {
+        final LinearLayout row = new LinearLayout(requireContext());
+        row.setPadding(dp(8), 0, dp(8), 0);
+        content.addView(row);
+        return row;
     }
 
+    private View shortcut(final LinearLayout parent, final String title, final String subtitle,
+                          @DrawableRes final int icon, @ColorRes final int tint,
+                          final View.OnClickListener click) {
+        final View tile = inflater().inflate(R.layout.music_shortcut, parent, false);
+        ((TextView) tile.findViewById(R.id.musicShortcutTitle)).setText(title);
+        ((TextView) tile.findViewById(R.id.musicShortcutSubtitle)).setText(subtitle);
+        final ImageView image = tile.findViewById(R.id.musicShortcutIcon);
+        image.setImageResource(icon);
+        image.setImageTintList(ContextCompat.getColorStateList(requireContext(), tint));
+        tile.setOnClickListener(click);
+        return tile;
+    }
+
+    // la sessione privata si accende e si spegne toccando il riquadro
+    private View privateTile(final LinearLayout parent) {
+        final View tile = shortcut(parent, getString(R.string.vm_private_short), "",
+                R.drawable.ic_vm_lock, R.color.vm_text, null);
+        final SwitchCompat toggle = tile.findViewById(R.id.musicShortcutSwitch);
+        toggle.setVisibility(View.VISIBLE);
+        tile.setContentDescription(getString(R.string.vm_private));
+        showPrivate(tile, MusicStore.isPrivate(requireContext()));
+        tile.setOnClickListener(v -> {
+            final boolean on = !MusicStore.isPrivate(requireContext());
+            MusicStore.setPrivate(requireContext(), on);
+            showPrivate(tile, on);
+        });
+        return tile;
+    }
+
+    private void showPrivate(final View tile, final boolean on) {
+        ((SwitchCompat) tile.findViewById(R.id.musicShortcutSwitch)).setChecked(on);
+        ((TextView) tile.findViewById(R.id.musicShortcutSubtitle))
+                .setText(on ? R.string.vm_private_on : R.string.vm_private_off);
+        ((ImageView) tile.findViewById(R.id.musicShortcutIcon))
+                .setImageTintList(ContextCompat.getColorStateList(requireContext(),
+                        on ? R.color.vm_accent : R.color.vm_text));
+    }
+
+    // gli artisti seguiti in fila, con la foto tonda
     private void addFollowedArtists() {
         final List<MusicStore.FollowedArtist> artists = MusicStore.followed(requireContext());
         if (artists.isEmpty()) {
             return;
         }
         addSection(content, getString(R.string.vm_chip_artists));
+        final LinearLayout strip = new LinearLayout(requireContext());
         for (final MusicStore.FollowedArtist artist : artists) {
-            content.addView(linkRow(content, artist.getName(), getString(R.string.vm_artist),
-                    ImageStrategy.INSTANCE.dbUrlToImageList(artist.getCover()),
-                    v -> host().openPage(
-                            MusicArtistPage.create(artist.getName(), artist.getCover()))));
+            final View card = inflater().inflate(R.layout.music_artist_card, strip, false);
+            ((TextView) card.findViewById(R.id.musicCardTitle)).setText(artist.getName());
+            loadCover(card.findViewById(R.id.musicCardCover),
+                    ImageStrategy.INSTANCE.dbUrlToImageList(artist.getCover()));
+            card.setOnClickListener(v -> host().openPage(
+                    MusicArtistPage.create(artist.getName(), artist.getCover())));
+            strip.addView(card);
         }
-    }
-
-    // al posto della copertina, un'icona
-    private View iconRow(final String title, final String subtitle, @DrawableRes final int icon,
-                         final View.OnClickListener click) {
-        // niente caricamento di copertina: l'immagine segnaposto arriverebbe dopo e coprirebbe
-        // l'icona
-        final View row = inflater().inflate(R.layout.music_row, content, false);
-        ((TextView) row.findViewById(R.id.musicRowTitle)).setText(title);
-        ((TextView) row.findViewById(R.id.musicRowSubtitle)).setText(subtitle);
-        row.findViewById(R.id.musicRowMore).setVisibility(View.GONE);
-        row.setOnClickListener(click);
-        final ImageView cover = row.findViewById(R.id.musicRowCover);
-        cover.setScaleType(ImageView.ScaleType.CENTER);
-        cover.setImageResource(icon);
-        cover.setImageTintList(ContextCompat.getColorStateList(
-                requireContext(), R.color.vm_accent));
-        return row;
+        final HorizontalScrollView scroll = new HorizontalScrollView(requireContext());
+        scroll.setHorizontalScrollBarEnabled(false);
+        scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        scroll.setClipToPadding(false);
+        scroll.setPadding(dp(12), 0, dp(12), 0);
+        scroll.addView(strip);
+        content.addView(scroll);
     }
 
     private String songsCount(final int count) {

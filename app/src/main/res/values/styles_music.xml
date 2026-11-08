@@ -12,6 +12,11 @@
         <item name="cornerSize">9dp</item>
     </style>
 
+    <style name="VetroMusicRound">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
     <style name="VetroMusicCoverCard">
         <item name="cornerFamily">rounded</item>
         <item name="cornerSize">14dp</item>
@@ -70,6 +75,9 @@
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">64dp</item>
         <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">3dp</item>
+        <item name="android:layout_marginEnd">3dp</item>
+        <item name="android:background">@drawable/vm_glass</item>
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
         <item name="android:gravity">center</item>

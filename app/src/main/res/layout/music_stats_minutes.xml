@@ -2,26 +2,57 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="12dp"
-    android:layout_marginEnd="12dp"
-    android:background="@drawable/vm_glass"
-    android:gravity="center"
-    android:orientation="vertical"
-    android:paddingTop="20dp"
-    android:paddingBottom="20dp">
+    android:orientation="horizontal"
+    android:paddingStart="8dp"
+    android:paddingEnd="8dp">
 
-    <TextView
-        android:id="@+id/musicStatsMinutes"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textColor="@color/vm_accent"
-        android:textSize="44sp"
-        android:textStyle="bold" />
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:background="@drawable/vm_glass_card"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-    <TextView
-        android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/musicStatsMinutes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/vm_accent"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/VetroMusicSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:text="@string/vm_minutes_short" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/vm_minutes_month"
-        android:textColor="@color/vm_text_soft"
-        android:textSize="14sp" />
+        android:layout_margin="4dp"
+        android:layout_weight="1"
+        android:background="@drawable/vm_glass_card"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:id="@+id/musicStatsSongs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/vm_text"
+            android:textSize="32sp"
+            android:textStyle="bold" />
+
+        <TextView
+            style="@style/VetroMusicSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxLines="2"
+            android:text="@string/vm_songs_played" />
+    </LinearLayout>
 </LinearLayout>

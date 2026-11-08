@@ -9,7 +9,6 @@
     <string name="vm_more_of">Altro di %1$s</string>
     <string name="vm_chip_all">Tutto</string>
     <string name="vm_chip_songs">Brani</string>
-    <string name="vm_chip_videos">Video</string>
     <string name="vm_chip_albums">Album</string>
     <string name="vm_chip_playlists">Playlist</string>
     <string name="vm_chip_artists">Artisti</string>
@@ -110,4 +109,12 @@
         <item quantity="one">%1$d brano</item>
         <item quantity="other">%1$d brani</item>
     </plurals>
+    <string name="vm_private_short">Sessione privata</string>
+    <string name="vm_private_on">Attiva: non salva gli ascolti</string>
+    <string name="vm_private_off">Spenta</string>
+    <string name="vm_top_result">Risultato migliore</string>
+    <string name="vm_songs_played">brani diversi ascoltati</string>
+    <string name="vm_clear">Cancella</string>
+    <string name="vm_radio_short">Radio</string>
+    <string name="vm_minutes_short">minuti questo mese</string>
 </resources>

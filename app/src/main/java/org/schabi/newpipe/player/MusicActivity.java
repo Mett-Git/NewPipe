@@ -71,7 +71,6 @@ import org.schabi.newpipe.player.playqueue.PlayQueue;
 import org.schabi.newpipe.player.playqueue.PlayQueueItem;
 import org.schabi.newpipe.player.playqueue.SinglePlayQueue;
 import org.schabi.newpipe.util.DeviceUtils;
-import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.image.CoilHelper;
 
@@ -600,10 +599,10 @@ public final class MusicActivity extends AppCompatActivity
         binding.musicMiniProgress.setProgress(currentProgress);
         binding.musicPlayerSeek.setMax(duration);
         binding.musicPlayerSeek.setSecondaryProgress((int) (duration * (bufferPercent / 100f)));
-        binding.musicPlayerEnd.setText(Localization.getDurationString(duration / 1000));
+        binding.musicPlayerEnd.setText(MusicPage.time(duration / 1000));
         if (!seeking) {
             binding.musicPlayerSeek.setProgress(currentProgress);
-            binding.musicPlayerNow.setText(Localization.getDurationString(currentProgress / 1000));
+            binding.musicPlayerNow.setText(MusicPage.time(currentProgress / 1000));
         }
         if (lyricsPanel != null) {
             lyricsPanel.onProgress(currentProgress);
@@ -685,7 +684,7 @@ public final class MusicActivity extends AppCompatActivity
                                           final boolean fromUser) {
                 if (fromUser) {
                     binding.musicPlayerNow.setText(
-                            Localization.getDurationString(progress / 1000));
+                            MusicPage.time(progress / 1000));
                 }
             }
 
@@ -855,7 +854,11 @@ public final class MusicActivity extends AppCompatActivity
     }
 
     // Il colore medio dei punti più vivi: il bianco, il nero e i grigi non contano.
-    private static int mainColor(final Bitmap bitmap) {
+    /**
+     * @param bitmap la copertina
+     * @return il suo colore principale, già abbastanza vivo da usare come sfondo
+     */
+    public static int mainColor(final Bitmap bitmap) {
         final Bitmap small = Bitmap.createScaledBitmap(
                 bitmap.copy(Bitmap.Config.ARGB_8888, false), 24, 24, true);
         final float[] hsv = new float[3];

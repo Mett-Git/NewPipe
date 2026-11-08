@@ -4,12 +4,14 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.TextViewCompat;
 
 import org.schabi.newpipe.R;
 import org.schabi.newpipe.extractor.InfoItem;
@@ -27,20 +29,20 @@ import java.util.Locale;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-/** Il profilo di un artista: foto grande, brani più popolari, album, video e informazioni. */
+/** Il profilo di un artista: foto grande, i 10 brani più popolari, album, playlist e info. */
 public class MusicArtistPage extends MusicPage {
     private static final String ARG_NAME = "name";
     private static final String ARG_COVER = "cover";
-    private static final int TOP_SONGS = 5;
+    private static final int TOP_SONGS = 10;
     private static final int MAX_ALBUMS = 15;
-    private static final int MAX_VIDEOS = 15;
+    private static final int MAX_PLAYLISTS = 15;
     private static final int COLLAPSED_LINES = 4;
 
     private final List<StreamInfoItem> songs = new ArrayList<>();
     private View hero;
     private LinearLayout songsBox;
     private LinearLayout albumsBox;
-    private LinearLayout videosBox;
+    private LinearLayout playlistsBox;
     private LinearLayout infoBox;
     private String name;
     @Nullable
@@ -98,13 +100,21 @@ public class MusicArtistPage extends MusicPage {
                 host().playSongs(songs, 0, true);
             }
         });
+        // la radio parte dal brano più popolare
+        hero.findViewById(R.id.musicArtistRadio).setOnClickListener(v -> {
+            if (!songs.isEmpty()) {
+                MusicActions.radio((AppCompatActivity) requireActivity(), host(),
+                        songs.get(0), disposables);
+            }
+        });
+        numbered = true;
         songsBox = addBox();
         albumsBox = addBox();
-        videosBox = addBox();
+        playlistsBox = addBox();
         infoBox = addBox();
         loadSongs();
         loadAlbums();
-        loadVideos();
+        loadPlaylists();
         loadProfile();
     }
 
@@ -124,11 +134,18 @@ public class MusicArtistPage extends MusicPage {
 
     private void setupFollow() {
         final TextView button = hero.findViewById(R.id.musicArtistFollow);
-        button.setText(MusicStore.isFollowed(requireContext(), name)
-                ? R.string.vm_following : R.string.vm_follow);
-        button.setOnClickListener(v -> button.setText(
-                MusicStore.toggleFollow(requireContext(), name, cover)
-                        ? R.string.vm_following : R.string.vm_follow));
+        showFollow(button, MusicStore.isFollowed(requireContext(), name));
+        button.setOnClickListener(v -> showFollow(button,
+                MusicStore.toggleFollow(requireContext(), name, cover)));
+    }
+
+    // seguito: la spunta davanti
+    private void showFollow(final TextView button, final boolean followed) {
+        button.setText(followed ? R.string.vm_following : R.string.vm_follow);
+        button.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                followed ? R.drawable.ic_done : 0, 0, 0, 0);
+        TextViewCompat.setCompoundDrawableTintList(button,
+                ContextCompat.getColorStateList(requireContext(), R.color.vm_text));
     }
 
     private boolean isTheirs(@Nullable final String uploader) {
@@ -165,77 +182,39 @@ public class MusicArtistPage extends MusicPage {
             return;
         }
         addSection(songsBox, getString(R.string.vm_popular));
-        final int rowsStart = songsBox.getChildCount();
-        addSongRows(songsBox, songs);
-        for (int i = rowsStart; i < songsBox.getChildCount(); i++) {
-            final TextView rank = songsBox.getChildAt(i).findViewById(R.id.musicRowRank);
-            rank.setText(String.valueOf(i - rowsStart + 1));
-            rank.setVisibility(View.VISIBLE);
-            if (i - rowsStart >= TOP_SONGS) {
-                songsBox.getChildAt(i).setVisibility(View.GONE);
-            }
-        }
-        if (songs.size() > TOP_SONGS) {
-            final TextView more = (TextView) inflater()
-                    .inflate(R.layout.music_show_more, songsBox, false);
-            more.setOnClickListener(v -> {
-                for (int i = rowsStart; i < songsBox.getChildCount(); i++) {
-                    songsBox.getChildAt(i).setVisibility(View.VISIBLE);
-                }
-                songsBox.removeView(more);
-            });
-            songsBox.addView(more);
-        }
+        addSongRows(songsBox, new ArrayList<>(songs.subList(0,
+                Math.min(TOP_SONGS, songs.size()))));
     }
     //endregion
 
-    //region Album e video
-    private HorizontalScrollView addStrip(final ViewGroup parent, final LinearLayout strip) {
-        final HorizontalScrollView scroll = new HorizontalScrollView(requireContext());
-        scroll.setHorizontalScrollBarEnabled(false);
-        scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        scroll.setClipToPadding(false);
-        scroll.setPadding(dp(12), 0, dp(12), 0);
-        scroll.addView(strip);
-        parent.addView(scroll);
-        return scroll;
-    }
-
+    //region Album e playlist
     private void loadAlbums() {
         disposables.add(search(name, FILTER_ALBUMS).subscribe(items -> {
-            final LinearLayout strip = new LinearLayout(requireContext());
+            final List<InfoItem> albums = new ArrayList<>();
             for (final InfoItem item : items) {
-                if (strip.getChildCount() < MAX_ALBUMS && item instanceof PlaylistInfoItem
+                if (item instanceof PlaylistInfoItem
                         && isTheirs(((PlaylistInfoItem) item).getUploaderName())) {
-                    final View card = inflater().inflate(R.layout.music_card, strip, false);
-                    ((TextView) card.findViewById(R.id.musicCardTitle)).setText(item.getName());
-                    card.findViewById(R.id.musicCardSubtitle).setVisibility(View.GONE);
-                    loadCover(card.findViewById(R.id.musicCardCover), item.getThumbnails());
-                    card.setOnClickListener(v -> host().openPage(
-                            MusicListPage.playlist(item.getName(), item.getUrl())));
-                    strip.addView(card);
+                    albums.add(item);
                 }
             }
-            if (strip.getChildCount() > 0) {
-                addSection(albumsBox, getString(R.string.vm_chip_albums));
-                addStrip(albumsBox, strip);
-            }
+            addStripSection(albumsBox, R.string.vm_chip_albums, albums, MAX_ALBUMS);
         }, error -> { /* senza album il profilo resta valido */ }));
     }
 
-    private void loadVideos() {
-        disposables.add(search(name, FILTER_VIDEOS).subscribe(items -> {
-            final List<StreamInfoItem> videos = new ArrayList<>();
-            for (final StreamInfoItem video : onlySongs(items)) {
-                if (videos.size() < MAX_VIDEOS && isTheirs(video.getUploaderName())) {
-                    videos.add(video);
-                }
-            }
-            if (!videos.isEmpty()) {
-                addSection(videosBox, getString(R.string.vm_chip_videos));
-                addCarousel(videosBox, videos);
-            }
-        }, error -> { /* senza video il profilo resta valido */ }));
+    // le playlist che YouTube Music trova col suo nome: sono quelle con i suoi brani
+    private void loadPlaylists() {
+        disposables.add(search(name, FILTER_PLAYLISTS).subscribe(items ->
+                        addStripSection(playlistsBox, R.string.vm_chip_playlists, items,
+                                MAX_PLAYLISTS),
+                error -> { /* senza playlist il profilo resta valido */ }));
+    }
+
+    private void addStripSection(final LinearLayout box, final int title,
+                                 final List<InfoItem> items, final int max) {
+        addSection(box, getString(title));
+        if (addItemStrip(box, items, max) == 0) {
+            box.removeAllViews();
+        }
     }
     //endregion
 

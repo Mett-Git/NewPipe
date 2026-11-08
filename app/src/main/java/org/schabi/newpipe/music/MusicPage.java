@@ -1,6 +1,8 @@
 package org.schabi.newpipe.music;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.Gravity;
@@ -23,6 +25,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.imageview.ShapeableImageView;
+import com.google.android.material.shape.RelativeCornerSize;
+
 import org.schabi.newpipe.R;
 import org.schabi.newpipe.extractor.Image;
 import org.schabi.newpipe.extractor.InfoItem;
@@ -31,8 +36,10 @@ import org.schabi.newpipe.extractor.ServiceList;
 import org.schabi.newpipe.extractor.channel.ChannelInfoItem;
 import org.schabi.newpipe.extractor.playlist.PlaylistInfoItem;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
+import org.schabi.newpipe.player.MusicActivity;
 import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.ExtractorHelper;
+import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.RestrictedVideos;
 import org.schabi.newpipe.util.image.CoilHelper;
 import org.schabi.newpipe.util.image.ImageStrategy;
@@ -40,6 +47,7 @@ import org.schabi.newpipe.util.image.ImageStrategy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
@@ -50,7 +58,6 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public abstract class MusicPage extends Fragment {
     protected static final int YOUTUBE = ServiceList.YouTube.getServiceId();
     protected static final String FILTER_SONGS = "music_songs";
-    protected static final String FILTER_VIDEOS = "music_videos";
     protected static final String FILTER_ALBUMS = "music_albums";
     protected static final String FILTER_PLAYLISTS = "music_playlists";
     protected static final String FILTER_ARTISTS = "music_artists";
@@ -58,10 +65,16 @@ public abstract class MusicPage extends Fragment {
     private static final String TRENDING_FALLBACK = "top hits";
     private static final int COVER_SIZE = 800;
     private static final int NEAR_END_DP = 500;
+    private static final int TINT_ALPHA = 0x8C;
+    private static final float HALF = 0.5f;
+    private static final int MINUTE = 60;
+    private static final int HOUR = 3600;
 
     protected final CompositeDisposable disposables = new CompositeDisposable();
     protected LinearLayout content;
     private final List<View> songRows = new ArrayList<>();
+    /** true per mettere il numero davanti a ogni brano, come in una classifica. */
+    protected boolean numbered = false;
 
     /** Riempie la pagina. */
     protected abstract void build();
@@ -226,7 +239,12 @@ public abstract class MusicPage extends Fragment {
         final View row = inflater().inflate(R.layout.music_row, parent, false);
         row.setTag(song.getUrl());
         ((TextView) row.findViewById(R.id.musicRowTitle)).setText(song.getName());
-        ((TextView) row.findViewById(R.id.musicRowSubtitle)).setText(song.getUploaderName());
+        ((TextView) row.findViewById(R.id.musicRowSubtitle)).setText(songInfo(song));
+        if (numbered) {
+            final TextView rank = row.findViewById(R.id.musicRowRank);
+            rank.setText(String.valueOf(index + 1));
+            rank.setVisibility(View.VISIBLE);
+        }
         loadCover(row.findViewById(R.id.musicRowCover), song.getThumbnails());
         RestrictedVideos.bind(row.findViewById(R.id.musicRowBadge), song.getUrl(),
                 song.getContentAvailability());
@@ -240,6 +258,25 @@ public abstract class MusicPage extends Fragment {
         songRows.add(row);
         markRow(row);
         return row;
+    }
+
+    // l'artista e, se si sa, quanto dura
+    private static String songInfo(final StreamInfoItem song) {
+        final String artist = song.getUploaderName() == null ? "" : song.getUploaderName();
+        if (song.getDuration() <= 0) {
+            return artist;
+        }
+        final String duration = time(song.getDuration());
+        return artist.isEmpty() ? duration : artist + " · " + duration;
+    }
+
+    /**
+     * @param seconds una durata
+     * @return scritta come "3:20", senza lo zero davanti ai minuti
+     */
+    public static String time(final long seconds) {
+        return seconds >= HOUR ? Localization.getDurationString(seconds)
+                : String.format(Locale.ROOT, "%d:%02d", seconds / MINUTE, seconds % MINUTE);
     }
 
     private void markRow(final View row) {
@@ -368,6 +405,87 @@ public abstract class MusicPage extends Fragment {
         }
         scroll.addView(strip);
         parent.addView(scroll);
+    }
+
+    /**
+     * @param parent dove va messa
+     * @param items  album, playlist o artisti da mostrare come copertine in fila
+     * @param max    quanti al massimo
+     * @return quanti ne ha messi
+     */
+    protected int addItemStrip(@NonNull final ViewGroup parent,
+                               @NonNull final List<? extends InfoItem> items, final int max) {
+        final LinearLayout strip = new LinearLayout(requireContext());
+        for (final InfoItem item : items) {
+            if (strip.getChildCount() >= max) {
+                break;
+            }
+            final boolean artist = item instanceof ChannelInfoItem;
+            if (!artist && !(item instanceof PlaylistInfoItem)) {
+                continue;
+            }
+            final View card = inflater().inflate(
+                    artist ? R.layout.music_artist_card : R.layout.music_card, strip, false);
+            ((TextView) card.findViewById(R.id.musicCardTitle)).setText(item.getName());
+            final TextView subtitle = card.findViewById(R.id.musicCardSubtitle);
+            if (subtitle != null) {
+                final String uploader = ((PlaylistInfoItem) item).getUploaderName();
+                subtitle.setText(uploader);
+                subtitle.setVisibility(TextUtils.isEmpty(uploader) ? View.GONE : View.VISIBLE);
+            }
+            loadCover(card.findViewById(R.id.musicCardCover), item.getThumbnails());
+            card.setOnClickListener(v -> openItem(item));
+            strip.addView(card);
+        }
+        if (strip.getChildCount() > 0) {
+            final HorizontalScrollView scroll = new HorizontalScrollView(requireContext());
+            scroll.setHorizontalScrollBarEnabled(false);
+            scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
+            scroll.setClipToPadding(false);
+            scroll.setPadding(dp(12), 0, dp(12), 0);
+            scroll.addView(strip);
+            parent.addView(scroll);
+        }
+        return strip.getChildCount();
+    }
+
+    /**
+     * @param row una riga fatta con {@link #linkRow}
+     */
+    protected static void makeRound(@NonNull final View row) {
+        final ShapeableImageView cover = row.findViewById(R.id.musicRowCover);
+        cover.setShapeAppearanceModel(cover.getShapeAppearanceModel().toBuilder()
+                .setAllCornerSizes(new RelativeCornerSize(HALF))
+                .build());
+    }
+
+    /**
+     * Sfuma dietro a una vista il colore principale della copertina.
+     *
+     * @param target dove mettere il colore
+     * @param images la copertina
+     */
+    protected void tintFromCover(@NonNull final View target, @NonNull final List<Image> images) {
+        final String url = coverUrl(images);
+        if (url == null) {
+            return;
+        }
+        final Context application = requireContext().getApplicationContext();
+        disposables.add(Single.fromCallable(() -> {
+                    final Bitmap bitmap =
+                            CoilHelper.INSTANCE.loadBitmapBlocking(application, url, 0);
+                    return bitmap == null ? 0 : MusicActivity.mainColor(bitmap);
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(color -> {
+                    if (color != 0) {
+                        target.setBackground(new GradientDrawable(
+                                GradientDrawable.Orientation.TOP_BOTTOM, new int[]{
+                                (color & 0x00ffffff) | (TINT_ALPHA << 24),
+                                color & 0x00ffffff}));
+                    }
+                }, error -> { /* senza colore va bene lo stesso */ }));
     }
 
     private void openItem(final InfoItem item) {

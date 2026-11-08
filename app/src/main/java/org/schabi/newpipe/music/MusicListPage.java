@@ -134,10 +134,15 @@ public class MusicListPage extends MusicPage {
         header.findViewById(R.id.musicListBack).setOnClickListener(v -> host().goBack());
         ((TextView) header.findViewById(R.id.musicListTitle))
                 .setText(args.getString(ARG_TITLE));
+        ((TextView) header.findViewById(R.id.musicListBarTitle))
+                .setText(args.getString(ARG_TITLE));
+        // album e playlist sono in ordine: i brani hanno il loro numero
+        numbered = args.getInt(ARG_KIND) == KIND_PLAYLIST || args.getInt(ARG_KIND) == KIND_LOCAL;
         final String cover = args.getString(ARG_COVER);
         if (cover != null) {
             loadCover(header.findViewById(R.id.musicListCover),
                     ImageStrategy.INSTANCE.dbUrlToImageList(cover));
+            tintFromCover(header, ImageStrategy.INSTANCE.dbUrlToImageList(cover));
         }
         box = new LinearLayout(requireContext());
         box.setOrientation(LinearLayout.VERTICAL);
@@ -159,6 +164,9 @@ public class MusicListPage extends MusicPage {
                         .subscribe(info -> {
                             box.removeView(spinner);
                             setSubtitle(info.getUploaderName());
+                            if (info.getStreamCount() > 0) {
+                                setCount((int) info.getStreamCount());
+                            }
                             nextPage = info.getNextPage();
                             setupSaveButton(info);
                             shownSongs.clear();
@@ -321,9 +329,17 @@ public class MusicListPage extends MusicPage {
         subtitle.setVisibility(TextUtils.isEmpty(text) ? View.GONE : View.VISIBLE);
     }
 
+    private void setCount(final int count) {
+        final TextView view = header.findViewById(R.id.musicListCount);
+        view.setText(getResources().getQuantityString(R.plurals.vm_songs_count, count, count));
+        view.setVisibility(View.VISIBLE);
+    }
+
+    // senza brani da suonare resta solo il titolo, accanto alla freccia
     private void hidePlayButtons() {
         header.findViewById(R.id.musicListButtons).setVisibility(View.GONE);
-        header.findViewById(R.id.musicListCover).setVisibility(View.GONE);
+        header.findViewById(R.id.musicListTop).setVisibility(View.GONE);
+        header.findViewById(R.id.musicListBarTitle).setVisibility(View.VISIBLE);
     }
 
     private void showSongs(@NonNull final List<StreamInfoItem> songs) {
@@ -334,6 +350,10 @@ public class MusicListPage extends MusicPage {
         }
         if (requireArguments().getString(ARG_COVER) == null) {
             loadCover(header.findViewById(R.id.musicListCover), songs.get(0).getThumbnails());
+            tintFromCover(header, songs.get(0).getThumbnails());
+        }
+        if (header.findViewById(R.id.musicListCount).getVisibility() != View.VISIBLE) {
+            setCount(songs.size());
         }
         header.findViewById(R.id.musicListPlay)
                 .setOnClickListener(v -> host().playSongs(songs, 0, false));

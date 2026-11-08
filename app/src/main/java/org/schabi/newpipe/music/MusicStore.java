@@ -291,6 +291,14 @@ public final class MusicStore {
 
     /**
      * @param context per leggere
+     * @return quanti brani diversi sono stati ascoltati da quando si usa Music
+     */
+    public static int songsPlayed(@NonNull final Context context) {
+        return plays(context).size();
+    }
+
+    /**
+     * @param context per leggere
      * @param limit   quanti al massimo
      * @return gli artisti più ascoltati, ognuno col suo brano più ascoltato
      */

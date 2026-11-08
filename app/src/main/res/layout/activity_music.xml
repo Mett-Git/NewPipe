@@ -208,14 +208,9 @@
                         android:textColor="@color/vm_text_soft"
                         android:textSize="13sp" />
 
-                    <ImageView
-                        android:id="@+id/musicPlayerLike"
-                        style="@style/VetroMusicIcon"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
-                        android:layout_marginEnd="-10dp"
-                        android:contentDescription="@string/vm_like"
-                        android:src="@drawable/ic_vm_favorite_border" />
+                    <View
+                        android:layout_width="34dp"
+                        android:layout_height="44dp" />
                 </LinearLayout>
 
                 <FrameLayout
@@ -235,26 +230,49 @@
                         app:shapeAppearance="@style/VetroMusicCoverBig" />
                 </FrameLayout>
 
-                <TextView
-                    android:id="@+id/musicPlayerTitle"
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
-                    android:ellipsize="end"
-                    android:maxLines="2"
-                    android:textColor="@color/vm_text"
-                    android:textSize="21sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/musicPlayerArtist"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="3dp"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="@color/vm_text_soft"
-                    android:textSize="15sp" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/musicPlayerTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="end"
+                            android:maxLines="2"
+                            android:textColor="@color/vm_text"
+                            android:textSize="21sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/musicPlayerArtist"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:textColor="@color/vm_text_soft"
+                            android:textSize="15sp" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/musicPlayerLike"
+                        style="@style/VetroMusicIcon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="-10dp"
+                        android:contentDescription="@string/vm_like"
+                        android:src="@drawable/ic_vm_favorite_border" />
+                </LinearLayout>
 
                 <SeekBar
                     android:id="@+id/musicPlayerSeek"
@@ -363,8 +381,9 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:background="@drawable/vm_glass"
+                    android:layout_marginStart="-3dp"
+                    android:layout_marginTop="14dp"
+                    android:layout_marginEnd="-3dp"
                     android:orientation="horizontal">
 
                     <LinearLayout

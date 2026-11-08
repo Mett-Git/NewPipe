@@ -5,6 +5,8 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
 import org.schabi.newpipe.R;
 
 /** Esplora: i generi e gli stati d'animo da toccare, poi le tendenze. */
@@ -13,6 +15,7 @@ public class MusicExplorePage extends MusicPage {
             R.string.vm_mood_relax, R.string.vm_mood_workout, R.string.vm_mood_party,
             R.string.vm_mood_focus, R.string.vm_mood_happy, R.string.vm_mood_love,
             R.string.vm_mood_80s, R.string.vm_mood_italian};
+    private static final int TILE_ALPHA = 0xB0;
     private static final int[][] COLORS = {
             {0xff2b6c8f, 0xff173a55}, {0xffb6442f, 0xff5e1f24}, {0xff8d3ec2, 0xff401d66},
             {0xff2c7f6d, 0xff143f3c}, {0xffc78a2c, 0xff6a3f18}, {0xffb73a6a, 0xff5a1b3a},
@@ -40,9 +43,14 @@ public class MusicExplorePage extends MusicPage {
                 .inflate(R.layout.music_tile, parent, false);
         final String name = getString(MOODS[index]);
         tile.setText(name);
+        // vetro colorato: il colore del genere sfuma verso destra
         final GradientDrawable background = new GradientDrawable(
-                GradientDrawable.Orientation.TL_BR, COLORS[index]);
-        background.setCornerRadius(dp(14));
+                GradientDrawable.Orientation.LEFT_RIGHT, new int[]{
+                (COLORS[index][0] & 0x00ffffff) | (TILE_ALPHA << 24),
+                ContextCompat.getColor(requireContext(), R.color.vm_glass)});
+        background.setCornerRadius(dp(16));
+        background.setStroke(dp(1), ContextCompat.getColor(requireContext(),
+                R.color.vm_glass_stroke));
         tile.setBackground(background);
         tile.setOnClickListener(v -> host().openPage(MusicListPage.mood(name)));
         return tile;
