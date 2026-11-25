@@ -224,4 +224,10 @@
     <string name="vt_bell_title">Notifiche</string>
     <string name="vt_bell_empty">Ancora nessun video nuovo dai tuoi canali. Iscriviti a un canale, o apri “Novità” per aggiornare.</string>
     <string name="vt_bell_published">%1$s ha pubblicato: %2$s</string>
+    <string name="vt_profile_edit">Modifica profilo</string>
+    <string name="vt_profile_name_hint">Il tuo nome</string>
+    <string name="vt_profile_color">Colore</string>
+    <string name="vt_profile_photo">Foto</string>
+    <string name="vt_profile_cover">Copertina</string>
+    <string name="vt_profile_remove_images">Togli foto e copertina</string>
 </resources>

@@ -21,6 +21,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.OvershootInterpolator;
+import android.widget.TextView;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import androidx.annotation.ColorInt;
@@ -50,6 +52,7 @@ import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.ServiceHelper;
 import org.schabi.newpipe.util.ThemeHelper;
 import org.schabi.newpipe.util.VetroBars;
+import org.schabi.newpipe.util.VetroForeground;
 import org.schabi.newpipe.views.ScrollableTabLayout;
 
 import java.util.ArrayList;
@@ -57,7 +60,7 @@ import java.util.List;
 
 public class MainFragment extends BaseFragment implements TabLayout.OnTabSelectedListener {
     /** Altezza della barra sospesa in basso, in dp. */
-    private static final int VETRO_BAR_HEIGHT_DP = 54;
+    private static final int VETRO_BAR_HEIGHT_DP = 56;
 
     /** La campanella in alto coi video nuovi dei canali seguiti. */
     @Nullable
@@ -139,6 +142,24 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
 
         setupTabs();
         updateTabLayoutPosition();
+    }
+
+    /** Riaprendo l'app (dopo almeno 15 secondi fuori) le schede si aggiornano da sole. */
+    private static final long RELOAD_AFTER_MILLIS = 15_000;
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (VetroForeground.consumeReturn(RELOAD_AFTER_MILLIS)) {
+            for (final Fragment fragment : getChildFragmentManager().getFragments()) {
+                if (fragment instanceof BaseStateFragment && fragment.getView() != null) {
+                    ((BaseStateFragment<?>) fragment).reloadContent();
+                }
+            }
+            if (bell != null) {
+                bell.refreshFeed(); // anche se la scheda Novità non è ancora aperta
+            }
+        }
     }
 
     @Override
@@ -242,15 +263,48 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
         hasTabsChanged = false;
     }
 
+    // una scheda della barra sospesa: icona e nome, bianchi se scelta, attenuati le altre
+    private View vetroTabView(final TabLayout.Tab tab, final int icon, final String name) {
+        View view = tab.getCustomView();
+        if (view == null || view.findViewById(R.id.vetroTabIcon) == null) {
+            view = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.vetro_tab_item, binding.mainTabLayout, false);
+        }
+        final ColorStateList colors = vetroTabColors();
+        final ImageView iconView = view.findViewById(R.id.vetroTabIcon);
+        iconView.setImageResource(icon);
+        iconView.setImageTintList(colors);
+        final TextView text = view.findViewById(R.id.vetroTabText);
+        text.setText(name);
+        text.setTextColor(colors);
+        return view;
+    }
+
+    private ColorStateList vetroTabColors() {
+        return new ColorStateList(
+                new int[][]{{android.R.attr.state_selected}, {}},
+                new int[]{Color.WHITE, ContextCompat.getColor(requireContext(),
+                        R.color.vetro_text_secondary)});
+    }
+
     private void updateTabsIconAndDescription() {
         for (int i = 0; i < tabsList.size(); i++) {
             final TabLayout.Tab tabToSet = binding.mainTabLayout.getTabAt(i);
             if (tabToSet != null) {
                 final Tab tab = tabsList.get(i);
-                tabToSet.setIcon(tab.getTabIconRes(requireContext()));
                 tabToSet.setContentDescription(tab.getTabName(requireContext()));
-                // barra in basso del Vetro: il nome sotto l'icona, come in YouTube
-                tabToSet.setText(isVetroBar() ? tab.getTabName(requireContext()) : null);
+                if (isVetroBar()) {
+                    // barra sottile in basso: icona e nome vicini e centrati in altezza
+                    // (la scheda di serie li tiene a 8dp e li spinge verso il basso)
+                    tabToSet.setIcon(null);
+                    tabToSet.setText(null);
+                    tabToSet.setCustomView(vetroTabView(tabToSet,
+                            tab.getTabIconRes(requireContext()), tab.getTabName(requireContext())));
+                } else {
+                    tabToSet.setCustomView(null);
+                    tabToSet.setIcon(tab.getTabIconRes(requireContext()));
+                    tabToSet.setText(null);
+                }
             }
         }
     }

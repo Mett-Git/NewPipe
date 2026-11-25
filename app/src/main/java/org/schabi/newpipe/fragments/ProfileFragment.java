@@ -1,17 +1,24 @@
 package org.schabi.newpipe.fragments;
 
+import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentManager;
 
 import org.schabi.newpipe.BaseFragment;
@@ -20,6 +27,7 @@ import org.schabi.newpipe.database.stream.StreamStatisticsEntry;
 import org.schabi.newpipe.database.stream.model.StreamEntity;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
 import org.schabi.newpipe.local.subscription.SubscriptionManager;
+import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.NavigationHelper;
 import org.schabi.newpipe.util.image.CoilHelper;
 
@@ -42,6 +50,20 @@ public class ProfileFragment extends BaseFragment {
     private LinearLayout historyCells;
     private View historySection;
     private TextView subtitle;
+    private View header;
+    /** Il profilo scelto da te: nome, colore, foto, copertina. */
+    private VetroProfile profile;
+    /** true = la prossima immagine scelta è la copertina, false = la foto. */
+    private boolean pickingCover;
+    private ActivityResultLauncher<String> pickImage;
+
+    @Override
+    public void onCreate(@Nullable final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        profile = new VetroProfile(requireContext());
+        pickImage = registerForActivityResult(new ActivityResultContracts.GetContent(),
+                this::onImagePicked);
+    }
 
     @Override
     public View onCreateView(@NonNull final LayoutInflater inflater,
@@ -56,6 +78,10 @@ public class ProfileFragment extends BaseFragment {
         historyCells = rootView.findViewById(R.id.profileHistory);
         historySection = rootView.findViewById(R.id.profileHistorySection);
         subtitle = rootView.findViewById(R.id.profileSubtitle);
+        header = rootView;
+        profile.show(rootView);
+        rootView.findViewById(R.id.profileEdit).setOnClickListener(v -> openEditor());
+        rootView.findViewById(R.id.profileAvatarFrame).setOnClickListener(v -> openEditor());
         final FragmentManager manager = requireActivity().getSupportFragmentManager();
         rootView.findViewById(R.id.profileHistoryAll).setOnClickListener(
                 v -> NavigationHelper.openStatisticFragment(manager));
@@ -136,5 +162,94 @@ public class ProfileFragment extends BaseFragment {
         super.onDestroyView();
         disposables.clear();
         historyCells = null;
+        header = null;
+    }
+
+    // la finestra "Modifica profilo": nome, colore, foto e copertina
+    private void openEditor() {
+        final View form = LayoutInflater.from(requireContext())
+                .inflate(R.layout.vetro_profile_edit, null, false);
+        final EditText name = form.findViewById(R.id.profileEditName);
+        name.setText(profile.name());
+        final int[] chosen = {profile.color()};
+        final LinearLayout colors = form.findViewById(R.id.profileEditColors);
+        final int size = DeviceUtils.dpToPx(30, requireContext());
+        final int gap = DeviceUtils.dpToPx(8, requireContext());
+        for (final int color : VetroProfile.COLORS) {
+            final View swatch = new View(requireContext());
+            final LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(size, size);
+            params.setMarginEnd(gap);
+            swatch.setLayoutParams(params);
+            swatch.setTag(color);
+            swatch.setOnClickListener(v -> {
+                chosen[0] = color;
+                paintSwatches(colors, color);
+            });
+            colors.addView(swatch);
+        }
+        paintSwatches(colors, chosen[0]);
+
+        final AlertDialog dialog = new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.vt_profile_edit)
+                .setView(form)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.ok, (d, w) -> {
+                    profile.save(name.getText().toString(), chosen[0]);
+                    refreshHeader();
+                })
+                .create();
+        // foto e copertina: si tiene quello che hai già scritto, poi si apre la galleria
+        form.findViewById(R.id.profileEditPhoto).setOnClickListener(v -> {
+            profile.save(name.getText().toString(), chosen[0]);
+            dialog.dismiss();
+            pickingCover = false;
+            pickImage.launch("image/*");
+        });
+        form.findViewById(R.id.profileEditCover).setOnClickListener(v -> {
+            profile.save(name.getText().toString(), chosen[0]);
+            dialog.dismiss();
+            pickingCover = true;
+            pickImage.launch("image/*");
+        });
+        form.findViewById(R.id.profileEditReset).setOnClickListener(v -> {
+            profile.save(name.getText().toString(), chosen[0]);
+            profile.removeImages();
+            dialog.dismiss();
+            refreshHeader();
+        });
+        dialog.show();
+    }
+
+    // il colore scelto ha un anello bianco attorno
+    private void paintSwatches(final LinearLayout colors, final int selected) {
+        for (int i = 0; i < colors.getChildCount(); i++) {
+            final View swatch = colors.getChildAt(i);
+            final int color = (int) swatch.getTag();
+            final GradientDrawable circle = new GradientDrawable();
+            circle.setShape(GradientDrawable.OVAL);
+            circle.setColor(color);
+            if (color == selected) {
+                circle.setStroke(DeviceUtils.dpToPx(3, requireContext()), 0xFFFFFFFF);
+            }
+            swatch.setBackground(circle);
+        }
+    }
+
+    private void onImagePicked(@Nullable final Uri uri) {
+        if (uri == null) {
+            return;
+        }
+        try {
+            profile.saveImage(uri, pickingCover);
+        } catch (final Exception e) {
+            Toast.makeText(requireContext(), R.string.general_error, Toast.LENGTH_SHORT).show();
+        }
+        refreshHeader();
+    }
+
+    private void refreshHeader() {
+        if (header != null) {
+            profile.show(header);
+        }
     }
 }

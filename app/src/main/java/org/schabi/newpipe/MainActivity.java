@@ -88,6 +88,7 @@ import org.schabi.newpipe.settings.UpdateSettingsFragment;
 import org.schabi.newpipe.settings.tabs.Tab;
 import org.schabi.newpipe.settings.tabs.TabsManager;
 import org.schabi.newpipe.settings.migration.MigrationManager;
+import org.schabi.newpipe.util.VetroForeground;
 import org.schabi.newpipe.util.Constants;
 import org.schabi.newpipe.util.DeviceUtils;
 import org.schabi.newpipe.util.KioskTranslator;
@@ -200,6 +201,7 @@ public class MainActivity extends AppCompatActivity {
 
         setSupportActionBar(toolbarLayoutBinding.toolbar);
         toolbarLayoutBinding.toolbar.setBrand(true); // "NewPipe" sopra il nome della pagina
+        VetroForeground.install(getApplication()); // per aggiornare le schede riaprendo l'app
         try {
             setupDrawer();
         } catch (final Exception e) {

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Una scheda della barra sospesa in basso: icona e nome vicini, centrati in altezza.
+     (La scheda di serie mette 8dp fra icona e nome e non li centra nella barra sottile.) -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:duplicateParentState="true"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/vetroTabIcon"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:duplicateParentState="true"
+        android:importantForAccessibility="no" />
+
+    <TextView
+        android:id="@+id/vetroTabText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="1dp"
+        android:duplicateParentState="true"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textAppearance="@style/VetroTabText" />
+
+</LinearLayout>

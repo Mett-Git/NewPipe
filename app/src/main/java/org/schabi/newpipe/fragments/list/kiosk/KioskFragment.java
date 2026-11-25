@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.evernote.android.state.State;
 
@@ -74,6 +75,9 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
     // LifeCycle
     //////////////////////////////////////////////////////////////////////////*/
 
+    @Nullable
+    private SwipeRefreshLayout swipeRefresh;
+
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,6 +107,38 @@ public class KioskFragment extends BaseListInfoFragment<StreamInfoItem, KioskInf
                              @Nullable final ViewGroup container,
                              @Nullable final Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_kiosk, container, false);
+    }
+
+    @Override
+    protected void initViews(final View rootView, final Bundle savedInstanceState) {
+        super.initViews(rootView, savedInstanceState);
+        // tira giù per aggiornare, come in "Novità"
+        swipeRefresh = rootView.findViewById(R.id.kiosk_swipe_refresh);
+        if (swipeRefresh != null) {
+            swipeRefresh.setOnRefreshListener(this::reloadContent);
+        }
+    }
+
+    @Override
+    public void hideLoading() {
+        super.hideLoading();
+        if (swipeRefresh != null) {
+            swipeRefresh.setRefreshing(false);
+        }
+    }
+
+    @Override
+    public void handleError() {
+        super.handleError();
+        if (swipeRefresh != null) {
+            swipeRefresh.setRefreshing(false);
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        swipeRefresh = null;
     }
 
     /*//////////////////////////////////////////////////////////////////////////

@@ -45,14 +45,12 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  * La campanella in alto accanto alla ricerca: il numero dei video nuovi dei canali a cui sei
  * iscritto (quelli usciti dopo l'ultima volta che l'hai aperta e non ancora guardati) e, al
  * tocco, l'elenco dei video usciti, dal più recente. I video arrivano dalla stessa lista di
- * "Novità": all'apertura dell'app, se è vecchia di più di mezz'ora, si aggiorna da sola.
+ * "Novità", che si aggiorna da sola a ogni apertura dell'app.
  */
 public final class VetroBell {
     private static final String PREFS_LAST_OPENED = "vetro_bell_last_opened";
     /** Quanti video al massimo nell'elenco. */
     private static final int MAX_ROWS = 40;
-    /** Ogni quanto aggiornare da sola la lista dei video nuovi, in minuti. */
-    private static final int REFRESH_MINUTES = 30;
 
     private final FragmentActivity activity;
     private final CompositeDisposable disposables = new CompositeDisposable();
@@ -68,7 +66,7 @@ public final class VetroBell {
                 .filter(e -> e instanceof FeedEventManager.Event.SuccessResultEvent)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(e -> reload(), e -> { }));
-        refreshFeedIfOld();
+        refreshFeed(); // a ogni apertura dell'app
     }
 
     /**
@@ -210,9 +208,11 @@ public final class VetroBell {
         return row;
     }
 
-    // all'apertura dell'app: se i video dei canali seguiti non si aggiornano da un po',
-    // li fa aggiornare (come il tasto Aggiorna di "Novità")
-    private void refreshFeedIfOld() {
+    /**
+     * Fa aggiornare i video dei canali seguiti (come il tasto Aggiorna di "Novità"): il
+     * servizio di NewPipe salta da solo i canali aggiornati da pochi minuti.
+     */
+    void refreshFeed() {
         disposables.add(new FeedDatabaseManager(activity)
                 .oldestSubscriptionUpdate(FeedGroupEntity.GROUP_ALL_ID)
                 .firstElement()
@@ -222,14 +222,10 @@ public final class VetroBell {
                     if (dates.isEmpty()) {
                         return; // nessun canale seguito
                     }
-                    final OffsetDateTime oldest = dates.get(0);
-                    final OffsetDateTime limit = OffsetDateTime.now().minusMinutes(REFRESH_MINUTES);
-                    if (oldest == null || oldest.isBefore(limit)) {
-                        try {
-                            activity.startService(new Intent(activity, FeedLoadService.class));
-                        } catch (final IllegalStateException e) {
-                            // app non in primo piano: si aggiorna la prossima volta
-                        }
+                    try {
+                        activity.startService(new Intent(activity, FeedLoadService.class));
+                    } catch (final IllegalStateException e) {
+                        // app non in primo piano: si aggiorna la prossima volta
                     }
                 }, e -> { }));
     }
