@@ -63,6 +63,14 @@ public class HomeFragment extends KioskFragment {
     private static final int SEARCHES = 4;
     /** Le fonti dello schema: S = iscrizioni, P = per te, D = da scoprire. */
     private static final String PATTERN = "SPPSDP";
+    /** Shorts: da quanti canali, quanti per canale, e ogni quanti video una fila. */
+    private static final int SHORTS_CHANNELS = 6;
+    private static final int SHORTS_PER_CHANNEL = 4;
+    private static final int SHORTS_EVERY = 8;
+    private static final int SHORTS_PER_ROW = 8;
+
+    /** Gli Shorts dell'ultimo caricamento, da mettere a file in mezzo ai video. */
+    private volatile List<StreamInfoItem> shorts = Collections.emptyList();
 
     public static HomeFragment getInstance(final int serviceId) throws ExtractionException {
         final HomeFragment instance = new HomeFragment();
@@ -133,8 +141,93 @@ public class HomeFragment extends KioskFragment {
                     // la pagina è una sola, già tutta caricata
                     container.setRelatedItems(compose(subscriptions, taste, discover));
                     container.setNextPage(null);
+                    shorts = loadShorts(service, subscriptions, taste);
                     return container;
                 });
+    }
+
+    @Override
+    public void handleResult(@NonNull final KioskInfo result) {
+        super.handleResult(result);
+        // come su YouTube: ogni tanto una fila di Shorts in mezzo ai video
+        final List<StreamInfoItem> rows = shorts;
+        if (rows.isEmpty() || result.getRelatedItems().isEmpty()) {
+            return;
+        }
+        final List<org.schabi.newpipe.extractor.InfoItem> mixed = new ArrayList<>();
+        int next = 0;
+        final List<StreamInfoItem> videos = result.getRelatedItems();
+        for (int i = 0; i < videos.size(); i++) {
+            mixed.add(videos.get(i));
+            if ((i + 1) % SHORTS_EVERY == (SHORTS_EVERY / 2) && next < rows.size()) {
+                final int end = Math.min(rows.size(), next + SHORTS_PER_ROW);
+                mixed.add(new org.schabi.newpipe.info_list.VetroShortsShelf(serviceId,
+                        new ArrayList<>(rows.subList(next, end))));
+                next = end;
+            }
+        }
+        infoListAdapter.clearStreamItemList();
+        infoListAdapter.addInfoItemList(mixed);
+    }
+
+    /**
+     * Gli Shorts più nuovi dei canali che segui e di quelli che guardi spesso, mescolati.
+     *
+     * @param service       il servizio
+     * @param subscriptions i video dei canali seguiti (dal più nuovo)
+     * @param taste         cosa hai visto e i canali preferiti
+     * @return gli Shorts non ancora visti
+     */
+    private static List<StreamInfoItem> loadShorts(final StreamingService service,
+                                                   final List<StreamWithState> subscriptions,
+                                                   final Taste taste) {
+        // i canali: prima chi ha pubblicato da poco fra quelli seguiti, poi i preferiti
+        final List<String> channels = new ArrayList<>();
+        for (final StreamWithState s : subscriptions) {
+            final String url = s.getStream().getUploaderUrl();
+            if (url != null && !channels.contains(url) && channels.size() < SHORTS_CHANNELS) {
+                channels.add(url);
+            }
+        }
+        for (final String url : taste.favouriteChannels) {
+            if (!channels.contains(url) && channels.size() < SHORTS_CHANNELS + 2) {
+                channels.add(url);
+            }
+        }
+        final List<Single<List<StreamInfoItem>>> loads = new ArrayList<>();
+        for (final String url : channels) {
+            loads.add(Single.fromCallable(() -> {
+                final String id = service.getChannelLHFactory().fromUrl(url).getId();
+                final var handler = service.getChannelTabLHFactory().fromQuery(id,
+                        List.of(org.schabi.newpipe.extractor.channel.tabs.ChannelTabs.SHORTS),
+                        "");
+                return streamsOf(ExtractorHelper.getChannelTab(service.getServiceId(), handler,
+                        false).blockingGet().getRelatedItems());
+            }).onErrorReturnItem(Collections.emptyList()).subscribeOn(Schedulers.io()));
+        }
+        if (loads.isEmpty()) {
+            return Collections.emptyList();
+        }
+        final List<List<StreamInfoItem>> perChannel = new ArrayList<>();
+        Single.zip(loads, results -> {
+            for (final Object r : results) {
+                @SuppressWarnings("unchecked") final List<StreamInfoItem> list =
+                        (List<StreamInfoItem>) r;
+                perChannel.add(list);
+            }
+            return perChannel;
+        }).blockingGet();
+        // uno per canale a turno, i più nuovi prima
+        final List<StreamInfoItem> out = new ArrayList<>();
+        final Set<String> seen = new HashSet<>(taste.watched);
+        for (int i = 0; i < SHORTS_PER_CHANNEL; i++) {
+            for (final List<StreamInfoItem> list : perChannel) {
+                if (i < list.size() && seen.add(list.get(i).getUrl())) {
+                    out.add(list.get(i));
+                }
+            }
+        }
+        return out;
     }
 
     /** Quello che serve dei tuoi gusti: i video "per te" e cosa hai già visto. */

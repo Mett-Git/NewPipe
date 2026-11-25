@@ -243,4 +243,14 @@
     <string name="vt_account_synced">Synced: %1$d subscriptions, %2$d playlists</string>
     <string name="vt_account_error">Couldn’t read the account. Try again, or sign out and back in.</string>
     <string name="vt_account_logout_confirm">Sign out? Subscriptions and playlists that came from the account will be removed; what you had before stays.</string>
+    <string name="vt_channel_home">Home</string>
+    <string name="vt_channel_featured">Featured</string>
+    <string name="vt_channel_most_viewed_top">Most viewed</string>
+    <string name="vt_channel_latest">New uploads</string>
+    <string name="vt_channel_popular">Most viewed</string>
+    <string name="vt_channel_popular_note">among the latest uploads</string>
+    <string name="vt_channel_members">Members only</string>
+    <string name="vt_channel_members_badge">MEMBERS</string>
+    <string name="vt_see_all">See all</string>
+    <string name="vt_shorts_from_channels">from your channels</string>
 </resources>

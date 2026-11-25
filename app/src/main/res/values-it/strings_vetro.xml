@@ -242,4 +242,14 @@
     <string name="vt_account_synced">Sincronizzato: %1$d iscrizioni, %2$d playlist</string>
     <string name="vt_account_error">Non sono riuscito a leggere l’account. Riprova, oppure esci e rientra.</string>
     <string name="vt_account_logout_confirm">Uscire? Le iscrizioni e le playlist arrivate dall’account verranno tolte, quello che avevi prima resta.</string>
+    <string name="vt_channel_home">Home</string>
+    <string name="vt_channel_featured">In evidenza</string>
+    <string name="vt_channel_most_viewed_top">Il più visto</string>
+    <string name="vt_channel_latest">Nuove uscite</string>
+    <string name="vt_channel_popular">I più visti</string>
+    <string name="vt_channel_popular_note">tra gli ultimi caricati</string>
+    <string name="vt_channel_members">Solo abbonati</string>
+    <string name="vt_channel_members_badge">ABBONATI</string>
+    <string name="vt_see_all">Vedi tutto</string>
+    <string name="vt_shorts_from_channels">dai tuoi canali</string>
 </resources>

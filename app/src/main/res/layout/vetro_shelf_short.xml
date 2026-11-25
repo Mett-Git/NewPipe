@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Uno Short in una sezione: anteprima verticale e titolo. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="120dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="8dp"
+    android:background="?attr/selectableItemBackground"
+    android:orientation="vertical">
+
+    <ImageView
+        android:id="@+id/shelfThumb"
+        android:layout_width="match_parent"
+        android:layout_height="212dp"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <TextView
+        android:id="@+id/shelfName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textSize="12.5sp" />
+
+    <TextView
+        android:id="@+id/shelfInfo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="?android:attr/textColorSecondary"
+        android:textSize="11sp" />
+</LinearLayout>

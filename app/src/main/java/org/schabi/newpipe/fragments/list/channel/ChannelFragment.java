@@ -493,13 +493,35 @@ public class ChannelFragment extends BaseStateFragment<ChannelInfo>
     // Init
     //////////////////////////////////////////////////////////////////////////*/
 
+    /** Il contenuto di ogni scheda, nell'ordine (per "Vedi tutto" della Home del canale). */
+    private final java.util.List<String> tabFilters = new java.util.ArrayList<>();
+
+    /**
+     * Apre la scheda del canale con quel contenuto (video, Shorts, Live...).
+     *
+     * @param filter il contenuto, es. ChannelTabs.VIDEOS
+     */
+    public void selectChannelTab(@NonNull final String filter) {
+        final int index = tabFilters.indexOf(filter);
+        final TabLayout.Tab tab = index < 0 ? null : binding.tabLayout.getTabAt(index);
+        if (tab != null) {
+            binding.tabLayout.selectTab(tab);
+        }
+    }
+
     private void updateTabs() {
         tabAdapter.clearAllItems();
+        tabFilters.clear();
 
         if (currentInfo != null && !channelContentNotSupported) {
             final Context context = requireContext();
             final SharedPreferences preferences = PreferenceManager
                     .getDefaultSharedPreferences(context);
+
+            // per prima la "Home" del canale: in evidenza e sezioni (ChannelHomeFragment)
+            tabAdapter.addFragment(new ChannelHomeFragment(currentInfo),
+                    context.getString(R.string.vt_channel_home));
+            tabFilters.add("");
 
             for (final ListLinkHandler linkHandler : currentInfo.getTabs()) {
                 final String tab = linkHandler.getContentFilters().get(0);
@@ -509,6 +531,7 @@ public class ChannelFragment extends BaseStateFragment<ChannelInfo>
                     channelTabFragment.useAsFrontPage(useAsFrontPage);
                     tabAdapter.addFragment(channelTabFragment,
                             context.getString(ChannelTabHelper.getTranslationKey(tab)));
+                    tabFilters.add(tab);
                 }
             }
 
@@ -517,6 +540,7 @@ public class ChannelFragment extends BaseStateFragment<ChannelInfo>
                 tabAdapter.addFragment(
                         new ChannelAboutFragment(currentInfo),
                         context.getString(R.string.channel_tab_about));
+                tabFilters.add("about");
             }
         }
 

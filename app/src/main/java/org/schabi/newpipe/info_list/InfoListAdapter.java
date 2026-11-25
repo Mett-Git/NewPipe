@@ -79,6 +79,8 @@ public class InfoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private static final int GRID_PLAYLIST_HOLDER_TYPE = 0x302;
     private static final int CARD_PLAYLIST_HOLDER_TYPE = 0x303;
     private static final int COMMENT_HOLDER_TYPE = 0x400;
+    /** Fila di Shorts in mezzo alla Home (VetroShortsShelf). */
+    private static final int SHORTS_SHELF_TYPE = 0x500;
 
     private final LayoutInflater layoutInflater;
     private final InfoItemBuilder infoItemBuilder;
@@ -237,6 +239,9 @@ public class InfoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             return FOOTER_TYPE;
         }
         final InfoItem item = infoItemList.get(position);
+        if (item instanceof VetroShortsShelf) {
+            return SHORTS_SHELF_TYPE;
+        }
         switch (item.getInfoType()) {
             case STREAM:
                 if (itemMode == ItemViewMode.CARD) {
@@ -320,6 +325,8 @@ public class InfoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 return new PlaylistCardInfoItemHolder(infoItemBuilder, parent);
             case COMMENT_HOLDER_TYPE:
                 return new CommentInfoItemHolder(infoItemBuilder, parent);
+            case SHORTS_SHELF_TYPE:
+                return new VetroShortsShelf.Holder(parent);
             default:
                 return new FallbackViewHolder(new View(parent.getContext()));
         }
@@ -333,7 +340,10 @@ public class InfoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     + "holder = [" + holder.getClass().getSimpleName() + "], "
                     + "position = [" + position + "]");
         }
-        if (holder instanceof InfoItemHolder) {
+        if (holder instanceof VetroShortsShelf.Holder) {
+            ((VetroShortsShelf.Holder) holder).bind((VetroShortsShelf)
+                    infoItemList.get(hasHeader() ? position - 1 : position));
+        } else if (holder instanceof InfoItemHolder) {
             ((InfoItemHolder) holder).updateFromItem(
                     // If header is present, offset the items by -1
                     infoItemList.get(hasHeader() ? position - 1 : position), recordManager);
@@ -345,7 +355,8 @@ public class InfoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             @Override
             public int getSpanSize(final int position) {
                 final int type = getItemViewType(position);
-                return type == HEADER_TYPE || type == FOOTER_TYPE ? spanCount : 1;
+                return type == HEADER_TYPE || type == FOOTER_TYPE || type == SHORTS_SHELF_TYPE
+                        ? spanCount : 1;
             }
         };
     }
