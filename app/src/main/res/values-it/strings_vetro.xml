@@ -220,4 +220,8 @@
         <item quantity="one">%1$d canale su %2$d ti avvisa</item>
         <item quantity="other">%1$d canali su %2$d ti avvisano</item>
     </plurals>
+    <string name="vt_bell">Video nuovi dei tuoi canali</string>
+    <string name="vt_bell_title">Notifiche</string>
+    <string name="vt_bell_empty">Ancora nessun video nuovo dai tuoi canali. Iscriviti a un canale, o apri “Novità” per aggiornare.</string>
+    <string name="vt_bell_published">%1$s ha pubblicato: %2$s</string>
 </resources>

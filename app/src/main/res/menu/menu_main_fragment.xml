@@ -8,4 +8,12 @@
         android:orderInCategory="1"
         android:title="@string/search"
         app:showAsAction="always" />
+
+    <!-- campanella: i video nuovi dei canali a cui sei iscritto (VetroBell) -->
+    <item
+        android:id="@+id/action_notifications"
+        android:orderInCategory="2"
+        android:title="@string/vt_bell"
+        app:actionLayout="@layout/vetro_bell_action"
+        app:showAsAction="always" />
 </menu>

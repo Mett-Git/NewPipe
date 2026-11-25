@@ -221,4 +221,8 @@
         <item quantity="one">%1$d of %2$d channel notifies you</item>
         <item quantity="other">%1$d of %2$d channels notify you</item>
     </plurals>
+    <string name="vt_bell">New videos from your channels</string>
+    <string name="vt_bell_title">Notifications</string>
+    <string name="vt_bell_empty">No new videos from your channels yet. Subscribe to a channel, or open “What’s New” to refresh.</string>
+    <string name="vt_bell_published">%1$s uploaded: %2$s</string>
 </resources>

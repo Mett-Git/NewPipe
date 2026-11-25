@@ -626,6 +626,11 @@ public final class VideoDetailFragment
         binding.overlayCloseButton.setOnClickListener(v -> bottomSheetBehavior
                 .setState(BottomSheetBehavior.STATE_HIDDEN));
         binding.overlayPlayQueueButton.setOnClickListener(v -> openPlayQueue(requireContext()));
+        // finestrella: toccandola torna grande, i suoi tasti fanno come quelli della striscia
+        binding.miniWindow.setOnClickListener(overlayListener);
+        binding.miniWindowClose.setOnClickListener(v -> binding.overlayCloseButton.performClick());
+        binding.miniWindowPlay.setOnClickListener(v ->
+                binding.overlayPlayPauseButton.performClick());
         binding.overlayPlayPauseButton.setOnClickListener(v -> {
             if (playerIsNotStopped()) {
                 player.playPause();
@@ -2603,7 +2608,8 @@ public final class VideoDetailFragment
      * @param showMore whether main fragment should be expanded or not
      */
     private void manageSpaceAtTheBottom(final boolean showMore) {
-        final int peekHeight = getResources().getDimensionPixelSize(R.dimen.mini_player_height);
+        final int peekHeight = floatingMiniPlayer != null ? floatingMiniPlayer.miniHeight()
+                : getResources().getDimensionPixelSize(R.dimen.mini_player_height);
         final ViewGroup holder = requireActivity().findViewById(R.id.fragment_holder);
         final int gap = DeviceUtils.dpToPx(8, requireContext());
         // con la barra sospesa il mini-player le sta sopra e le liste gli passano dietro;
@@ -2644,16 +2650,18 @@ public final class VideoDetailFragment
         bottomSheetBehavior.setState(lastStableBottomSheetState);
         updateBottomSheetState(lastStableBottomSheetState);
 
-        final int peekHeight = getResources().getDimensionPixelSize(R.dimen.mini_player_height);
+        final int stripHeight = getResources().getDimensionPixelSize(R.dimen.mini_player_height);
         floatingMiniPlayer = new FloatingMiniPlayer(bottomSheetLayout, binding.getRoot(),
-                peekHeight);
+                bottomSheetBehavior, binding.detailThumbnailRootLayout, binding.overlayLayout,
+                binding.miniWindow, stripHeight);
+        final FloatingMiniPlayer mini = floatingMiniPlayer;
         activity.getSupportFragmentManager()
                 .addOnBackStackChangedListener(miniPlayerPageListener);
         if (bottomSheetState != BottomSheetBehavior.STATE_HIDDEN) {
             manageSpaceAtTheBottom(false);
             floatingMiniPlayer.apply(
                     bottomSheetState == BottomSheetBehavior.STATE_EXPANDED ? 1f : 0f);
-            bottomSheetBehavior.setPeekHeight(peekHeight);
+            bottomSheetBehavior.setPeekHeight(mini.peekHeight());
             if (bottomSheetState == BottomSheetBehavior.STATE_COLLAPSED) {
                 binding.overlayLayout.setAlpha(MAX_OVERLAY_ALPHA);
             } else if (bottomSheetState == BottomSheetBehavior.STATE_EXPANDED) {
@@ -2671,7 +2679,7 @@ public final class VideoDetailFragment
                     case BottomSheetBehavior.STATE_HIDDEN:
                         moveFocusToMainFragment(true);
                         manageSpaceAtTheBottom(true);
-                        floatingMiniPlayer.reset();
+                        mini.reset();
 
                         bottomSheetBehavior.setPeekHeight(0);
                         cleanUp();
@@ -2679,9 +2687,9 @@ public final class VideoDetailFragment
                     case BottomSheetBehavior.STATE_EXPANDED:
                         moveFocusToMainFragment(false);
                         manageSpaceAtTheBottom(false);
-                        floatingMiniPlayer.apply(1f);
+                        mini.apply(1f);
 
-                        bottomSheetBehavior.setPeekHeight(peekHeight);
+                        bottomSheetBehavior.setPeekHeight(mini.peekHeight());
                         // Disable click because overlay buttons located on top of buttons
                         // from the player
                         setOverlayElementsClickable(false);
@@ -2700,9 +2708,9 @@ public final class VideoDetailFragment
                     case BottomSheetBehavior.STATE_COLLAPSED:
                         moveFocusToMainFragment(true);
                         manageSpaceAtTheBottom(false);
-                        floatingMiniPlayer.apply(0f);
+                        mini.apply(0f);
 
-                        bottomSheetBehavior.setPeekHeight(peekHeight);
+                        bottomSheetBehavior.setPeekHeight(mini.peekHeight());
 
                         // Re-enable clicks
                         setOverlayElementsClickable(true);
@@ -2734,7 +2742,7 @@ public final class VideoDetailFragment
             public void onSlide(@NonNull final View bottomSheet, final float slideOffset) {
                 setOverlayLook(binding.appBarLayout, behavior, slideOffset);
                 if (slideOffset >= 0) {
-                    floatingMiniPlayer.apply(slideOffset);
+                    mini.apply(slideOffset);
                 }
             }
         };
@@ -2775,6 +2783,7 @@ public final class VideoDetailFragment
                 ? R.drawable.ic_pause
                 : R.drawable.ic_play_arrow;
         binding.overlayPlayPauseButton.setImageResource(drawable);
+        binding.miniWindowPlay.setImageResource(drawable);
     }
 
     private void setOverlayLook(final AppBarLayout appBar,
@@ -2783,6 +2792,14 @@ public final class VideoDetailFragment
         // SlideOffset < 0 when mini player is about to close via swipe.
         // Stop animation in this case
         if (behavior == null || slideOffset < 0) {
+            return;
+        }
+        if (floatingMiniPlayer != null && floatingMiniPlayer.isWindow()) {
+            // la finestrella è la pagina rimpicciolita: il video deve restare in cima, intero
+            if (behavior.getTopAndBottomOffset() != 0) {
+                behavior.setTopAndBottomOffset(0);
+                appBar.requestLayout();
+            }
             return;
         }
         binding.overlayLayout.setAlpha(Math.min(MAX_OVERLAY_ALPHA, 1 - slideOffset));

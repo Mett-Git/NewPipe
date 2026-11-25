@@ -8,6 +8,19 @@
         <item name="textAllCaps">false</item>
     </style>
 
+    <!-- barra in alto: "NewPipe" piccolo sopra, il nome della pagina grande sotto -->
+    <style name="VetroToolbarBrand" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.03</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+    <style name="VetroToolbarPage" parent="TextAppearance.Widget.AppCompat.Toolbar.Subtitle">
+        <item name="android:textSize">21sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+
     <!-- tasti a pillola sotto il video (Finestrella, Audio, Scarica...) -->
     <style name="VetroPill">
         <item name="android:layout_width">wrap_content</item>

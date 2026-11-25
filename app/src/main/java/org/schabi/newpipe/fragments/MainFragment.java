@@ -56,6 +56,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainFragment extends BaseFragment implements TabLayout.OnTabSelectedListener {
+    /** Altezza della barra sospesa in basso, in dp. */
+    private static final int VETRO_BAR_HEIGHT_DP = 54;
+
+    /** La campanella in alto coi video nuovi dei canali seguiti. */
+    @Nullable
+    private VetroBell bell;
     private FragmentMainBinding binding;
     private SelectedTabsPagerAdapter pagerAdapter;
 
@@ -151,12 +157,19 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
             mainTabsPositionBottom = newMainTabsPosition;
             updateTabLayoutPosition();
         }
+        if (bell != null) {
+            bell.reload(); // magari hai guardato qualcosa nel frattempo
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         tabsManager.unsetSavedTabsListener();
+        if (bell != null) {
+            bell.dispose();
+            bell = null;
+        }
         if (binding != null) {
             binding.pager.setAdapter(null);
             binding = null;
@@ -182,6 +195,10 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
                     + "menu = [" + menu + "], inflater = [" + inflater + "]");
         }
         inflater.inflate(R.menu.menu_main_fragment, menu);
+        if (bell == null) {
+            bell = new VetroBell(activity);
+        }
+        bell.attach(menu.findItem(R.id.action_notifications));
 
         final ActionBar supportActionBar = activity.getSupportActionBar();
         if (supportActionBar != null) {
@@ -269,6 +286,8 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
             // scheda scelta bianca, le altre attenuate
             final int margin = DeviceUtils.dpToPx(12, requireContext());
             tabParams.setMargins(margin, 0, margin, margin);
+            // più sottile di quella di serie (72dp con icona e nome): scelta di Matt
+            tabParams.height = DeviceUtils.dpToPx(VETRO_BAR_HEIGHT_DP, requireContext());
             pagerParams.removeRule(ABOVE);
             tabLayout.setLayoutParams(tabParams);
             viewPager.setLayoutParams(pagerParams);
@@ -287,6 +306,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
             return;
         }
         tabParams.setMargins(0, 0, 0, 0);
+        tabParams.height = ViewGroup.LayoutParams.WRAP_CONTENT;
         tabLayout.setSelectedTabIndicator(null);
         tabLayout.setLayoutParams(tabParams);
         viewPager.setLayoutParams(pagerParams);
@@ -326,7 +346,7 @@ public class MainFragment extends BaseFragment implements TabLayout.OnTabSelecte
             return 0;
         }
         final int height = binding.mainTabLayout.getHeight();
-        return (height > 0 ? height : DeviceUtils.dpToPx(72, requireContext()))
+        return (height > 0 ? height : DeviceUtils.dpToPx(VETRO_BAR_HEIGHT_DP, requireContext()))
                 + DeviceUtils.dpToPx(20, requireContext());
     }
 

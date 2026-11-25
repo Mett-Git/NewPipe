@@ -199,6 +199,7 @@ public class MainActivity extends AppCompatActivity {
                 }, true);
 
         setSupportActionBar(toolbarLayoutBinding.toolbar);
+        toolbarLayoutBinding.toolbar.setBrand(true); // "NewPipe" sopra il nome della pagina
         try {
             setupDrawer();
         } catch (final Exception e) {

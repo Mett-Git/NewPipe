@@ -815,4 +815,41 @@
 
     </RelativeLayout>
 
+    <!-- video ridotto a finestrella: chiudi in alto a destra, play/pausa al centro.
+         Sta dentro la pagina rimpicciolita: FloatingMiniPlayer ingrandisce i tasti
+         quanto la pagina viene ridotta, così restano della loro grandezza -->
+    <FrameLayout
+        android:id="@+id/mini_window"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="#33000000"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/mini_window_close"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="top|end"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/close"
+            android:scaleType="center"
+            android:src="@drawable/ic_close"
+            app:tint="@android:color/white" />
+
+        <ImageButton
+            android:id="@+id/mini_window_play"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/play"
+            android:scaleType="fitCenter"
+            android:padding="8dp"
+            android:src="@drawable/ic_pause"
+            app:tint="@android:color/white" />
+
+    </FrameLayout>
+
 </org.schabi.newpipe.views.MiniPlayerRoot>

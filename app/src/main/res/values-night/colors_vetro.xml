@@ -11,11 +11,11 @@
     <color name="vetro_subscribe_text">#0B0B0F</color>
     <color name="vetro_card_fill">#0FFFFFFF</color>
     <color name="vetro_card_border">#1AFFFFFF</color>
-    <color name="vetro_floating_fill">#CC0B0E14</color>
+    <color name="vetro_floating_fill">#CC0D0D0D</color>
     <!-- mini-player in fondo allo schermo -->
-    <color name="vetro_mini_player">#FF14171D</color>
-    <color name="vetro_drawer_fill">#FF0B0E15</color>
+    <color name="vetro_mini_player">#FF141414</color>
+    <color name="vetro_drawer_fill">#FF0A0A0A</color>
     <color name="vetro_subscribed_fill">#24FFFFFF</color>
-    <color name="vetro_menu_fill">#F20B0E14</color>
+    <color name="vetro_menu_fill">#F20A0A0A</color>
     <color name="vetro_menu_scrim">#8C000000</color>
 </resources>

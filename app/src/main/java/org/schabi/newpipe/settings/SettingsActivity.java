@@ -99,6 +99,8 @@ public class SettingsActivity extends AppCompatActivity implements
         initSearch(settingsLayoutBinding, restored);
 
         setSupportActionBar(settingsLayoutBinding.settingsToolbarLayout.toolbar);
+        // "NewPipe" sopra il nome della pagina
+        settingsLayoutBinding.settingsToolbarLayout.toolbar.setBrand(true);
 
         if (restored) {
             // Restore state
