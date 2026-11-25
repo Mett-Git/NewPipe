@@ -10,6 +10,7 @@ import org.schabi.newpipe.error.ReCaptchaActivity;
 import org.schabi.newpipe.extractor.downloader.Downloader;
 import org.schabi.newpipe.extractor.downloader.Request;
 import org.schabi.newpipe.extractor.downloader.Response;
+import org.schabi.newpipe.account.VetroAccount;
 import org.schabi.newpipe.util.YoutubeCommentAvatars;
 import org.schabi.newpipe.extractor.exceptions.ReCaptchaException;
 import org.schabi.newpipe.util.InfoCache;
@@ -162,6 +163,16 @@ public final class DownloaderImpl extends Downloader {
             requestBuilder.removeHeader(headerName);
             headerValueList.forEach(headerValue ->
                     requestBuilder.addHeader(headerName, headerValue));
+        });
+
+        // account YouTube (VetroAccount): solo per le richieste fatte apposta per leggere
+        // iscrizioni e playlist, mai per i video
+        final List<String> requestCookies = headers.get("Cookie");
+        final String existingCookie = requestCookies != null && !requestCookies.isEmpty()
+                ? String.join("; ", requestCookies) : cookies;
+        VetroAccount.authHeaders(url, existingCookie).forEach((name, value) -> {
+            requestBuilder.removeHeader(name);
+            requestBuilder.addHeader(name, value);
         });
 
         try (

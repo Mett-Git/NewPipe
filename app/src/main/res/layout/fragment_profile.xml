@@ -100,6 +100,85 @@
             </LinearLayout>
         </FrameLayout>
 
+        <!-- account YouTube: entra, sincronizza, esci (VetroAccount) -->
+        <LinearLayout
+            android:id="@+id/profileAccount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginBottom="6dp"
+            android:background="@drawable/vetro_card"
+            android:orientation="vertical"
+            android:padding="14dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/profileAccountPhoto"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginEnd="12dp"
+                    android:importantForAccessibility="no"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/placeholder_person" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/profileAccountTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/vt_account_title"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/profileAccountText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/vt_account_hint"
+                        android:textColor="?android:attr/textColorSecondary"
+                        android:textSize="12.5sp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/profileAccountLogin"
+                    style="@style/VetroPill.Hot"
+                    android:text="@string/vt_account_login" />
+
+                <TextView
+                    android:id="@+id/profileAccountSync"
+                    style="@style/VetroPill"
+                    android:text="@string/vt_account_sync"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/profileAccountLogout"
+                    style="@style/VetroPill"
+                    android:text="@string/vt_account_logout"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+
         <LinearLayout
             android:id="@+id/profileHistorySection"
             android:layout_width="match_parent"

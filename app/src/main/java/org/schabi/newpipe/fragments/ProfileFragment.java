@@ -13,6 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import android.content.Intent;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
@@ -23,6 +25,8 @@ import androidx.fragment.app.FragmentManager;
 
 import org.schabi.newpipe.BaseFragment;
 import org.schabi.newpipe.R;
+import org.schabi.newpipe.account.VetroAccount;
+import org.schabi.newpipe.account.VetroLoginActivity;
 import org.schabi.newpipe.database.stream.StreamStatisticsEntry;
 import org.schabi.newpipe.database.stream.model.StreamEntity;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
@@ -36,6 +40,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
@@ -55,14 +61,27 @@ public class ProfileFragment extends BaseFragment {
     private VetroProfile profile;
     /** true = la prossima immagine scelta è la copertina, false = la foto. */
     private boolean pickingCover;
-    private ActivityResultLauncher<String> pickImage;
+    private ActivityResultLauncher<PickVisualMediaRequest> pickImage;
+    private ActivityResultLauncher<Intent> login;
+    /** Sincronizzazione o uscita in corso: resta anche se cambi scheda. */
+    private final CompositeDisposable accountWork = new CompositeDisposable();
+    @Nullable
+    private String accountStatus;
 
     @Override
     public void onCreate(@Nullable final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         profile = new VetroProfile(requireContext());
-        pickImage = registerForActivityResult(new ActivityResultContracts.GetContent(),
+        // il selettore di foto di Android (su quelli vecchi apre la galleria dei file)
+        pickImage = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
                 this::onImagePicked);
+        // appena entrato nell'account si copiano subito iscrizioni e playlist
+        login = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (VetroAccount.isLoggedIn(requireContext())) {
+                        startSync();
+                    }
+                });
     }
 
     @Override
@@ -82,6 +101,11 @@ public class ProfileFragment extends BaseFragment {
         profile.show(rootView);
         rootView.findViewById(R.id.profileEdit).setOnClickListener(v -> openEditor());
         rootView.findViewById(R.id.profileAvatarFrame).setOnClickListener(v -> openEditor());
+        rootView.findViewById(R.id.profileAccountLogin).setOnClickListener(v ->
+                login.launch(new Intent(requireContext(), VetroLoginActivity.class)));
+        rootView.findViewById(R.id.profileAccountSync).setOnClickListener(v -> startSync());
+        rootView.findViewById(R.id.profileAccountLogout).setOnClickListener(v -> confirmLogout());
+        showAccount();
         final FragmentManager manager = requireActivity().getSupportFragmentManager();
         rootView.findViewById(R.id.profileHistoryAll).setOnClickListener(
                 v -> NavigationHelper.openStatisticFragment(manager));
@@ -203,13 +227,13 @@ public class ProfileFragment extends BaseFragment {
             profile.save(name.getText().toString(), chosen[0]);
             dialog.dismiss();
             pickingCover = false;
-            pickImage.launch("image/*");
+            pickImage.launch(onlyImages());
         });
         form.findViewById(R.id.profileEditCover).setOnClickListener(v -> {
             profile.save(name.getText().toString(), chosen[0]);
             dialog.dismiss();
             pickingCover = true;
-            pickImage.launch("image/*");
+            pickImage.launch(onlyImages());
         });
         form.findViewById(R.id.profileEditReset).setOnClickListener(v -> {
             profile.save(name.getText().toString(), chosen[0]);
@@ -235,12 +259,120 @@ public class ProfileFragment extends BaseFragment {
         }
     }
 
+    // ----- account YouTube -----
+
+    // il riquadro dell'account: "Accedi" se non sei entrato, sennò nome, Sincronizza ed Esci
+    private void showAccount() {
+        if (header == null) {
+            return;
+        }
+        final boolean in = VetroAccount.isLoggedIn(requireContext());
+        final boolean busy = accountWork.size() > 0;
+        header.findViewById(R.id.profileAccountLogin).setVisibility(in ? View.GONE : View.VISIBLE);
+        header.findViewById(R.id.profileAccountSync).setVisibility(in ? View.VISIBLE : View.GONE);
+        header.findViewById(R.id.profileAccountLogout).setVisibility(in ? View.VISIBLE : View.GONE);
+        header.findViewById(R.id.profileAccountSync).setEnabled(!busy);
+        header.findViewById(R.id.profileAccountLogout).setEnabled(!busy);
+        final TextView title = header.findViewById(R.id.profileAccountTitle);
+        final TextView text = header.findViewById(R.id.profileAccountText);
+        final ImageView photo = header.findViewById(R.id.profileAccountPhoto);
+        // la foto dell'account è rotonda, anche quella di riserva
+        photo.setClipToOutline(true);
+        photo.setOutlineProvider(new android.view.ViewOutlineProvider() {
+            @Override
+            public void getOutline(final View view, final android.graphics.Outline outline) {
+                outline.setOval(0, 0, view.getWidth(), view.getHeight());
+            }
+        });
+        if (!in) {
+            title.setText(R.string.vt_account_title);
+            text.setText(accountStatus != null
+                    ? accountStatus : getString(R.string.vt_account_hint));
+            photo.setImageResource(R.drawable.placeholder_person);
+            return;
+        }
+        final String name = VetroAccount.name(requireContext());
+        title.setText(name.isEmpty() ? getString(R.string.vt_account_title)
+                : getString(R.string.vt_account_connected, name));
+        text.setText(accountStatus != null ? accountStatus : VetroAccount.handle(requireContext()));
+        CoilHelper.INSTANCE.loadAvatar(photo, VetroAccount.photo(requireContext()));
+    }
+
+    private void startSync() {
+        if (accountWork.size() > 0) {
+            return;
+        }
+        final android.content.Context app = requireContext().getApplicationContext();
+        accountStatus = getString(R.string.vt_account_syncing, 0, 0);
+        accountWork.add(Single.fromCallable(() -> VetroAccount.sync(app, (subs, lists) ->
+                        historyCells.post(() -> {
+                            if (isAdded()) {
+                                accountStatus = getString(R.string.vt_account_syncing,
+                                        subs, lists);
+                                showAccount();
+                            }
+                        })))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doFinally(() -> {
+                    accountWork.clear();
+                    if (isAdded()) {
+                        showAccount();
+                    }
+                })
+                .subscribe(counts -> accountStatus = isAdded()
+                                ? getString(R.string.vt_account_synced, counts[0], counts[1])
+                                : null,
+                        error -> accountStatus = isAdded()
+                                ? getString(R.string.vt_account_error) : null));
+        showAccount();
+    }
+
+    private void confirmLogout() {
+        new AlertDialog.Builder(requireContext())
+                .setMessage(R.string.vt_account_logout_confirm)
+                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.vt_account_logout, (d, w) -> {
+                    final android.content.Context app = requireContext().getApplicationContext();
+                    accountStatus = null;
+                    accountWork.add(Completable.fromAction(() -> VetroAccount.logout(app))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .doFinally(() -> {
+                                accountWork.clear();
+                                if (isAdded()) {
+                                    showAccount();
+                                    onResume(); // iscrizioni e cronologia di nuovo
+                                }
+                            })
+                            .subscribe(() -> { }, e -> { }));
+                    showAccount();
+                })
+                .show();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        accountWork.dispose();
+    }
+
+    private static PickVisualMediaRequest onlyImages() {
+        return new PickVisualMediaRequest.Builder()
+                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                .build();
+    }
+
     private void onImagePicked(@Nullable final Uri uri) {
         if (uri == null) {
             return;
         }
         try {
             profile.saveImage(uri, pickingCover);
+        } catch (final VetroProfile.TooSmallException e) {
+            final int message = pickingCover
+                    ? R.string.vt_profile_cover_too_small : R.string.vt_profile_photo_too_small;
+            Toast.makeText(requireContext(), message, Toast.LENGTH_LONG).show();
         } catch (final Exception e) {
             Toast.makeText(requireContext(), R.string.general_error, Toast.LENGTH_SHORT).show();
         }

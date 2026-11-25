@@ -42,8 +42,14 @@ final class VetroProfile {
     private static final String KEY_COLOR = "color";
     private static final String PHOTO_FILE = "vetro_profile_photo.jpg";
     private static final String COVER_FILE = "vetro_profile_cover.jpg";
-    private static final int PHOTO_SIZE = 512;
-    private static final int COVER_SIZE = 1440;
+    /** Foto del profilo: quadrata, da 32x32 a 128x128 (scelta di Matt). */
+    static final int PHOTO_MIN = 32;
+    static final int PHOTO_MAX = 128;
+    /** Copertina: 16:5 come il riquadro, da 320x100 a 1280x400. */
+    static final int COVER_MIN_WIDTH = 320;
+    static final int COVER_MIN_HEIGHT = 100;
+    static final int COVER_MAX_WIDTH = 1280;
+    static final int COVER_MAX_HEIGHT = 400;
 
     private final Context context;
 
@@ -78,36 +84,71 @@ final class VetroProfile {
         return new File(context.getFilesDir(), COVER_FILE);
     }
 
+    /** L'immagine scelta è troppo piccola. */
+    static final class TooSmallException extends IOException {
+        TooSmallException() {
+            super("Immagine troppo piccola");
+        }
+    }
+
     /**
-     * Copia un'immagine scelta dalla galleria, rimpicciolita, come foto o copertina.
+     * Copia un'immagine scelta dalla galleria, ritagliata al centro e rimpicciolita.
+     * Foto: quadrata, da 32x32 a 128x128. Copertina: nella forma del riquadro (16:5),
+     * da 320x100 a 1280x400.
      *
      * @param uri   l'immagine scelta
      * @param cover true = copertina, false = foto del profilo
-     * @throws IOException se l'immagine non si legge
+     * @throws IOException se l'immagine non si legge o è più piccola del minimo
      */
     void saveImage(@NonNull final Uri uri, final boolean cover) throws IOException {
-        final int max = cover ? COVER_SIZE : PHOTO_SIZE;
+        final int maxWidth = cover ? COVER_MAX_WIDTH : PHOTO_MAX;
+        final int maxHeight = cover ? COVER_MAX_HEIGHT : PHOTO_MAX;
+        final int minWidth = cover ? COVER_MIN_WIDTH : PHOTO_MIN;
+        final int minHeight = cover ? COVER_MIN_HEIGHT : PHOTO_MIN;
+
         final BitmapFactory.Options bounds = new BitmapFactory.Options();
         bounds.inJustDecodeBounds = true;
         try (InputStream in = context.getContentResolver().openInputStream(uri)) {
             BitmapFactory.decodeStream(in, null, bounds);
         }
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inSampleSize = 1;
-        while (Math.max(bounds.outWidth, bounds.outHeight) / (options.inSampleSize * 2) >= max) {
-            options.inSampleSize *= 2;
-        }
-        final Bitmap bitmap;
-        try (InputStream in = context.getContentResolver().openInputStream(uri)) {
-            bitmap = BitmapFactory.decodeStream(in, null, options);
-        }
-        if (bitmap == null) {
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
             throw new IOException("Immagine non leggibile");
         }
-        try (OutputStream out = new FileOutputStream(cover ? cover() : photo())) {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, out);
+        // il pezzo che si tiene: il più grande con le proporzioni giuste, al centro
+        final float ratio = (float) maxWidth / maxHeight;
+        int cropWidth = bounds.outWidth;
+        int cropHeight = Math.round(cropWidth / ratio);
+        if (cropHeight > bounds.outHeight) {
+            cropHeight = bounds.outHeight;
+            cropWidth = Math.round(cropHeight * ratio);
         }
-        bitmap.recycle();
+        if (cropWidth < minWidth || cropHeight < minHeight) {
+            throw new TooSmallException();
+        }
+
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 1;
+        while (cropWidth / (options.inSampleSize * 2) >= maxWidth) {
+            options.inSampleSize *= 2;
+        }
+        final Bitmap full;
+        try (InputStream in = context.getContentResolver().openInputStream(uri)) {
+            full = BitmapFactory.decodeStream(in, null, options);
+        }
+        if (full == null) {
+            throw new IOException("Immagine non leggibile");
+        }
+        final int w = Math.min(full.getWidth(), cropWidth / options.inSampleSize);
+        final int h = Math.min(full.getHeight(), cropHeight / options.inSampleSize);
+        final Bitmap cropped = Bitmap.createBitmap(full, (full.getWidth() - w) / 2,
+                (full.getHeight() - h) / 2, w, h);
+        final Bitmap result = w > maxWidth
+                ? Bitmap.createScaledBitmap(cropped, maxWidth,
+                        Math.round(maxWidth / ratio), true)
+                : cropped;
+        try (OutputStream out = new FileOutputStream(cover ? cover() : photo())) {
+            result.compress(Bitmap.CompressFormat.JPEG, 92, out);
+        }
     }
 
     void removeImages() {

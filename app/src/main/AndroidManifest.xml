@@ -167,6 +167,12 @@
             android:exported="false"
             android:label="@string/recaptcha" />
 
+        <!-- accesso all'account YouTube (VetroAccount) -->
+        <activity
+            android:name=".account.VetroLoginActivity"
+            android:exported="false"
+            android:label="@string/vt_account_login" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"

@@ -231,4 +231,16 @@
     <string name="vt_profile_photo">Photo</string>
     <string name="vt_profile_cover">Cover</string>
     <string name="vt_profile_remove_images">Remove photo and cover</string>
+    <string name="vt_profile_photo_too_small">The photo is too small: it must be at least 32 × 32</string>
+    <string name="vt_profile_cover_too_small">The cover is too small: it must be at least 320 × 100</string>
+    <string name="vt_account_title">YouTube account</string>
+    <string name="vt_account_hint">Sign in to bring your subscriptions and playlists here. The account is only read, and only when you ask.</string>
+    <string name="vt_account_login">Sign in with YouTube</string>
+    <string name="vt_account_sync">Sync</string>
+    <string name="vt_account_logout">Sign out</string>
+    <string name="vt_account_connected">Signed in as %s</string>
+    <string name="vt_account_syncing">Syncing… %1$d subscriptions, %2$d playlists</string>
+    <string name="vt_account_synced">Synced: %1$d subscriptions, %2$d playlists</string>
+    <string name="vt_account_error">Couldn’t read the account. Try again, or sign out and back in.</string>
+    <string name="vt_account_logout_confirm">Sign out? Subscriptions and playlists that came from the account will be removed; what you had before stays.</string>
 </resources>

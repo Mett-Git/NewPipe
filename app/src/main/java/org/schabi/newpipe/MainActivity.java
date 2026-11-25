@@ -202,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbarLayoutBinding.toolbar);
         toolbarLayoutBinding.toolbar.setBrand(true); // "NewPipe" sopra il nome della pagina
         VetroForeground.install(getApplication()); // per aggiornare le schede riaprendo l'app
+        org.schabi.newpipe.account.VetroAccount.init(this); // cookie dell'account, se sei entrato
         try {
             setupDrawer();
         } catch (final Exception e) {

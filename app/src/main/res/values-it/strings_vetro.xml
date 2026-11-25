@@ -230,4 +230,16 @@
     <string name="vt_profile_photo">Foto</string>
     <string name="vt_profile_cover">Copertina</string>
     <string name="vt_profile_remove_images">Togli foto e copertina</string>
+    <string name="vt_profile_photo_too_small">La foto è troppo piccola: deve essere almeno 32 × 32</string>
+    <string name="vt_profile_cover_too_small">La copertina è troppo piccola: deve essere almeno 320 × 100</string>
+    <string name="vt_account_title">Account YouTube</string>
+    <string name="vt_account_hint">Entra per portare qui iscrizioni e playlist. L’account viene solo letto, e solo quando lo chiedi tu.</string>
+    <string name="vt_account_login">Accedi con YouTube</string>
+    <string name="vt_account_sync">Sincronizza</string>
+    <string name="vt_account_logout">Esci</string>
+    <string name="vt_account_connected">Collegato come %s</string>
+    <string name="vt_account_syncing">Sincronizzo… %1$d iscrizioni, %2$d playlist</string>
+    <string name="vt_account_synced">Sincronizzato: %1$d iscrizioni, %2$d playlist</string>
+    <string name="vt_account_error">Non sono riuscito a leggere l’account. Riprova, oppure esci e rientra.</string>
+    <string name="vt_account_logout_confirm">Uscire? Le iscrizioni e le playlist arrivate dall’account verranno tolte, quello che avevi prima resta.</string>
 </resources>
