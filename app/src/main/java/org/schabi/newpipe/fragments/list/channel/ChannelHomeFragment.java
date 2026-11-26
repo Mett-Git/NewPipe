@@ -29,6 +29,7 @@ import org.schabi.newpipe.extractor.stream.StreamType;
 import org.schabi.newpipe.util.ExtractorHelper;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.NavigationHelper;
+import org.schabi.newpipe.util.VetroRound;
 import org.schabi.newpipe.util.image.CoilHelper;
 
 import java.nio.charset.StandardCharsets;
@@ -328,6 +329,7 @@ public class ChannelHomeFragment extends BaseFragment {
                 playlists.size()))) {
             final View cell = LayoutInflater.from(requireContext())
                     .inflate(R.layout.vetro_shelf_video, row, false);
+            VetroRound.apply(cell.findViewById(R.id.shelfThumb), 12);
             CoilHelper.INSTANCE.loadThumbnail(cell.findViewById(R.id.shelfThumb),
                     p.getThumbnails());
             ((TextView) cell.findViewById(R.id.shelfName)).setText(p.getName());
@@ -364,6 +366,7 @@ public class ChannelHomeFragment extends BaseFragment {
     }
 
     private void bindVideo(@NonNull final View cell, @NonNull final StreamInfoItem item) {
+        VetroRound.apply(cell.findViewById(R.id.shelfThumb), 12);
         CoilHelper.INSTANCE.loadThumbnail(cell.findViewById(R.id.shelfThumb),
                 item.getThumbnails());
         ((TextView) cell.findViewById(R.id.shelfName)).setText(item.getName());

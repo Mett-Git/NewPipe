@@ -15,6 +15,7 @@ import org.schabi.newpipe.extractor.InfoItem;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.NavigationHelper;
+import org.schabi.newpipe.util.VetroRound;
 import org.schabi.newpipe.util.image.CoilHelper;
 
 import java.util.List;
@@ -54,6 +55,7 @@ public final class VetroShortsShelf extends InfoItem {
             final LayoutInflater inflater = LayoutInflater.from(itemView.getContext());
             for (final StreamInfoItem item : shelf.shorts) {
                 final View cell = inflater.inflate(R.layout.vetro_shelf_short, row, false);
+                VetroRound.apply(cell.findViewById(R.id.shelfThumb), 12);
                 CoilHelper.INSTANCE.loadThumbnail(cell.findViewById(R.id.shelfThumb),
                         item.getThumbnails());
                 ((TextView) cell.findViewById(R.id.shelfName)).setText(item.getName());

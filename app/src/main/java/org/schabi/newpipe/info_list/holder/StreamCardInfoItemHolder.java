@@ -10,6 +10,7 @@ import org.schabi.newpipe.extractor.InfoItem;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
 import org.schabi.newpipe.info_list.InfoItemBuilder;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
+import org.schabi.newpipe.util.VetroRound;
 import org.schabi.newpipe.util.image.CoilHelper;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class StreamCardInfoItemHolder extends StreamInfoItemHolder {
     public StreamCardInfoItemHolder(final InfoItemBuilder infoItemBuilder, final ViewGroup parent) {
         super(infoItemBuilder, R.layout.list_stream_card_item, parent);
         itemUploaderAvatarView = itemView.findViewById(R.id.itemUploaderAvatarView);
+        VetroRound.apply(itemView.findViewById(R.id.itemThumbnailView), 14);
     }
 
     @Override
