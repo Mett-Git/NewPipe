@@ -238,6 +238,13 @@
             </HorizontalScrollView>
         </LinearLayout>
 
+        <!-- Mi piace, Non mi piace, Preferiti (VetroTaste): file come la cronologia -->
+        <LinearLayout
+            android:id="@+id/profileTaste"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
         <LinearLayout
             android:id="@+id/profileRows"
             android:layout_width="match_parent"

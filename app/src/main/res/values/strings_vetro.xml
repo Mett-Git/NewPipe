@@ -255,4 +255,11 @@
     <string name="vt_shorts_from_channels">from your channels</string>
     <string name="vt_likes">%s likes</string>
     <string name="vt_more">...more</string>
+    <string name="vt_liked">Liked</string>
+    <string name="vt_disliked">Disliked</string>
+    <string name="vt_favourites">Favourites</string>
+    <string name="vt_chip_all">All</string>
+    <string name="vt_chip_from">From %s</string>
+    <string name="vt_chip_related">Related</string>
+    <string name="vt_chip_for_you">For you</string>
 </resources>

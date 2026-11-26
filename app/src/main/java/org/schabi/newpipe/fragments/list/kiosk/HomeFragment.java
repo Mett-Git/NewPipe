@@ -25,6 +25,7 @@ import org.schabi.newpipe.local.feed.FeedDatabaseManager;
 import org.schabi.newpipe.local.history.HistoryRecordManager;
 import org.schabi.newpipe.util.ExtractorHelper;
 import org.schabi.newpipe.util.Localization;
+import org.schabi.newpipe.util.VetroTaste;
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -287,15 +288,36 @@ public class HomeFragment extends KioskFragment {
                             (List<StreamStatisticsEntry>) both[0];
                     @SuppressWarnings("unchecked") final List<String> queries =
                             (List<String>) both[1];
-                    return score(serviceId, statistics, queries);
+                    return score(serviceId, statistics, queries, new Likes(context));
                 })
                 .subscribeOn(Schedulers.io());
     }
 
+    /** I tuoi Preferiti, Mi piace e Non mi piace (VetroTaste, solo sul telefono). */
+    private static final class Likes {
+        final List<StreamInfoItem> favourites;
+        final List<StreamInfoItem> liked;
+        final Set<String> dislikedVideos = new HashSet<>();
+        final Set<String> dislikedChannels;
+
+        Likes(@NonNull final Context context) {
+            favourites = VetroTaste.list(context, VetroTaste.Kind.FAVOURITE);
+            liked = VetroTaste.list(context, VetroTaste.Kind.LIKED);
+            for (final StreamInfoItem item
+                    : VetroTaste.list(context, VetroTaste.Kind.DISLIKED)) {
+                dislikedVideos.add(item.getUrl());
+            }
+            dislikedChannels = VetroTaste.channels(context, VetroTaste.Kind.DISLIKED);
+        }
+    }
+
     private static Single<Taste> score(final int serviceId,
                                        final List<StreamStatisticsEntry> statistics,
-                                       final List<String> queries) {
+                                       final List<String> queries,
+                                       final Likes likes) {
         final Set<String> watched = new HashSet<>();
+        // i video che non ti piacciono non tornano più, come quelli già visti
+        watched.addAll(likes.dislikedVideos);
         final Map<String, Integer> channelViews = new HashMap<>();
         for (final StreamStatisticsEntry s : statistics) {
             watched.add(s.getStreamEntity().getUrl());
@@ -334,6 +356,22 @@ public class HomeFragment extends KioskFragment {
                     .map(info -> new WeightedList(streamsOf(itemsOf(info)), weight))
                     .onErrorReturnItem(WeightedList.EMPTY));
         }
+        // punti di partenza anche i Preferiti (contano di più) e i Mi piace, e i loro canali
+        // salgono come quelli che guardi spesso
+        addLikedSeeds(sources, serviceId, likes.favourites, 2.0);
+        addLikedSeeds(sources, serviceId, likes.liked, 1.3);
+        for (final StreamInfoItem item : likes.favourites) {
+            watched.add(item.getUrl());
+            if (item.getUploaderUrl() != null) {
+                favourite.add(item.getUploaderUrl());
+            }
+        }
+        for (final StreamInfoItem item : likes.liked) {
+            watched.add(item.getUrl());
+            if (item.getUploaderUrl() != null) {
+                favourite.add(item.getUploaderUrl());
+            }
+        }
         if (sources.isEmpty()) {
             return Single.just(new Taste(Collections.emptyList(), watched, favourite));
         }
@@ -362,11 +400,31 @@ public class HomeFragment extends KioskFragment {
                 if (favourite.contains(item.getUploaderUrl())) {
                     points.computeIfPresent(item.getUrl(), (k, v) -> v * 1.3);
                 }
+                if (likes.dislikedChannels.contains(item.getUploaderUrl())) {
+                    // canale di un video che non ti è piaciuto: scende parecchio
+                    points.computeIfPresent(item.getUrl(), (k, v) -> v * 0.3);
+                }
             }
             ranked.sort((a, b) -> Double.compare(points.get(b.getUrl()), points.get(a.getUrl())));
             shuffleNearby(ranked);
             return new Taste(ranked, watched, favourite);
         });
+    }
+
+    // i correlati dei primi Preferiti o Mi piace, col loro peso
+    private static void addLikedSeeds(final List<Single<WeightedList>> sources,
+                                      final int serviceId, final List<StreamInfoItem> seeds,
+                                      final double weight) {
+        for (int i = 0; i < Math.min(4, seeds.size()); i++) {
+            final StreamInfoItem seed = seeds.get(i);
+            if (seed.getServiceId() != serviceId) {
+                continue;
+            }
+            final double w = weight / (1 + i * 0.35);
+            sources.add(ExtractorHelper.getStreamInfo(serviceId, seed.getUrl(), false)
+                    .map(info -> new WeightedList(streamsOf(relatedOf(info)), w))
+                    .onErrorReturnItem(WeightedList.EMPTY));
+        }
     }
 
     /** Una lista di video consigliati e quanto conta chi la consiglia. */

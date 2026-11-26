@@ -254,4 +254,11 @@
     <string name="vt_shorts_from_channels">dai tuoi canali</string>
     <string name="vt_likes">%s Mi piace</string>
     <string name="vt_more">...altro</string>
+    <string name="vt_liked">Mi piace</string>
+    <string name="vt_disliked">Non mi piace</string>
+    <string name="vt_favourites">Preferiti</string>
+    <string name="vt_chip_all">Tutti</string>
+    <string name="vt_chip_from">Di %s</string>
+    <string name="vt_chip_related">Video correlati</string>
+    <string name="vt_chip_for_you">Per te</string>
 </resources>

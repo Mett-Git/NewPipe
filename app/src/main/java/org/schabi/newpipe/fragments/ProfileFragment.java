@@ -138,6 +138,7 @@ public class ProfileFragment extends BaseFragment {
             return;
         }
         disposables.clear();
+        showTaste();
         disposables.add(new HistoryRecordManager(requireContext()).getStreamStatistics()
                 .firstOrError()
                 .map(entries -> {
@@ -155,6 +156,45 @@ public class ProfileFragment extends BaseFragment {
                 .subscribe(list -> subtitle.setText(getResources().getQuantityString(
                         R.plurals.profile_subscriptions, list.size(), list.size())),
                         error -> { }));
+    }
+
+    // le tre file dei tuoi gusti: Preferiti, Mi piace, Non mi piace (solo quelle non vuote)
+    private void showTaste() {
+        if (header == null) {
+            return;
+        }
+        final LinearLayout box = header.findViewById(R.id.profileTaste);
+        box.removeAllViews();
+        final org.schabi.newpipe.util.VetroTaste.Kind[] kinds = {
+                org.schabi.newpipe.util.VetroTaste.Kind.FAVOURITE,
+                org.schabi.newpipe.util.VetroTaste.Kind.LIKED,
+                org.schabi.newpipe.util.VetroTaste.Kind.DISLIKED};
+        final int[] titles = {R.string.vt_favourites, R.string.vt_liked, R.string.vt_disliked};
+        final LayoutInflater inflater = LayoutInflater.from(requireContext());
+        for (int k = 0; k < kinds.length; k++) {
+            final List<org.schabi.newpipe.extractor.stream.StreamInfoItem> items =
+                    org.schabi.newpipe.util.VetroTaste.list(requireContext(), kinds[k]);
+            if (items.isEmpty()) {
+                continue;
+            }
+            final View shelf = inflater.inflate(R.layout.vetro_shelf, box, false);
+            ((TextView) shelf.findViewById(R.id.shelfTitle)).setText(titles[k]);
+            ((TextView) shelf.findViewById(R.id.shelfMore)).setText(String.valueOf(items.size()));
+            final LinearLayout row = shelf.findViewById(R.id.shelfItems);
+            for (final org.schabi.newpipe.extractor.stream.StreamInfoItem item : items) {
+                final View cell = inflater.inflate(R.layout.vetro_profile_video, row, false);
+                CoilHelper.INSTANCE.loadThumbnail(cell.findViewById(R.id.vetroRowIcon),
+                        item.getThumbnails());
+                ((TextView) cell.findViewById(R.id.vetroRowTitle)).setText(item.getName());
+                ((TextView) cell.findViewById(R.id.vetroRowSubtitle))
+                        .setText(item.getUploaderName());
+                cell.setOnClickListener(v -> NavigationHelper.openVideoDetailFragment(
+                        requireContext(), requireActivity().getSupportFragmentManager(),
+                        item.getServiceId(), item.getUrl(), item.getName(), null, false));
+                row.addView(cell);
+            }
+            box.addView(shelf);
+        }
     }
 
     @Override

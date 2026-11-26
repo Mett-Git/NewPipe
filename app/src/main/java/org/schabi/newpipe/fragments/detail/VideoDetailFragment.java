@@ -47,6 +47,7 @@ import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -121,6 +122,7 @@ import org.schabi.newpipe.util.InfoCache;
 import org.schabi.newpipe.util.ListHelper;
 import org.schabi.newpipe.util.Localization;
 import org.schabi.newpipe.util.NavigationHelper;
+import org.schabi.newpipe.util.VetroTaste;
 import org.schabi.newpipe.util.PermissionHelper;
 import org.schabi.newpipe.util.PlayButtonHelper;
 import org.schabi.newpipe.util.StreamTypeUtil;
@@ -252,6 +254,9 @@ public final class VideoDetailFragment
     /** Pagina tutta insieme come su YouTube; null sui tablet in orizzontale (hanno le schede). */
     @Nullable
     private VideoPagePanels panels;
+    /** La luce del colore del video dietro la pagina (modalità ambient di YouTube). */
+    @Nullable
+    private AmbientGlow ambientGlow;
     /** Il video ridotto: mini-player arrotondato sospeso sopra la barra in basso. */
     @Nullable
     private FloatingMiniPlayer floatingMiniPlayer;
@@ -429,6 +434,9 @@ public final class VideoDetailFragment
     @Override
     public void onPause() {
         super.onPause();
+        if (ambientGlow != null) {
+            ambientGlow.stop();
+        }
         if (currentWorker != null) {
             currentWorker.dispose();
         }
@@ -443,6 +451,9 @@ public final class VideoDetailFragment
     @Override
     public void onResume() {
         super.onResume();
+        if (ambientGlow != null) {
+            ambientGlow.start();
+        }
         if (DEBUG) {
             Log.d(TAG, "onResume() called");
         }
@@ -612,10 +623,19 @@ public final class VideoDetailFragment
         // icone come su YouTube accanto a Iscriviti: fanno quello dei tasti a pillola; i tre
         // puntini aprono le pillole (Finestrella, Audio, Popup...) e gli altri tasti
         binding.detailIconShare.setOnClickListener(v -> binding.detailControlsShare.performClick());
-        binding.detailIconSave.setOnClickListener(v ->
-                binding.detailControlsPlaylistAppend.performClick());
-        binding.detailIconDownload.setOnClickListener(v ->
-                binding.detailControlsDownload.performClick());
+        // Mi piace / Non mi piace / Preferiti: solo sul telefono, li usa l'algoritmo
+        binding.detailIconLike.setOnClickListener(makeOnClickListener(info -> {
+            VetroTaste.toggle(requireContext(), VetroTaste.Kind.LIKED, info);
+            showTasteIcons(info);
+        }));
+        binding.detailIconDislike.setOnClickListener(makeOnClickListener(info -> {
+            VetroTaste.toggle(requireContext(), VetroTaste.Kind.DISLIKED, info);
+            showTasteIcons(info);
+        }));
+        binding.detailIconFavourite.setOnClickListener(makeOnClickListener(info -> {
+            VetroTaste.toggle(requireContext(), VetroTaste.Kind.FAVOURITE, info);
+            showTasteIcons(info);
+        }));
         binding.detailIconMore.setOnClickListener(v -> {
             final boolean show = binding.detailPillsScroll.getVisibility() != View.VISIBLE;
             binding.detailPillsScroll.setVisibility(show ? View.VISIBLE : View.GONE);
@@ -742,6 +762,24 @@ public final class VideoDetailFragment
         binding.detailViewCountView.setVisibility(View.VISIBLE);
     }
 
+    // icone piene e corallo quando il video è fra i Mi piace, Non mi piace o Preferiti
+    private void showTasteIcons(@NonNull final StreamInfo info) {
+        final android.content.res.ColorStateList normal = android.content.res.ColorStateList
+                .valueOf(binding.detailVideoTitleView.getCurrentTextColor());
+        final android.content.res.ColorStateList active = android.content.res.ColorStateList
+                .valueOf(androidx.core.content.ContextCompat.getColor(requireContext(),
+                        R.color.vetro_coral));
+        final ImageButton[] icons = {binding.detailIconLike, binding.detailIconDislike,
+                binding.detailIconFavourite};
+        final VetroTaste.Kind[] kinds = {VetroTaste.Kind.LIKED, VetroTaste.Kind.DISLIKED,
+                VetroTaste.Kind.FAVOURITE};
+        for (int i = 0; i < icons.length; i++) {
+            final boolean on = VetroTaste.has(requireContext(), kinds[i], info.getUrl());
+            icons[i].setImageTintList(on ? active : normal);
+            icons[i].setAlpha(on ? 1f : 0.9f);
+        }
+    }
+
     private void toggleTitleAndSecondaryControls() {
         if (binding.detailSecondaryControlPanel.getVisibility() == View.GONE) {
             binding.detailVideoTitleView.setMaxLines(10);
@@ -765,6 +803,12 @@ public final class VideoDetailFragment
     @Override // called from onViewCreated in {@link BaseFragment#onViewCreated}
     protected void initViews(final View rootView, final Bundle savedInstanceState) {
         super.initViews(rootView, savedInstanceState);
+        // la luce del colore del video dietro la pagina, come su YouTube
+        ambientGlow = new AmbientGlow(binding.getRoot(), () -> isPlayerAvailable()
+                ? player.UIs().get(VideoPlayerUi.class)
+                        .map(ui -> (android.view.SurfaceView) ui.getBinding().surfaceView)
+                        .orElse(null)
+                : null);
 
         pageAdapter = new TabAdapter(getChildFragmentManager());
         binding.viewPager.setAdapter(pageAdapter);
@@ -1751,6 +1795,7 @@ public final class VideoDetailFragment
         }
 
         showYoutubeMetaLine(info);
+        showTasteIcons(info);
 
         if (info.getDislikeCount() == -1 && info.getLikeCount() == -1) {
             binding.detailThumbsDownImgView.setVisibility(View.VISIBLE);

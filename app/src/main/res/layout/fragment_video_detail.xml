@@ -372,7 +372,36 @@
                             android:layout_height="1dp"
                             android:layout_weight="1" />
 
-                        <!-- icone come su YouTube: fanno quello dei tasti a pillola qui sotto -->
+                        <!-- icone come su YouTube: Mi piace, Non mi piace, Preferiti (solo sul
+                             telefono, VetroTaste) e condividi; Salva e Scarica stanno nei tre
+                             puntini insieme alle pillole -->
+                        <ImageButton
+                            android:id="@+id/detail_icon_like"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/vt_liked"
+                            android:src="@drawable/ic_thumb_up"
+                            app:tint="?android:attr/textColorPrimary" />
+
+                        <ImageButton
+                            android:id="@+id/detail_icon_dislike"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/vt_disliked"
+                            android:src="@drawable/ic_thumb_down"
+                            app:tint="?android:attr/textColorPrimary" />
+
+                        <ImageButton
+                            android:id="@+id/detail_icon_favourite"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/vt_favourites"
+                            android:src="@drawable/ic_stars"
+                            app:tint="?android:attr/textColorPrimary" />
+
                         <ImageButton
                             android:id="@+id/detail_icon_share"
                             android:layout_width="42dp"
@@ -380,24 +409,6 @@
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="@string/share"
                             android:src="@drawable/ic_share"
-                            app:tint="?android:attr/textColorPrimary" />
-
-                        <ImageButton
-                            android:id="@+id/detail_icon_save"
-                            android:layout_width="42dp"
-                            android:layout_height="42dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="@string/pill_save"
-                            android:src="@drawable/ic_playlist_add"
-                            app:tint="?android:attr/textColorPrimary" />
-
-                        <ImageButton
-                            android:id="@+id/detail_icon_download"
-                            android:layout_width="42dp"
-                            android:layout_height="42dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="@string/download"
-                            android:src="@drawable/ic_file_download"
                             app:tint="?android:attr/textColorPrimary" />
 
                         <ImageButton
