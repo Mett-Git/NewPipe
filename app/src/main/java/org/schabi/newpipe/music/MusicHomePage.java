@@ -1,10 +1,12 @@
 package org.schabi.newpipe.music;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.StringRes;
 
 import org.schabi.newpipe.R;
@@ -18,15 +20,13 @@ import io.reactivex.rxjava3.core.Single;
 /** La Home: ascoltati di recente, tendenze e altro dell'ultimo artista ascoltato. */
 public class MusicHomePage extends MusicPage {
     private static final int RECENT_ROWS = 3;
-    private static final int FREQUENT_TILES = 6;
-    private static final int MIN_FREQUENT_TILES = 4;
+    private static final int FREQUENT_TILES = 9;
+    private static final int MIN_FREQUENT_TILES = 3;
+    private static final int GRID_COLUMNS = 3;
     private static final int MAX_MIXES = 5;
     private static final int MAX_FOLLOWED_SEARCHES = 3;
     private static final int SONGS_PER_ARTIST = 5;
     private static final String DEFAULT_SEED = "musica italiana";
-    private static final int[] CHIPS = {
-            R.string.vm_chip_all, R.string.vm_chip_songs,
-            R.string.vm_chip_albums, R.string.vm_chip_artists};
 
     private LinearLayout strip;
     private LinearLayout body;
@@ -37,19 +37,21 @@ public class MusicHomePage extends MusicPage {
     protected void build() {
         final View title = inflater().inflate(R.layout.music_home_title, content, false);
         content.addView(title);
-        title.findViewById(R.id.musicPageSearch)
-                .setOnClickListener(v -> host().openPage(new MusicSearchPage()));
+        // la ricerca sta nella barra in basso ("Cerca"), come su YouTube Music
+        title.findViewById(R.id.musicPageSearch).setVisibility(View.GONE);
         final HorizontalScrollView chips = new HorizontalScrollView(requireContext());
         chips.setHorizontalScrollBarEnabled(false);
         chips.setClipToPadding(false);
         chips.setPadding(dp(12), 0, dp(12), 0);
         strip = new LinearLayout(requireContext());
-        for (int i = 0; i < CHIPS.length; i++) {
-            final int index = i;
+        // come su YouTube Music: in cima le pillole dei momenti (Relax, Allenamento...),
+        // ognuna apre la sua musica
+        for (final int mood : MusicExplorePage.MOODS) {
             final TextView chip = (TextView) inflater()
                     .inflate(R.layout.music_chip, strip, false);
-            chip.setText(CHIPS[i]);
-            chip.setOnClickListener(v -> select(index));
+            final String name = getString(mood);
+            chip.setText(name);
+            chip.setOnClickListener(v -> host().openPage(MusicListPage.mood(name)));
             strip.addView(chip);
         }
         chips.addView(strip);
@@ -62,9 +64,7 @@ public class MusicHomePage extends MusicPage {
 
     private void select(final int index) {
         selectedChip = index;
-        for (int i = 0; i < strip.getChildCount(); i++) {
-            strip.getChildAt(i).setSelected(i == index);
-        }
+
         disposables.clear();
         body.removeAllViews();
         resumeBox = null;
@@ -102,17 +102,19 @@ public class MusicHomePage extends MusicPage {
             return;
         }
         addSection(body, getString(R.string.vm_frequent));
-        final int count = songs.size() - songs.size() % 2;
+        // mattonelle quadrate tre per riga, come la griglia in cima a YouTube Music
+        final int count = songs.size() - songs.size() % GRID_COLUMNS;
         LinearLayout pair = null;
         for (int i = 0; i < count; i++) {
-            if (i % 2 == 0) {
+            if (i % GRID_COLUMNS == 0) {
                 pair = new LinearLayout(requireContext());
-                pair.setPadding(dp(8), 0, dp(8), 0);
+                pair.setPadding(dp(9), 0, dp(9), 0);
                 body.addView(pair);
             }
             final StreamInfoItem song = songs.get(i);
             final int index = i;
-            final View tile = inflater().inflate(R.layout.music_song_tile, pair, false);
+            final View tile = inflater().inflate(R.layout.music_grid_tile, pair, false);
+            org.schabi.newpipe.util.VetroRound.apply(tile, 6);
             ((TextView) tile.findViewById(R.id.musicTileTitle)).setText(song.getName());
             loadCover(tile.findViewById(R.id.musicTileCover), song.getThumbnails());
             tile.setOnClickListener(v -> host().playSongs(songs, index, false));
@@ -198,12 +200,36 @@ public class MusicHomePage extends MusicPage {
                 }));
     }
 
+    // titolo della sezione con "Riproduci tutti" a destra, come su YouTube Music
+    private void addSectionWithPlayAll(@NonNull final String title,
+                                       @NonNull final List<StreamInfoItem> songs) {
+        final LinearLayout row = new LinearLayout(requireContext());
+        row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+        addSection(row, title);
+        final View section = row.getChildAt(0);
+        final LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0,
+                ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        if (section.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            final ViewGroup.MarginLayoutParams old =
+                    (ViewGroup.MarginLayoutParams) section.getLayoutParams();
+            params.setMargins(old.leftMargin, old.topMargin, old.rightMargin, old.bottomMargin);
+            params.setMarginStart(old.getMarginStart());
+        }
+        section.setLayoutParams(params);
+        final TextView playAll = (TextView) inflater().inflate(R.layout.music_chip, row, false);
+        playAll.setText(R.string.vm_play_all);
+        playAll.setOnClickListener(v -> host().playSongs(songs, 0, false));
+        row.addView(playAll);
+        row.setPadding(0, 0, dp(10), 0);
+        body.addView(row);
+    }
+
     private void showAll() {
         addResumeRow();
         addFrequentGrid();
         final List<StreamInfoItem> recent = MusicStore.recent(requireContext());
         if (!recent.isEmpty()) {
-            addSection(body, getString(R.string.vm_recent));
+            addSectionWithPlayAll(getString(R.string.vm_recent), recent);
             addSongRows(body, recent.subList(0, Math.min(RECENT_ROWS, recent.size())));
         }
         addMixes();

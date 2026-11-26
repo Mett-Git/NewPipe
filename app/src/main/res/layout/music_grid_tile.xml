@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Una mattonella quadrata della griglia in cima alla Home di Music, come su YouTube Music:
+     copertina con il titolo sopra, in basso. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_margin="3dp"
+    android:layout_weight="1"
+    android:background="?attr/selectableItemBackground">
+
+    <ImageView
+        android:id="@+id/musicTileCover"
+        android:layout_width="match_parent"
+        android:layout_height="112dp"
+        android:background="@color/vm_glass"
+        android:importantForAccessibility="no"
+        android:scaleType="centerCrop" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/vm_tile_shade" />
+
+    <TextView
+        android:id="@+id/musicTileTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:paddingStart="7dp"
+        android:paddingEnd="7dp"
+        android:paddingBottom="6dp"
+        android:textColor="#FFFFFF"
+        android:textSize="12.5sp"
+        android:textStyle="bold" />
+</FrameLayout>

@@ -117,4 +117,9 @@
     <string name="vm_clear">Cancella</string>
     <string name="vm_radio_short">Radio</string>
     <string name="vm_minutes_short">minuti questo mese</string>
+    <string name="vm_play_all">Riproduci tutti</string>
+    <string name="vm_mode_song">Brano</string>
+    <string name="vm_mode_video">Video</string>
+    <string name="vm_recent_activity">Attività recente</string>
+    <string name="vm_playlist_count">Playlist • %s</string>
 </resources>

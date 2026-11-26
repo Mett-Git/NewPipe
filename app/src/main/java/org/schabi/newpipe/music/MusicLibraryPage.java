@@ -38,58 +38,118 @@ public class MusicLibraryPage extends MusicPage {
         }
     }
 
+    /** Le pillole in cima, come su YouTube Music: -1 = tutto. */
+    private static final int CHIP_PLAYLISTS = 0;
+    private static final int CHIP_SONGS = 1;
+    private static final int CHIP_ALBUMS = 2;
+    private static final int CHIP_ARTISTS = 3;
+    private int chip = -1;
+
     @Override
     protected void build() {
         content.addView(pageTitle(getString(R.string.vm_library)));
-        final String likedTitle = getString(R.string.vm_liked);
-        final String recentTitle = getString(R.string.vm_recent);
-        final List<StreamInfoItem> liked = MusicStore.liked(requireContext());
-        final List<StreamInfoItem> recent = MusicStore.recent(requireContext());
-        // quattro riquadri di vetro, due per riga
-        final LinearLayout first = gridRow();
-        first.addView(shortcut(first, likedTitle, songsCount(liked.size()),
-                R.drawable.ic_favorite, R.color.vm_accent,
-                v -> host().openPage(MusicListPage.liked(likedTitle))));
-        first.addView(shortcut(first, recentTitle, songsCount(recent.size()),
-                R.drawable.ic_history, R.color.vm_text,
-                v -> host().openPage(MusicListPage.recent(recentTitle))));
-        final LinearLayout second = gridRow();
-        final int minutes = MusicStore.minutesThisMonth(requireContext());
-        second.addView(shortcut(second, getString(R.string.vm_stats),
-                getResources().getQuantityString(R.plurals.vm_minutes_count, minutes, minutes),
-                R.drawable.ic_vm_equalizer, R.color.vm_text,
-                v -> host().openPage(new MusicStatsPage())));
-        second.addView(privateTile(second));
-        addFollowedArtists();
-        addSection(content, getString(R.string.vm_your_playlists));
+        // pillole: Playlist, Brani, Album, Artisti, Download (toccandone una si filtra,
+        // toccandola di nuovo si torna a tutto)
+        final HorizontalScrollView chips = new HorizontalScrollView(requireContext());
+        chips.setHorizontalScrollBarEnabled(false);
+        chips.setClipToPadding(false);
+        chips.setPadding(dp(12), 0, dp(12), dp(4));
+        final LinearLayout strip = new LinearLayout(requireContext());
+        final int[] names = {R.string.vm_chip_playlists, R.string.vm_chip_songs,
+                R.string.vm_chip_albums, R.string.vm_chip_artists};
+        for (int i = 0; i < names.length; i++) {
+            final int index = i;
+            final TextView pill = (TextView) inflater().inflate(R.layout.music_chip, strip, false);
+            pill.setText(names[i]);
+            pill.setSelected(chip == i);
+            pill.setOnClickListener(v -> {
+                chip = chip == index ? -1 : index;
+                disposables.clear();
+                content.removeAllViews();
+                build();
+            });
+            strip.addView(pill);
+        }
+        final TextView downloads = (TextView) inflater().inflate(R.layout.music_chip, strip,
+                false);
+        downloads.setText(R.string.downloads);
+        downloads.setOnClickListener(v ->
+                org.schabi.newpipe.util.NavigationHelper.openDownloads(requireActivity()));
+        strip.addView(downloads);
+        chips.addView(strip);
+        content.addView(chips);
+
+        addSection(content, getString(R.string.vm_recent_activity));
         final LinearLayout box = new LinearLayout(requireContext());
         box.setOrientation(LinearLayout.VERTICAL);
         content.addView(box);
+
+        if (chip == -1 || chip == CHIP_SONGS) {
+            final String likedTitle = getString(R.string.vm_liked);
+            final String recentTitle = getString(R.string.vm_recent);
+            final List<StreamInfoItem> liked = MusicStore.liked(requireContext());
+            final List<StreamInfoItem> recent = MusicStore.recent(requireContext());
+            box.addView(linkRow(box, likedTitle, songsCount(liked.size()),
+                    liked.isEmpty() ? new java.util.ArrayList<>() : liked.get(0).getThumbnails(),
+                    v -> host().openPage(MusicListPage.liked(likedTitle))));
+            box.addView(linkRow(box, recentTitle, songsCount(recent.size()),
+                    recent.isEmpty() ? new java.util.ArrayList<>()
+                            : recent.get(0).getThumbnails(),
+                    v -> host().openPage(MusicListPage.recent(recentTitle))));
+        }
+        if (chip == -1 || chip == CHIP_ARTISTS) {
+            for (final MusicStore.FollowedArtist artist : MusicStore.followed(requireContext())) {
+                final View row = linkRow(box, artist.getName(), getString(R.string.vm_artist),
+                        ImageStrategy.INSTANCE.dbUrlToImageList(artist.getCover()),
+                        v -> host().openPage(
+                                MusicArtistPage.create(artist.getName(), artist.getCover())));
+                makeRound(row);
+                box.addView(row);
+            }
+        }
         final AppDatabase database = NewPipeDatabase.getInstance(requireContext());
-        disposables.add(new LocalPlaylistManager(database).getPlaylists().firstOrError()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(playlists -> {
-                    for (final PlaylistMetadataEntry playlist : playlists) {
-                        box.addView(linkRow(box, playlist.getOrderingName(),
-                                songsCount((int) playlist.getStreamCount()),
-                                ImageStrategy.INSTANCE.dbUrlToImageList(
-                                        playlist.getThumbnailUrl()),
-                                v -> host().openPage(MusicListPage.localPlaylist(
-                                        playlist.getOrderingName(), playlist.getUid()))));
-                    }
-                }, error -> addMessage(box, R.string.vm_load_error, null)));
-        disposables.add(new RemotePlaylistManager(database).getPlaylists().firstOrError()
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(playlists -> {
-                    for (final PlaylistRemoteEntity playlist : playlists) {
-                        box.addView(linkRow(box, playlist.getOrderingName(),
-                                playlist.getUploader(),
-                                ImageStrategy.INSTANCE.dbUrlToImageList(
-                                        playlist.getThumbnailUrl()),
-                                v -> host().openPage(MusicListPage.playlist(
-                                        playlist.getOrderingName(), playlist.getUrl()))));
-                    }
-                }, error -> addMessage(box, R.string.vm_load_error, null)));
+        if (chip == -1 || chip == CHIP_PLAYLISTS) {
+            disposables.add(new LocalPlaylistManager(database).getPlaylists().firstOrError()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(playlists -> {
+                        for (final PlaylistMetadataEntry playlist : playlists) {
+                            box.addView(linkRow(box, playlist.getOrderingName(),
+                                    getString(R.string.vm_playlist_count,
+                                            songsCount((int) playlist.getStreamCount())),
+                                    ImageStrategy.INSTANCE.dbUrlToImageList(
+                                            playlist.getThumbnailUrl()),
+                                    v -> host().openPage(MusicListPage.localPlaylist(
+                                            playlist.getOrderingName(), playlist.getUid()))));
+                        }
+                    }, error -> addMessage(box, R.string.vm_load_error, null)));
+        }
+        if (chip == -1 || chip == CHIP_ALBUMS || chip == CHIP_PLAYLISTS) {
+            // album e playlist salvati da YouTube
+            disposables.add(new RemotePlaylistManager(database).getPlaylists().firstOrError()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(playlists -> {
+                        for (final PlaylistRemoteEntity playlist : playlists) {
+                            box.addView(linkRow(box, playlist.getOrderingName(),
+                                    playlist.getUploader(),
+                                    ImageStrategy.INSTANCE.dbUrlToImageList(
+                                            playlist.getThumbnailUrl()),
+                                    v -> host().openPage(MusicListPage.playlist(
+                                            playlist.getOrderingName(), playlist.getUrl()))));
+                        }
+                    }, error -> addMessage(box, R.string.vm_load_error, null)));
+        }
+
+        // in fondo: il riepilogo e la sessione privata
+        if (chip == -1) {
+            final LinearLayout first = gridRow();
+            final int minutes = MusicStore.minutesThisMonth(requireContext());
+            first.addView(shortcut(first, getString(R.string.vm_stats),
+                    getResources().getQuantityString(R.plurals.vm_minutes_count, minutes,
+                            minutes),
+                    R.drawable.ic_vm_equalizer, R.color.vm_text,
+                    v -> host().openPage(new MusicStatsPage())));
+            first.addView(privateTile(first));
+        }
     }
 
     private LinearLayout gridRow() {
@@ -135,32 +195,6 @@ public class MusicLibraryPage extends MusicPage {
         ((ImageView) tile.findViewById(R.id.musicShortcutIcon))
                 .setImageTintList(ContextCompat.getColorStateList(requireContext(),
                         on ? R.color.vm_accent : R.color.vm_text));
-    }
-
-    // gli artisti seguiti in fila, con la foto tonda
-    private void addFollowedArtists() {
-        final List<MusicStore.FollowedArtist> artists = MusicStore.followed(requireContext());
-        if (artists.isEmpty()) {
-            return;
-        }
-        addSection(content, getString(R.string.vm_chip_artists));
-        final LinearLayout strip = new LinearLayout(requireContext());
-        for (final MusicStore.FollowedArtist artist : artists) {
-            final View card = inflater().inflate(R.layout.music_artist_card, strip, false);
-            ((TextView) card.findViewById(R.id.musicCardTitle)).setText(artist.getName());
-            loadCover(card.findViewById(R.id.musicCardCover),
-                    ImageStrategy.INSTANCE.dbUrlToImageList(artist.getCover()));
-            card.setOnClickListener(v -> host().openPage(
-                    MusicArtistPage.create(artist.getName(), artist.getCover())));
-            strip.addView(card);
-        }
-        final HorizontalScrollView scroll = new HorizontalScrollView(requireContext());
-        scroll.setHorizontalScrollBarEnabled(false);
-        scroll.setOverScrollMode(View.OVER_SCROLL_NEVER);
-        scroll.setClipToPadding(false);
-        scroll.setPadding(dp(12), 0, dp(12), 0);
-        scroll.addView(strip);
-        content.addView(scroll);
     }
 
     private String songsCount(final int count) {

@@ -48,6 +48,7 @@ import androidx.preference.PreferenceManager;
 import com.google.android.exoplayer2.PlaybackParameters;
 
 import org.schabi.newpipe.R;
+import org.schabi.newpipe.extractor.ServiceList;
 import org.schabi.newpipe.databinding.ActivityMusicBinding;
 import org.schabi.newpipe.extractor.stream.StreamInfo;
 import org.schabi.newpipe.extractor.stream.StreamInfoItem;
@@ -654,6 +655,16 @@ public final class MusicActivity extends AppCompatActivity
         binding.musicActionTimer.setOnClickListener(this::showTimerMenu);
         binding.musicActionEqualizer.setOnClickListener(v -> openEqualizer());
         binding.musicActionMore.setOnClickListener(this::showPlayerMenu);
+        // come su YouTube Music: tre puntini in alto e "Brano | Video" (Video apre il video del
+        // brano nella pagina video di NewPipe)
+        binding.musicPlayerMenu.setOnClickListener(this::showPlayerMenu);
+        binding.musicPlayerModeVideo.setOnClickListener(v -> {
+            if (currentUrl != null) {
+                NavigationHelper.openVideoDetail(this, ServiceList.YouTube.getServiceId(),
+                        currentUrl, String.valueOf(binding.musicPlayerTitle.getText()), null,
+                        false);
+            }
+        });
         binding.musicPlayerQueueEdit.setOnClickListener(v -> openQueue());
         binding.musicPanelClose.setOnClickListener(v -> closePanel());
         binding.musicPlayerPlay.setOnClickListener(v -> togglePlay());

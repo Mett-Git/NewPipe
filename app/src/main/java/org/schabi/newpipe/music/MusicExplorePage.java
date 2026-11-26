@@ -11,7 +11,7 @@ import org.schabi.newpipe.R;
 
 /** Esplora: i generi e gli stati d'animo da toccare, poi le tendenze. */
 public class MusicExplorePage extends MusicPage {
-    private static final int[] MOODS = {
+    static final int[] MOODS = {
             R.string.vm_mood_relax, R.string.vm_mood_workout, R.string.vm_mood_party,
             R.string.vm_mood_focus, R.string.vm_mood_happy, R.string.vm_mood_love,
             R.string.vm_mood_80s, R.string.vm_mood_italian};
@@ -23,7 +23,16 @@ public class MusicExplorePage extends MusicPage {
 
     @Override
     protected void build() {
-        content.addView(pageTitle(getString(R.string.vm_explore)));
+        // come su YouTube Music la scheda è "Cerca": barra di ricerca in cima, sotto generi
+        // e momenti e le tendenze
+        content.addView(pageTitle(getString(R.string.vm_search)));
+        final View bar = inflater().inflate(R.layout.music_search_bar, content, false);
+        final android.widget.EditText field = bar.findViewById(R.id.musicSearchField);
+        field.setFocusable(false);
+        field.setOnClickListener(v -> host().openPage(new MusicSearchPage()));
+        bar.setOnClickListener(v -> host().openPage(new MusicSearchPage()));
+        bar.findViewById(R.id.musicSearchBack).setVisibility(View.GONE);
+        content.addView(bar);
         addSection(content, getString(R.string.vm_moods));
         LinearLayout pair = null;
         for (int i = 0; i < MOODS.length; i++) {
