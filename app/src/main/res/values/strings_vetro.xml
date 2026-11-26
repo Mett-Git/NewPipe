@@ -253,4 +253,6 @@
     <string name="vt_channel_members_badge">MEMBERS</string>
     <string name="vt_see_all">See all</string>
     <string name="vt_shorts_from_channels">from your channels</string>
+    <string name="vt_likes">%s likes</string>
+    <string name="vt_more">...more</string>
 </resources>

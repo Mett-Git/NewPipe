@@ -174,7 +174,7 @@
                         android:layout_marginEnd="44dp"
                         android:ellipsize="end"
                         android:lineSpacingExtra="1dp"
-                        android:maxLines="2"
+                        android:maxLines="1"
                         android:paddingTop="14dp"
                         android:paddingBottom="4dp"
                         android:textAppearance="?android:attr/textAppearanceLarge"
@@ -228,18 +228,39 @@
                     android:visibility="gone"
                     tools:visibility="visible">
 
-                    <!-- VISUALIZZAZIONI (e data) sotto il titolo -->
-                    <org.schabi.newpipe.views.NewPipeTextView
-                        android:id="@+id/detail_view_count_view"
+                    <!-- sotto il titolo, come su YouTube: canale, Mi piace, visualizzazioni,
+                         quando, e "...altro" sempre in fondo a destra (apre la descrizione) -->
+                    <LinearLayout
+                        android:id="@+id/detail_meta_row"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="16dp"
                         android:layout_marginEnd="16dp"
-                        android:ellipsize="end"
-                        android:singleLine="true"
-                        android:textColor="?android:attr/textColorSecondary"
-                        android:textSize="13sp"
-                        tools:text="1,2 Mln di visualizzazioni • 2 giorni fa" />
+                        android:background="?attr/selectableItemBackground"
+                        android:orientation="horizontal">
+
+                        <org.schabi.newpipe.views.NewPipeTextView
+                            android:id="@+id/detail_view_count_view"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:singleLine="true"
+                            android:textColor="?android:attr/textColorSecondary"
+                            android:textSize="13sp"
+                            tools:text="1,2 Mln di visualizzazioni • 2 giorni fa" />
+
+                        <org.schabi.newpipe.views.NewPipeTextView
+                            android:id="@+id/detail_meta_more"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:singleLine="true"
+                            android:text="@string/vt_more"
+                            android:textColor="?android:attr/textColorPrimary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
 
                     <!-- CANALE + ISCRIVITI -->
                     <LinearLayout
@@ -255,9 +276,8 @@
 
                         <LinearLayout
                             android:id="@+id/detail_uploader_root_layout"
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:background="?attr/selectableItemBackground"
                             android:gravity="center_vertical"
                             android:orientation="horizontal"
@@ -287,12 +307,15 @@
 
                             </FrameLayout>
 
+                            <!-- nome e iscritti: nascosti, come su YouTube il nome sta
+                                 nella riga sotto il titolo -->
                             <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="10dp"
                                 android:gravity="center_vertical"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:visibility="gone">
 
                                 <org.schabi.newpipe.views.NewPipeTextView
                                     android:id="@+id/detail_sub_channel_text_view"
@@ -343,10 +366,54 @@
                             android:textStyle="bold"
                             android:visibility="gone"
                             tools:visibility="visible" />
+
+                        <View
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1" />
+
+                        <!-- icone come su YouTube: fanno quello dei tasti a pillola qui sotto -->
+                        <ImageButton
+                            android:id="@+id/detail_icon_share"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/share"
+                            android:src="@drawable/ic_share"
+                            app:tint="?android:attr/textColorPrimary" />
+
+                        <ImageButton
+                            android:id="@+id/detail_icon_save"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/pill_save"
+                            android:src="@drawable/ic_playlist_add"
+                            app:tint="?android:attr/textColorPrimary" />
+
+                        <ImageButton
+                            android:id="@+id/detail_icon_download"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/download"
+                            android:src="@drawable/ic_file_download"
+                            app:tint="?android:attr/textColorPrimary" />
+
+                        <ImageButton
+                            android:id="@+id/detail_icon_more"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/more_options"
+                            android:src="@drawable/ic_more_vert"
+                            app:tint="?android:attr/textColorPrimary" />
                     </LinearLayout>
 
-                    <!-- TASTI A PILLOLA (scorrono di lato) -->
+                    <!-- TASTI A PILLOLA (Finestrella, Audio, Popup...): si aprono con i tre puntini -->
                     <HorizontalScrollView
+                        android:id="@+id/detail_pills_scroll"
+                        android:visibility="gone"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"

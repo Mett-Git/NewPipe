@@ -609,6 +609,23 @@ public final class VideoDetailFragment
         binding.detailControlsShare.setOnClickListener(makeOnClickListener(info ->
                 ShareUtils.shareText(requireContext(), info.getName(), info.getUrl(),
                         info.getThumbnails())));
+        // icone come su YouTube accanto a Iscriviti: fanno quello dei tasti a pillola; i tre
+        // puntini aprono le pillole (Finestrella, Audio, Popup...) e gli altri tasti
+        binding.detailIconShare.setOnClickListener(v -> binding.detailControlsShare.performClick());
+        binding.detailIconSave.setOnClickListener(v ->
+                binding.detailControlsPlaylistAppend.performClick());
+        binding.detailIconDownload.setOnClickListener(v ->
+                binding.detailControlsDownload.performClick());
+        binding.detailIconMore.setOnClickListener(v -> {
+            final boolean show = binding.detailPillsScroll.getVisibility() != View.VISIBLE;
+            binding.detailPillsScroll.setVisibility(show ? View.VISIBLE : View.GONE);
+            if (show == (binding.detailSecondaryControlPanel.getVisibility() == View.GONE)) {
+                toggleTitleAndSecondaryControls();
+            }
+        });
+        // la riga sotto il titolo ("...altro") apre la descrizione
+        binding.detailMetaRow.setOnClickListener(v ->
+                binding.detailDescriptionBox.performClick());
         binding.detailControlsOpenInBrowser.setOnClickListener(makeOnClickListener(info ->
                 ShareUtils.openUrlInBrowser(requireContext(), info.getUrl())));
         binding.detailControlsPlayWithKodi.setOnClickListener(makeOnClickListener(info ->
@@ -699,6 +716,32 @@ public final class VideoDetailFragment
         }
     }
 
+    // la riga sotto il titolo come su YouTube: canale, Mi piace, visualizzazioni, quando,
+    // e "...altro" che apre la descrizione
+    private void showYoutubeMetaLine(@NonNull final StreamInfo info) {
+        final java.util.List<CharSequence> parts = new java.util.ArrayList<>();
+        final String channel = isEmpty(info.getSubChannelName())
+                ? info.getUploaderName() : info.getSubChannelName();
+        if (!isEmpty(channel)) {
+            parts.add(channel);
+        }
+        if (info.getLikeCount() >= 0) {
+            parts.add(getString(R.string.vt_likes,
+                    Localization.shortCount(activity, info.getLikeCount())));
+        }
+        if (info.getViewCount() >= 0 && info.getStreamType() == StreamType.VIDEO_STREAM) {
+            // in breve, come su YouTube: "449 Mln di visualizzazioni"
+            parts.add(Localization.shortViewCount(activity, info.getViewCount()));
+            if (info.getUploadDate() != null) {
+                parts.add(Localization.relativeTime(info.getUploadDate().offsetDateTime()));
+            }
+        } else if (binding.detailViewCountView.getVisibility() == View.VISIBLE) {
+            parts.add(binding.detailViewCountView.getText());
+        }
+        binding.detailViewCountView.setText(android.text.TextUtils.join("   ", parts));
+        binding.detailViewCountView.setVisibility(View.VISIBLE);
+    }
+
     private void toggleTitleAndSecondaryControls() {
         if (binding.detailSecondaryControlPanel.getVisibility() == View.GONE) {
             binding.detailVideoTitleView.setMaxLines(10);
@@ -706,7 +749,7 @@ public final class VideoDetailFragment
                     VideoPlayerUi.DEFAULT_CONTROLS_DURATION, 180);
             binding.detailSecondaryControlPanel.setVisibility(View.VISIBLE);
         } else {
-            binding.detailVideoTitleView.setMaxLines(2);
+            binding.detailVideoTitleView.setMaxLines(1);
             animateRotation(binding.detailToggleSecondaryControlsView,
                     VideoPlayerUi.DEFAULT_CONTROLS_DURATION, 0);
             binding.detailSecondaryControlPanel.setVisibility(View.GONE);
@@ -1707,6 +1750,8 @@ public final class VideoDetailFragment
             }
         }
 
+        showYoutubeMetaLine(info);
+
         if (info.getDislikeCount() == -1 && info.getLikeCount() == -1) {
             binding.detailThumbsDownImgView.setVisibility(View.VISIBLE);
             binding.detailThumbsUpImgView.setVisibility(View.VISIBLE);
@@ -1753,8 +1798,10 @@ public final class VideoDetailFragment
 
         binding.detailTitleRootLayout.setClickable(true);
         binding.detailToggleSecondaryControlsView.setRotation(0);
-        binding.detailToggleSecondaryControlsView.setVisibility(View.VISIBLE);
+        // come su YouTube niente freccia: gli altri tasti stanno nei tre puntini
+        binding.detailToggleSecondaryControlsView.setVisibility(View.GONE);
         binding.detailSecondaryControlPanel.setVisibility(View.GONE);
+        binding.detailPillsScroll.setVisibility(View.GONE);
 
         checkUpdateProgressInfo(info);
         CoilHelper.INSTANCE.loadDetailsThumbnail(binding.detailThumbnailImageView,

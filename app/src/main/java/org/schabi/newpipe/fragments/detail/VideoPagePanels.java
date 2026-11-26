@@ -64,7 +64,10 @@ final class VideoPagePanels {
      */
     void bind(@NonNull final StreamInfo info, final boolean showDescription,
               final boolean showComments) {
-        binding.detailDescriptionBox.setVisibility(showDescription ? View.VISIBLE : View.GONE);
+        // come su YouTube la descrizione si apre da "...altro" sotto il titolo: il riquadro
+        // resta nascosto (ma si apre lo stesso col suo tocco)
+        binding.detailDescriptionBox.setVisibility(View.GONE);
+        binding.detailDescriptionBox.setEnabled(showDescription);
         final String description = plainText(info.getDescription());
         binding.detailDescriptionPreview.setText(description.isEmpty()
                 ? binding.getRoot().getContext().getString(R.string.video_box_more_info)

@@ -252,4 +252,6 @@
     <string name="vt_channel_members_badge">ABBONATI</string>
     <string name="vt_see_all">Vedi tutto</string>
     <string name="vt_shorts_from_channels">dai tuoi canali</string>
+    <string name="vt_likes">%s Mi piace</string>
+    <string name="vt_more">...altro</string>
 </resources>
