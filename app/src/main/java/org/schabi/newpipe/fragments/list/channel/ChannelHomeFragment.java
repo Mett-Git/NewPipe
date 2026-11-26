@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -52,6 +53,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
  */
 public class ChannelHomeFragment extends BaseFragment {
     private static final int SHELF_SIZE = 12;
+    /** Quanti video di "Nuove uscite" si vedono prima della freccia giù. */
+    private static final int ROWS_SHOWN = 4;
     /** Quanti video grandi al massimo fra una sezione e l'altra. */
     private static final int BETWEEN = 5;
 
@@ -233,8 +236,8 @@ public class ChannelHomeFragment extends BaseFragment {
             }
         };
 
-        if (addShelf(content, getString(R.string.vt_channel_latest), null, ChannelTabs.VIDEOS,
-                newest, false)) {
+        if (addRows(content, getString(R.string.vt_channel_latest), ChannelTabs.VIDEOS,
+                newest)) {
             bigVideo.run();
         }
         if (addShelf(content, getString(R.string.vt_channel_popular),
@@ -282,13 +285,23 @@ public class ChannelHomeFragment extends BaseFragment {
         final View view = LayoutInflater.from(requireContext())
                 .inflate(R.layout.vetro_shelf_featured, parent, false);
         bindVideo(view, item);
-        // qui il "segnino" in alto è il titolo della sezione (0 = niente titolo)
-        final TextView badge = view.findViewById(R.id.shelfBadge);
-        if (title != 0) {
-            badge.setText(title);
-            badge.setVisibility(View.VISIBLE);
-        } else if (item.getContentAvailability() != ContentAvailability.MEMBERSHIP) {
-            badge.setVisibility(View.GONE);
+        // come su YouTube: a tutta larghezza (angoli dritti), 16:9, foto del canale a sinistra
+        final View thumb = view.findViewById(R.id.shelfThumb);
+        thumb.setClipToOutline(false);
+        thumb.getLayoutParams().height =
+                getResources().getDisplayMetrics().widthPixels * 9 / 16;
+        view.findViewById(R.id.shelfBadge).setVisibility(View.GONE);
+        final ImageView avatar = view.findViewById(R.id.shelfAvatar);
+        if (channel != null && !channel.getAvatars().isEmpty()) {
+            avatar.setVisibility(View.VISIBLE);
+            avatar.setOutlineProvider(new android.view.ViewOutlineProvider() {
+                @Override
+                public void getOutline(final View v, final android.graphics.Outline outline) {
+                    outline.setOval(0, 0, v.getWidth(), v.getHeight());
+                }
+            });
+            avatar.setClipToOutline(true);
+            CoilHelper.INSTANCE.loadAvatar(avatar, channel.getAvatars());
         }
         return view;
     }
@@ -306,6 +319,53 @@ public class ChannelHomeFragment extends BaseFragment {
                     shorts ? R.layout.vetro_shelf_short : R.layout.vetro_shelf_video, row, false);
             bindVideo(cell, item);
             row.addView(cell);
+        }
+        return true;
+    }
+
+    private boolean addRows(@NonNull final LinearLayout content, @NonNull final String title,
+                            @NonNull final String tab, @NonNull final List<StreamInfoItem> items) {
+        if (items.isEmpty()) {
+            return false;
+        }
+        final LinearLayout list = shelf(content, title, null, tab);
+        // la fila che scorre di lato qui non serve: i video vanno uno sotto l'altro
+        final ViewGroup scroll = (ViewGroup) list.getParent();
+        final ViewGroup shelfView = (ViewGroup) scroll.getParent();
+        shelfView.removeView(scroll);
+        final LinearLayout rows = new LinearLayout(requireContext());
+        rows.setOrientation(LinearLayout.VERTICAL);
+        shelfView.addView(rows);
+        final int max = Math.min(SHELF_SIZE, items.size());
+        for (int i = 0; i < max; i++) {
+            final View row = LayoutInflater.from(requireContext())
+                    .inflate(R.layout.vetro_shelf_row, rows, false);
+            bindVideo(row, items.get(i));
+            VetroRound.apply(row.findViewById(R.id.shelfThumb), 8);
+            row.setVisibility(i < ROWS_SHOWN ? View.VISIBLE : View.GONE);
+            rows.addView(row);
+        }
+        if (max > ROWS_SHOWN) {
+            final ImageView expand = new ImageView(requireContext());
+            expand.setImageResource(R.drawable.ic_expand_more);
+            expand.setImageTintList(android.content.res.ColorStateList.valueOf(
+                    ((TextView) shelfView.findViewById(R.id.shelfTitle)).getCurrentTextColor()));
+            expand.setBackgroundResource(R.drawable.vetro_pill);
+            final int pad = org.schabi.newpipe.util.DeviceUtils.dpToPx(6, requireContext());
+            expand.setPadding(pad, pad, pad, pad);
+            final LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    org.schabi.newpipe.util.DeviceUtils.dpToPx(44, requireContext()),
+                    org.schabi.newpipe.util.DeviceUtils.dpToPx(32, requireContext()));
+            params.gravity = android.view.Gravity.CENTER_HORIZONTAL;
+            params.topMargin = pad;
+            expand.setLayoutParams(params);
+            expand.setOnClickListener(v -> {
+                for (int i = 0; i < rows.getChildCount(); i++) {
+                    rows.getChildAt(i).setVisibility(View.VISIBLE);
+                }
+                expand.setVisibility(View.GONE);
+            });
+            rows.addView(expand);
         }
         return true;
     }
@@ -351,14 +411,17 @@ public class ChannelHomeFragment extends BaseFragment {
                                @Nullable final String note, @Nullable final String tab) {
         final View shelf = LayoutInflater.from(requireContext())
                 .inflate(R.layout.vetro_shelf, content, false);
-        ((TextView) shelf.findViewById(R.id.shelfTitle)).setText(title);
+        final TextView titleView = shelf.findViewById(R.id.shelfTitle);
         final TextView more = shelf.findViewById(R.id.shelfMore);
         if (tab != null) {
-            more.setText(R.string.vt_see_all);
-            more.setOnClickListener(v -> openTab(tab));
+            titleView.setText(title + "  ›");
+            titleView.setOnClickListener(v -> openTab(tab));
+            more.setVisibility(View.GONE);
         } else if (note != null) {
+            titleView.setText(title);
             more.setText(note);
         } else {
+            titleView.setText(title);
             more.setVisibility(View.GONE);
         }
         content.addView(shelf);

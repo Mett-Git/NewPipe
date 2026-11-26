@@ -201,6 +201,9 @@ public class ChannelFragment extends BaseStateFragment<ChannelInfo>
 
         setTitle(name);
         binding.channelTitleView.setText(name);
+        // copertina arrotondata come su YouTube; la riga della descrizione apre Informazioni
+        org.schabi.newpipe.util.VetroRound.apply(binding.channelBannerImage, 12);
+        binding.channelDescriptionRow.setOnClickListener(v -> selectChannelTab("about"));
         if (!ImageStrategy.shouldLoadImages()) {
             // do not waste space for the banner if it is not going to be loaded
             binding.channelBannerImage.setImageDrawable(null);
@@ -665,6 +668,11 @@ public class ChannelFragment extends BaseStateFragment<ChannelInfo>
         } else {
             binding.channelSubscriberView.setText(R.string.subscribers_count_not_available);
         }
+        final String description = result.getDescription() == null
+                ? "" : result.getDescription().replace('\n', ' ').trim();
+        binding.channelDescriptionLine.setText(description);
+        binding.channelDescriptionRow.setVisibility(description.isEmpty()
+                ? View.GONE : View.VISIBLE);
 
         if (!TextUtils.isEmpty(currentInfo.getParentChannelName())) {
             binding.subChannelTitleView.setText(String.format(
